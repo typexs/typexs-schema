@@ -1,0 +1,72 @@
+{
+  "name": "typexs-schema",
+  "version": "0.0.1",
+  "description": "Schema for typexs",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs/de"
+  },
+  "scripts": {
+    "test": "nyc mocha --opts test/mocha.all.opts",
+    "posttest": "nyc report --reporter=json && codecov -f coverage/*.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/typexs/typexs-schema.git"
+  },
+  "author": "Robert Kania",
+  "license": "MIT",
+  "keywords": [
+    "typexs",
+    "typescript"
+  ],
+  "bugs": {
+    "url": "https://github.com/typexs/typexs-schema/issues"
+  },
+  "homepage": "https://github.com/typexs/typexs-schema#readme",
+  "devDependencies": {
+    "ts-node": "^6.0.2",
+    "tslint": "~5.9.1",
+    "typescript": "^2.8.3",
+    "typescript-require": "^0.2.10",
+    "mocha": "^5.1.1",
+    "mocha-typescript": "^1.1.12",
+    "gulp": "^3.9.1",
+    "gulp-bump": "^3.1.1",
+    "gulp-clean": "^0.4.0",
+    "gulp-ngc": "^0.3.3",
+    "gulp-replace": "^0.6.1",
+    "gulp-shell": "^0.6.5",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-typescript": "^4.0.2",
+    "gulp-util": "^3.0.8",
+    "gulp-watch": "^5.0.0",
+    "gulpclass": "^0.1.2",
+    "nyc": "^11.7.1",
+    "sqlite3": "^4.0.0"
+  },
+  "dependencies": {
+    "typexs-base": "latest"
+  },
+  "private": true,
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "tmp/",
+      "build/"
+    ],
+    "require": [
+      "ts-node/register"
+    ],
+    "sourceMap": true,
+    "instrument": true,
+    "cache": false
+  },
+  "typexs": {
+    "name": "typexs-schema"
+  }
+}

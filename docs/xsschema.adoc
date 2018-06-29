@@ -1,0 +1,446 @@
+
+Unterschied zwischen Entity und Property:
+
+* Entity hat eigene eindeutige Identifikation,
+ Property nicht und unterliegt einem Kontext
+
+
+== Datentypen
+
+Primitive Datentypen
+
+|===
+| Type
+
+| string
+
+| integer
+
+| int
+
+| bigint
+
+| double
+
+| float
+
+
+
+|===
+
+== Annotationen
+
+=== @Schema
+
+* asd
+
+=== @Entity
+
+* asd
+
+=== @Property
+
+[cols="1,3"]
+|===
+| Name | Beschreibung
+
+| type : string
+| Datentyp des Feldes
+
+| id / pk : boolean
+| Marker für primären Identifikationsschlüssel
+
+| reuseable : boolean
+| Auslagern der Eigenschaftsdaten in gesonderte Tabelle
+
+| join : boolean
+| Direkte Bindung zu externer Entität (nur bei Kardinalität = 1)
+
+| tableName : string
+| Übersteuerung des generierten Tabellennamens der Eigenschaft
+
+| fieldName : string
+| Übersteuerung des generierten Feldnamens für die Join-Beziehung der
+ Eigenschaft
+
+| refFieldName : string
+| Übersteuerung des Schlüsselfeldnamens für die referenzierte Tabelle
+
+|===
+
+
+=== @PropertyOf
+
+Erweiterung einer bzw mehrerer Entitätentypen
+durch eine zusätzliche Eigenschaft.
+Entweder durch gesonderte Tabelle oder durch Erweiterung der
+Tabelle der Entität um zusätzliche Felder in dem Fall wird die
+Bezeichnung der Eigenschaft kombiniert mit den Namen der Sub-Eigenschften.
+
+*Über zusätzliche Tabelle*
+
+Zusätzliche Felder als Primärschlüssel hinzufügen:
+|===
+| Name | Type
+
+| source_id | integer
+| source_rev_id | integer
+| source_type | string(64)
+| source_seqnr | integer
+
+|===
+
+
+*Über Integration*
+
+NOTE: @TODO asd
+
+```
+Entity:
+  {propertyName}__{subPropertyName} : {someType}
+```
+
+
+
+
+== Variationen
+
+*Einfaches Schema*
+
+[cols="a,a"]
+|===
+|
+```js
+@XsEntity()
+class Author {
+  @XsProperty({type:'number', id:true})
+  id: number;
+
+  @XsProperty({type:'string'})
+  firstName: string;
+
+  @XsProperty({type:'string'})
+  lastName: string;
+}
+```
+|
+```js
+@Entity('e_author')
+class Author {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  first_name: string;
+
+  @Column('text')
+  last_name: string;
+}
+```
+
+|===
+
+
+
+[plantuml, images/erm_01_simple, png]
+....
+
+object e_author {
+  id: integer
+  first_name: text
+  last_name: text
+}
+
+....
+
+
+*Schema mit direkter Referenz auf andere Entität*
+
+[cols="a,a"]
+|===
+|
+```js
+@XsEntity()
+class Author {
+  @XsProperty({type:'number', id:true})
+  id: number;
+
+  @XsProperty({type:'string'})
+  firstName: string;
+
+  @XsProperty({type:'string'})
+  lastName: string;
+}
+
+@XsEntity()
+class Book {
+  @XsProperty({type:'number', id:true})
+  id: number;
+
+  @XsProperty({type:'string'})
+  content: string;
+
+  // reuseable allows other
+  @XsProperty({type:'Author', direct: true})
+  author: Author;
+}
+```
+|
+```js
+@Entity('e_author')
+class Author {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  first_name: string;
+
+  @Column('text')
+  last_name: string;
+}
+
+@Entity('e_book')
+class Book {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  content: string;
+
+  @JoinColumn(Author)
+  author: Author;
+}
+```
+
+|===
+
+
+[plantuml, images/erm_02_schema_with_join, png]
+....
+
+object e_author {
+  id: integer
+  first_name: text
+  last_name: text
+}
+
+object e_book {
+  id: integer
+  content: text
+  author_id: integer
+}
+
+e_book::author_id -right-> e_author::id
+
+
+....
+
+
+*Schema mit indirekter Referenz  auf andere Entität*
+
+[cols="a,a"]
+|===
+|
+```js
+@XsEntity()
+class Author {
+
+  @XsProperty({type:'number', id:true})
+  id: number;
+
+  @XsProperty({type:'string'})
+  firstName: string;
+
+  @XsProperty({type:'string'})
+  lastName: string;
+
+}
+
+
+@XsEntity()
+class Book {
+
+  @XsProperty({type:'number', id:true})
+  id: number;
+
+  @XsProperty({type:'string'})
+  content: string;
+
+  // reuseable allows other
+  @XsProperty({type:'Author', reuseable: true})
+  author: Author;
+
+}
+```
+|
+```js
+@Entity('e_author')
+class Author {
+
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  first_name: string;
+
+  @Column('text')
+  last_name: string;
+}
+
+
+@Entity('p_author') // name by entity referencing type
+class PropertyAuthor {
+
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('int')
+  src_id: number;
+
+  @Column('text')
+  src_type: string; // name of entity
+
+  @Column('text') // name of property
+  src_ctxt: string;
+
+  @Column('int')
+  seqnr: number;
+
+  @JoinColumn(Author)
+  author: Author;
+}
+
+@Entity('e_book')
+class Author {
+
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  content: string;
+
+}
+```
+
+|===
+
+
+[plantuml, images/erm_03_schema_with_join, png]
+....
+
+object e_author {
+  id: integer
+  first_name: text
+  last_name: text
+}
+
+object p_author {
+  id: integer
+  src_id: integer
+  src_type:varchar(64)
+  seqnr: integer
+  author_id: integer
+}
+
+object e_book {
+  id: integer
+  content: text
+}
+
+
+e_book::id -right-> p_author::src_id : "src_id = id &&\n src_type = 'author'"
+p_author::author_id -right-> e_author::id : "author_id = id"
+
+....
+
+
+*Schema mit indirekter Referenz auf eingebettete Entität*
+
+[cols="a,a"]
+|===
+|
+```js
+@XsEntity()
+class Book {
+
+  @XsProperty({type:'number', id:true})
+  id: number;
+
+  @XsProperty({type:'string'})
+  content: string;
+
+  @XsProperty({type:'Author'})
+  author: Author;
+
+}
+```
+|
+```js
+
+@Entity('p_author') // name by entity referencing type
+class PropertyAuthor {
+
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('int')
+  src_id:number;
+
+  @Column('text')
+  src_type:string;
+
+  @Column('text')
+  first_name: string;
+
+  @Column('text')
+  last_name: string;
+
+}
+
+@Entity('e_book')
+class Book {
+
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  content: string;
+
+}
+```
+
+|===
+
+
+[plantuml, images/erm_04_schema_with_join, png]
+....
+
+
+object p_author {
+  id: integer
+  src_id: integer
+  src_type:varchar(64)
+  seqnr: integer
+  first_name: text
+  last_name: text
+}
+
+object e_book {
+  id: integer
+  content: text
+}
+
+
+e_book::id -right-> p_author::src_id : "src_id = id &&\n src_type = 'author'"
+
+....
+
+
+
+[NOTE]
+====
+For referencing properties currently an class is generated with a
+constructor name which is a combination of property name and
+the referencing clazz. It should be possible to override this
+by supporting an predefined class.
+====

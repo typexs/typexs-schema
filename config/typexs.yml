@@ -1,0 +1,26 @@
+
+app:
+  name: typexs-base
+
+
+
+logging:
+  enable: true
+  level: debug
+  transports:
+  - console: {}
+
+
+server:
+  default:
+    type: web
+    framework: express
+    host: localhost
+    port: 4500
+
+    routes:
+    - type: routing_controller
+      context: api
+      routePrefix: api
+
+#    - dataType: static_files
