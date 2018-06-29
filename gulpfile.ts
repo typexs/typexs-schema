@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as glob from 'glob';
 import * as gulp from 'gulp';
 import * as watch from 'gulp-watch';
-import {main as ngc} from '@angular/compiler-cli/src/main';
+
 
 // const debug = require('gulp-debug');
 //import * as ts from "gulp-typescript";
@@ -17,12 +17,8 @@ const shell = require("gulp-shell");
 const replace = require("gulp-replace");
 const sourcemaps = require("gulp-sourcemaps");
 const ts = require("gulp-typescript");
-const debug = require("gulp-debug");
+
 const sequence = require('run-sequence');
-const webpack = require('webpack-stream');
-
-
-// ngc -p tsconfig.app.json
 
 
 @Gulpclass()
@@ -91,12 +87,6 @@ export class Gulpfile {
       "./src/**/*.ts",
       "!./src/**/files/*.ts",
       "!./src/**/files/**/*.ts",
-      "!./src/app/**",
-      "!./src/modules/*/*.ts",
-      "!./src/modules/*/!(api|entities)/*.ts",
-      "!./src/modules/*/!(api|entities)/**/*.ts",
-      "./src/modules/*/+(api|entities)/*.ts",
-      "./src/modules/*/+(api|entities)/**/*.ts",
       "./node_modules/@types/**/*.ts"])
       .pipe(sourcemaps.init())
       .pipe(tsProject());
@@ -109,31 +99,6 @@ export class Gulpfile {
     ];
   }
 
-  @Task()
-  async packageNgCompile() {
-    return await ngc(['-p','tsconfig.app.json'])
-  }
-
-  @Task()
-  packageNgCopy() {
-    return gulp.src([
-      "./src/modules/**/*.+(html|css|less|sass|scss|ts)",
-      "!./src/modules/*/api/**",
-      "!./src/modules/*/entities/**",
-      // "./build/app/src/modules/**/*",
-      // "!./build/app/src/modules/app/**",
-      "!./src/modules/app/**" ])
-    //  .pipe(debug())
-         .pipe(gulp.dest("./build/package/modules"));
-  }
-
-  // @Task()
-  // packageNgWebpack() {
-  //   return gulp.src(['./build/app/src/modules/**/*.component.js','!./src/modules/app/**'])
-  //     .pipe(debug())
-  //     .pipe(webpack( require('./webpack.config.js') ))
-  //     .pipe(gulp.dest('./build/prebuild'));
-  // }
 
 
   /**
@@ -219,7 +184,7 @@ export class Gulpfile {
       "clean",
       "packageCompile",
       [
-        "packageNgCopy",
+
         "packageCopyBin",
         "packageCopyJsons",
         "packageCopyFiles",
@@ -240,7 +205,7 @@ export class Gulpfile {
     return [
       "packageCompile",
       [
-        "packageNgCopy",
+
         "packageCopyBin",
         "packageCopyJsons",
         "packageCopyFiles",
