@@ -23,7 +23,7 @@ class Xsschema_scenario_00_simpleSpec {
 
   @test
   async 'initializing a simple schema'() {
-    Registry.reset();
+
     require('./schemas/default/Author');
 
     let ref = new StorageRef(TEST_STORAGE_OPTIONS);
@@ -44,12 +44,12 @@ class Xsschema_scenario_00_simpleSpec {
     expect(data).to.have.length(3);
     expect(_.find(data, {name: 'last_name'})).to.deep.include({name: 'last_name', type: 'text'});
     await c.close();
-    Registry.reset();
+
   }
 
   @test
   async 'initializing a simple schema but use other names'() {
-    Registry.reset();
+
     require('./schemas/default/AuthorRename');
 
     let ref = new StorageRef(TEST_STORAGE_OPTIONS);
@@ -68,7 +68,7 @@ class Xsschema_scenario_00_simpleSpec {
 
     expect(_.find(data, {name: 'id_new_name'})).to.deep.include({type: 'integer', pk: 1});
     await c.close();
-    Registry.reset();
+
   }
 
 }

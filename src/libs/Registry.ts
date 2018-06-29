@@ -109,7 +109,9 @@ export class Registry {
   }
 
   static reset() {
+    LookupRegistry.reset();
     this._self = null;
+
   }
 }
 

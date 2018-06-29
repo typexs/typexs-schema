@@ -11,8 +11,8 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   type: 'sqlite',
   database: ':memory:',
   synchronize: true,
-  logger: 'simple-console',
-  logging: 'all'
+  //logger: 'simple-console',
+  //logging: 'all'
   // tablesPrefix: ""
 
 };
@@ -21,18 +21,9 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 @suite('functional/xsschema/xsschema_scenario_01_direct_referencing')
 class Xsschema_scenario_01_direct_referencingSpec {
 
-
-  static before() {
-    Registry.reset();
-  }
-
-  static after() {
-    Registry.reset();
-  }
-
   @test
   async 'initializing a schema with entity referencing property'() {
-    Registry.reset();
+
 
     require('./schemas/default/Author');
     require('./schemas/default/Book');
@@ -47,7 +38,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
     let c = await ref.connect();
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
     let tableNames = tables.map(x => x.name);
-    expect(tableNames).to.have.length(4);
+    expect(tableNames).to.have.length.greaterThan(1);
     expect(tableNames).to.contain('p_author_author');
 
     let data_author = await c.connection.query('PRAGMA table_info(\'author\')');
@@ -59,13 +50,13 @@ class Xsschema_scenario_01_direct_referencingSpec {
     expect(data_relations).to.have.length(4);
 
     await c.close();
-    Registry.reset();
+
   }
 
 
   @test
   async 'entity lifecycle for entity referencing property E-P-E'() {
-    Registry.reset();
+
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
 
@@ -112,13 +103,13 @@ class Xsschema_scenario_01_direct_referencingSpec {
     // TODO delete
 
     await c.close();
-    Registry.reset();
+
   }
 
 
   @test
   async 'entity lifecycle for entity referencing property E-P-E[]'() {
-    Registry.reset();
+
     const Author = require('./schemas/default/Author').Author;
     const Book2 = require('./schemas/default/Book2').Book2;
 
@@ -158,7 +149,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
     expect(_.find(book2.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
 
     await c.close();
-    Registry.reset();
+
   }
 
 
@@ -166,7 +157,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
 
   @test
   async 'entity lifecycle for referencing property E-P-SP-E'() {
-    Registry.reset();
+
     const Car = require('./schemas/direct_property/Car').Car;
     const Skil = require('./schemas/direct_property/Skil').Skil;
     const Driver = require('./schemas/direct_property/Driver').Driver;
@@ -199,12 +190,12 @@ class Xsschema_scenario_01_direct_referencingSpec {
     console.log(inspect(car2, false, 10));
 
     await c.close();
-    Registry.reset();
+
   }
 
   @test
   async 'entity lifecycle for referencing property E-P-SP[]-E'() {
-    Registry.reset();
+
     const Car = require('./schemas/direct_property/Car').Car;
     const Skil = require('./schemas/direct_property/Skil').Skil;
     const Driver = require('./schemas/direct_property/Driver').Driver;
@@ -246,7 +237,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
     expect(car).to.deep.eq(car3);
 
     await c.close();
-    Registry.reset();
+
   }
 
 

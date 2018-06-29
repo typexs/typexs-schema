@@ -23,7 +23,7 @@ class Xsschema_scenario_02_indirect_integrationSpec {
 
   @test
   async 'initializing a schema with integrated property'() {
-    Registry.reset();
+
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
     const Summary = require('./schemas/default/Summary').Summary;
@@ -52,13 +52,13 @@ class Xsschema_scenario_02_indirect_integrationSpec {
     expect(data_summary).to.have.length(5);
 
     await c.close();
-    Registry.reset();
+
   }
 
 
   @test
   async 'entity lifecycle for integrated property'() {
-    Registry.reset();
+
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
     const Summary = require('./schemas/default/Summary').Summary;
@@ -91,8 +91,8 @@ class Xsschema_scenario_02_indirect_integrationSpec {
 
     // console.log(book)
 
-    let data2 = await c.connection.query('SELECT name FROM sqlite_master WHERE type=\'table\';');
-    expect(data2).to.have.length(5);
+   // let data2 = await c.connection.query('SELECT name FROM sqlite_master WHERE type=\'table\';');
+    // expect(data2).to.have.length(5);
 
     let data = await c.connection.query('select * from author');
     expect(data).to.have.length(1);
@@ -121,13 +121,13 @@ class Xsschema_scenario_02_indirect_integrationSpec {
     expect(book).to.deep.eq(_book2);
 
     await c.close();
-    Registry.reset();
+
   }
 
 
   @test
   async 'entity lifecycle for integrated property with multiple references'() {
-    Registry.reset();
+
     const Room = require('./schemas/integrated_property/Room').Room;
     const Equipment = require('./schemas/integrated_property/Equipment').Equipment;
 
@@ -139,8 +139,8 @@ class Xsschema_scenario_02_indirect_integrationSpec {
     await xsem.initialize();
 
     let c = await ref.connect();
-    let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
-    console.log(tables);
+   // let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
+   // console.log(tables);
 
     let r = new Room();
     r.equipment = [];
@@ -167,7 +167,7 @@ class Xsschema_scenario_02_indirect_integrationSpec {
     expect(roomIn).to.deep.eq(r);
 
     await c.close();
-    Registry.reset();
+
   }
 
 

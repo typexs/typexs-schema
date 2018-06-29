@@ -13,6 +13,10 @@ export class LookupRegistry {
 
   }
 
+  static reset(){
+    this.$self = new LookupRegistry();
+    return this.$self;
+  }
 
   static $() {
     return this.$self;
