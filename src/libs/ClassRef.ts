@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import {LookupRegistry} from './LookupRegistry';
 import {XS_TYPE_CLASS_REF, XS_TYPE_ENTITY} from './Constants';
 import {EntityDef} from './EntityDef';
-import {NotYetImplementedError} from 'typexs-base';
+import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
 
 export class ClassRef {
 
@@ -14,18 +14,19 @@ export class ClassRef {
 
   constructor(klass: string | Function) {
     this.className = ClassRef.getClassName(klass);
-    if(_.isString(klass)){
+    if (_.isString(klass)) {
       this.originalValue = klass;
-    }else{
+    } else {
       this.originalValue = ClassRef.getFunction(klass);
     }
 
   }
 
 
-  machineName(){
+  machineName() {
     return _.snakeCase(this.className);
   }
+
 //  get klass():Funct{
   //return LookupRegistry.$().find(XS_TYPE_ENTITY)
   //}
@@ -43,7 +44,6 @@ export class ClassRef {
   }
 
 
-
   static getFunction(klass: string | Function) {
     if (_.isString(klass)) {
       // TODO create error class
@@ -58,10 +58,10 @@ export class ClassRef {
     }
   }
 
-  getClass():Function{
-    if(_.isFunction(this.originalValue)){
+  getClass(): Function {
+    if (_.isFunction(this.originalValue)) {
       return this.originalValue;
-    }else{
+    } else {
       // generate function make ctor
       throw new NotYetImplementedError();
     }

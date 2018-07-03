@@ -4,7 +4,7 @@ import {IProperty} from './IProperty';
 import {ClassRef} from './ClassRef';
 import {LookupRegistry} from './LookupRegistry';
 import {XS_ID_SEPARATOR, XS_TYPE_PROPERTY} from './Constants';
-import {NotYetImplementedError} from 'typexs-base';
+import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
 
 export class PropertyDef extends AbstractDef {
 

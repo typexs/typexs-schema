@@ -1,3 +1,28 @@
 == Issues
 
 
+*@ISSUE {counter:task} 20180629* +
+Füge die Eigenschaft "storeable" bei der Initialisierung von Entitäten hinzu.
+Standardmäßig sollte es auf "true" stehen. Mittels der Eigenschaft wird
+signalisiert das eine Entität auch speicherbar sein soll.
+
+
+*@ISSUE {counter:task} 20180629* +
+Für speicherbare Entitäten ohne PrimaryKey wird per default eine automatisch
+hochzählender Primary Key gesetzt mit "id" als Kennzeichnung.
+
+
+*@ISSUE {counter:task} 20180630* +
+Zusätzlich Eigenschaft "readonly" hinzufügen, welche die Speicherung der Entitäten und
+ihr zugewiesener Eigenschaften verhindert. Manche Schemata dienen nur der Beschreibung
+einer schon existerenden Struktur.
+
+*@ISSUE {counter:task} 20180630* +
+Tiefe "depthLevel" setzen mit der die Abbruchstufe definiert wird, ab welcher
+die Verarbeitung abbricht.
+
+
+
+
+
+
