@@ -6,6 +6,7 @@ import {XS_TYPE_PROPERTY} from './Constants';
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
 import {NotSupportedError} from "typexs-base/libs/exceptions/NotSupportedError";
 import * as _ from './LoDash';
+import {EntityDef} from "./EntityDef";
 
 export class PropertyDef extends AbstractDef {
 
@@ -111,7 +112,7 @@ export class PropertyDef extends AbstractDef {
   }
 
 
-  getEntity() {
+  getEntity(): EntityDef {
     if (this.isEntityReference()) {
       return this.targetRef.getEntity();
     }
@@ -123,7 +124,7 @@ export class PropertyDef extends AbstractDef {
   }
 
 
-  isOutOfSize(x: number) {
+  isOutOfSize(x: number): boolean {
     if (this.cardinality == 0) return false;
     if (this.cardinality < x) {
       return true;
@@ -132,7 +133,7 @@ export class PropertyDef extends AbstractDef {
   }
 
 
-  isCollection() {
+  isCollection(): boolean {
     return this.cardinality == 0 || this.cardinality > 1;
   }
 
