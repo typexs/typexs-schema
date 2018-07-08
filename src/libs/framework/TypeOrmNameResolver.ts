@@ -1,7 +1,7 @@
-import * as _ from 'lodash';
+
 import {PropertyDef} from '../PropertyDef';
 import {XS_REL_SOURCE_PREFIX, XS_REL_TARGET_PREFIX} from '../Constants';
-
+import * as _ from '../LoDash'
 
 export class TypeOrmNameResolver {
 

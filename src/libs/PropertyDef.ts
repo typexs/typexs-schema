@@ -1,11 +1,11 @@
-import * as _ from 'lodash';
 import {AbstractDef} from './AbstractDef';
 import {IProperty} from './IProperty';
 import {ClassRef} from './ClassRef';
 import {LookupRegistry} from './LookupRegistry';
-import {XS_ID_SEPARATOR, XS_TYPE_PROPERTY} from './Constants';
+import {XS_TYPE_PROPERTY} from './Constants';
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
 import {NotSupportedError} from "typexs-base/libs/exceptions/NotSupportedError";
+import * as _ from './LoDash'
 
 export class PropertyDef extends AbstractDef {
 

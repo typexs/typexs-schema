@@ -1,5 +1,5 @@
 import {XS_ID_SEPARATOR, XS_TYPE} from './Constants';
-import * as _ from 'lodash';
+
 import {ClassRef} from './ClassRef';
 
 

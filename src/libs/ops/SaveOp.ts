@@ -1,5 +1,5 @@
 import {EntityDef} from '../EntityDef';
-import * as _ from 'lodash';
+
 import {ConnectionWrapper} from 'typexs-base';
 import {SchemaUtils} from '../SchemaUtils';
 import {PropertyDef} from '../PropertyDef';

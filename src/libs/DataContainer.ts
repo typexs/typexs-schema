@@ -1,5 +1,5 @@
 import {validate} from 'class-validator';
-import * as _ from 'lodash';
+import * as _ from './LoDash'
 import {Registry} from './Registry';
 
 

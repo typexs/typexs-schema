@@ -1,7 +1,7 @@
 import {EntityManager} from '../EntityManager';
 import {ClassRef} from '../ClassRef';
 import {EntityDef} from '../EntityDef';
-import * as _ from 'lodash';
+
 import {ConnectionWrapper, NotSupportedError} from 'typexs-base';
 
 import {PropertyDef} from '../PropertyDef';

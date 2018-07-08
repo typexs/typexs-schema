@@ -1,8 +1,7 @@
-import * as _ from 'lodash';
 
 import {Registry} from '../Registry';
 import {IProperty} from '../IProperty';
-
+import * as _ from '../LoDash'
 
 export function Property(typeOrOptions: IProperty | string = null) {
   return function (object: any, property: string, _options: any = {}) {

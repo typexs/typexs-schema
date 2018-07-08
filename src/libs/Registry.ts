@@ -1,4 +1,4 @@
-import * as _ from 'lodash';
+
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
 import {XS_TYPE, XS_TYPE_CLASS_REF, XS_TYPE_ENTITY, XS_TYPE_PROPERTY, XS_TYPE_SCHEMA} from './Constants';
 
@@ -10,7 +10,7 @@ import {EntityDef} from './EntityDef';
 import {IProperty} from './IProperty';
 import {IEntity} from './IEntity';
 import {ISchema} from './ISchema';
-
+import * as _ from './LoDash'
 
 export class Registry {
 

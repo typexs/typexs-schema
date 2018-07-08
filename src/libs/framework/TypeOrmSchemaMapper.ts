@@ -1,16 +1,13 @@
-import * as _ from 'lodash';
-import {IStorageOptions, StorageRef} from 'typexs-base';
+import {IStorageOptions, NotSupportedError, StorageRef} from 'typexs-base';
 import {Column, Entity, PrimaryColumn, PrimaryGeneratedColumn} from 'typeorm';
 import {SchemaDef} from '../SchemaDef';
-import {NotYetImplementedError,NotSupportedError} from 'typexs-base';
 import {EntityDef} from '../EntityDef';
-
+import * as _ from '../LoDash'
 import {PropertyDef} from '../PropertyDef';
-import {XS_LINK_VARIANT, XS_P_PROPERTY, XS_P_SEQ_NR, XS_P_TYPE, XS_RELATION_TYPE_GLOBAL, XS_TYPE_PROPERTY} from '../Constants';
+import {XS_P_PROPERTY, XS_P_SEQ_NR, XS_P_TYPE} from '../Constants';
 
 import {ClassRef} from '../ClassRef';
 import {TypeOrmNameResolver} from './TypeOrmNameResolver';
-import {LookupRegistry} from '../LookupRegistry';
 
 interface DBType {
   type: string;

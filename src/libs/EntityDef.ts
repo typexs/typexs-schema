@@ -1,10 +1,11 @@
-import * as _ from 'lodash';
+
 import {PropertyDef} from './PropertyDef';
 import {LookupRegistry} from './LookupRegistry';
 import {AbstractDef} from './AbstractDef';
 import {XS_TYPE_BINDING_SCHEMA_ENTITY, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from './Constants';
 import {IEntity} from './IEntity';
 import {SchemaDef} from './SchemaDef';
+import * as _ from './LoDash'
 
 export class EntityDef extends AbstractDef {
 

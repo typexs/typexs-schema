@@ -1,6 +1,7 @@
-import * as _ from 'lodash';
+
 import {SchemaDef} from './SchemaDef';
 import {EntityDef} from './EntityDef';
+import * as _ from './LoDash'
 
 export class SchemaUtils {
 

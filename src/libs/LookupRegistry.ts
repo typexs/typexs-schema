@@ -1,6 +1,6 @@
-import * as _ from 'lodash';
-import {XS_TYPE} from './Constants';
 
+import {XS_TYPE} from './Constants';
+import * as _ from './LoDash'
 
 export class LookupRegistry {
 

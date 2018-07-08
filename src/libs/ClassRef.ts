@@ -1,8 +1,9 @@
-import * as _ from 'lodash';
+
 import {LookupRegistry} from './LookupRegistry';
 import {XS_TYPE_CLASS_REF, XS_TYPE_ENTITY} from './Constants';
 import {EntityDef} from './EntityDef';
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
+import * as _ from './LoDash'
 
 export class ClassRef {
 
