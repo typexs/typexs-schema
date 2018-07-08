@@ -5,6 +5,7 @@ import {ClassRef} from './ClassRef';
 import {LookupRegistry} from './LookupRegistry';
 import {XS_ID_SEPARATOR, XS_TYPE_PROPERTY} from './Constants';
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
+import {NotSupportedError} from "typexs-base/libs/exceptions/NotSupportedError";
 
 export class PropertyDef extends AbstractDef {
 
@@ -110,6 +111,13 @@ export class PropertyDef extends AbstractDef {
   }
 
 
+  getEntity(){
+    if(this.isEntityReference()){
+      return this.targetRef.getEntity();
+    }
+    throw new NotSupportedError('no entity')
+  }
+
   getSubPropertyDef(): PropertyDef[] {
     return LookupRegistry.$().filter(XS_TYPE_PROPERTY, {entityName: this.propertyRef.className});
   }
@@ -123,9 +131,11 @@ export class PropertyDef extends AbstractDef {
     return false;
   }
 
+
   isCollection() {
     return this.cardinality == 0 || this.cardinality > 1;
   }
+
 
   storingName() {
     let name = this.getOptions('name');
@@ -150,6 +160,7 @@ export class PropertyDef extends AbstractDef {
     return this.getOptions('nullable', false);
   }
 
+
   /**
    * retrieve propetry from an instance
    * @param instance
@@ -160,7 +171,6 @@ export class PropertyDef extends AbstractDef {
     } else {
       return null;
     }
-
   }
 
 
@@ -170,7 +180,6 @@ export class PropertyDef extends AbstractDef {
     if (options.label) {
       label = options.label;
     }
-
     if (!label) {
       label = _.capitalize(this.name);
     } else {

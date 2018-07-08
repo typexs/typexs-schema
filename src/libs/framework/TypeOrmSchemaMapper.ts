@@ -144,6 +144,7 @@ export class TypeOrmSchemaMapper {
 
   }
 
+
   private onLocalProperty(prop: PropertyDef, entityClass: Function, entityDef: EntityDef = null) {
     let propClass = {constructor: entityClass};
 
@@ -160,7 +161,6 @@ export class TypeOrmSchemaMapper {
     } else {
       this.ColumnDef(prop,prop.storingName())(propClass, prop.name);
     }
-
   }
 
 
