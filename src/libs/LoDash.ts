@@ -1,13 +1,15 @@
 import {
   find, filter, has, get, set, capitalize, isString,
   isFunction, isArray, isEmpty, clone, remove, isNull,
-  snakeCase, merge, isNumber, isObject, isBoolean, isUndefined
+  snakeCase, merge, isNumber, isObject, isBoolean, isUndefined,
+  map
 } from 'lodash';
 
 export {
   find, filter, has, get, set, capitalize, isString,
   isFunction, isArray, isEmpty, clone, remove, isNull,
-  snakeCase, merge, isNumber, isObject, isBoolean, isUndefined
+  snakeCase, merge, isNumber, isObject, isBoolean, isUndefined,
+  map
 };
 
 /*

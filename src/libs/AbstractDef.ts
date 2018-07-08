@@ -1,7 +1,7 @@
 import {XS_ID_SEPARATOR, XS_TYPE} from './Constants';
 
 import {ClassRef} from './ClassRef';
-
+import * as _ from './LoDash';
 
 
 export abstract class AbstractDef {
