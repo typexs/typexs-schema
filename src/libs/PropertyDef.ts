@@ -5,7 +5,7 @@ import {LookupRegistry} from './LookupRegistry';
 import {XS_TYPE_PROPERTY} from './Constants';
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
 import {NotSupportedError} from "typexs-base/libs/exceptions/NotSupportedError";
-import * as _ from './LoDash'
+import * as _ from './LoDash';
 
 export class PropertyDef extends AbstractDef {
 
@@ -111,8 +111,8 @@ export class PropertyDef extends AbstractDef {
   }
 
 
-  getEntity(){
-    if(this.isEntityReference()){
+  getEntity() {
+    if (this.isEntityReference()) {
       return this.targetRef.getEntity();
     }
     throw new NotSupportedError('no entity')
