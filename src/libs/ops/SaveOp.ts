@@ -7,7 +7,7 @@ import {EntityManager} from '../EntityManager';
 import {EntityDefTreeWorker} from './EntityDefTreeWorker';
 import {NotYetImplementedError,NotSupportedError} from 'typexs-base';
 import {XS_P_PROPERTY, XS_P_SEQ_NR, XS_P_TYPE} from '../Constants';
-
+import * as _ from '../LoDash';
 
 
 export interface IRelation {

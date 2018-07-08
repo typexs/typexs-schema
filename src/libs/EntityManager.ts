@@ -1,4 +1,4 @@
-import {StorageRef} from 'typexs-base';
+import {StorageRef} from 'typexs-base/libs/storage/StorageRef';
 import {SchemaDef} from './SchemaDef';
 import {EntityDef} from './EntityDef';
 import {TypeOrmSchemaMapper} from './framework/TypeOrmSchemaMapper';

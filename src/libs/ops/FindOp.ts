@@ -7,6 +7,7 @@ import {ConnectionWrapper, NotSupportedError} from 'typexs-base';
 import {PropertyDef} from '../PropertyDef';
 import {EntityDefTreeWorker} from './EntityDefTreeWorker';
 import {XS_P_PROPERTY, XS_P_SEQ_NR, XS_P_TYPE} from '../Constants';
+import * as _ from '../LoDash';
 
 export class FindOp<T> extends EntityDefTreeWorker {
 
