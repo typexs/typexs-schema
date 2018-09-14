@@ -12,10 +12,10 @@ import {IEntity} from './IEntity';
 import {ISchema} from './ISchema';
 import * as _ from './LoDash'
 
-export class Registry {
+export class EntityRegistry {
 
 
-  private static _self: Registry; // = new Registry();
+  private static _self: EntityRegistry; // = new Registry();
 
   private _lookup: LookupRegistry;
 
@@ -29,7 +29,7 @@ export class Registry {
 
   static $() {
     if (!this._self) {
-      this._self = new Registry();
+      this._self = new EntityRegistry();
     }
     return this._self;
   }

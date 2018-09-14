@@ -1,6 +1,6 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityDef, Registry} from "../../src";
+import {EntityDef, EntityRegistry} from "../../src";
 
 
 
@@ -14,13 +14,13 @@ class Form_parseSpec {
     require('./schemas/default/Author');
     require('./schemas/default/Book');
 
-    let registry = Registry.$();
+    let registry = EntityRegistry.$();
     let propNames = registry.listProperties().map(p => p.id());
     let entityNames = registry.listEntities().map(p => p.id());
     expect(entityNames).to.have.length(2);
     expect(propNames).to.have.length(7);
 
-    let entity = Registry.getEntityDefFor('Author');
+    let entity = EntityRegistry.getEntityDefFor('Author');
     expect(entity).to.not.be.null;
     let props = entity.getPropertyDefs();
     expect(props).to.have.length(3);
@@ -34,13 +34,13 @@ class Form_parseSpec {
     require('./schemas/default/Author');
 
 
-    let registry = Registry.$();
+    let registry = EntityRegistry.$();
     let propNames = registry.listProperties().map(p => p.id());
     let entityNames = registry.listEntities().map(p => p.id());
     expect(entityNames).to.have.length(2);
     expect(propNames).to.have.length(7);
 
-    let entity = Registry.getEntityDefFor('Author');
+    let entity = EntityRegistry.getEntityDefFor('Author');
     expect(entity).to.not.be.null;
     let props = entity.getPropertyDefs();
     expect(props).to.have.length(3);
@@ -53,13 +53,13 @@ class Form_parseSpec {
     require('./schemas/default/Book'); // Book imports Author
     require('./schemas/default/Summary');
 
-    let registry = Registry.$();
+    let registry = EntityRegistry.$();
     let propNames = registry.listProperties().map(p => p.id());
     let entityNames = registry.listEntities().map(p => p.id());
     expect(entityNames).to.have.length(2);
     expect(propNames).to.have.length(10); // 5 before and 2 from summary and summary as new prop of book
 
-    let entity = Registry.getEntityDefFor('Book');
+    let entity = EntityRegistry.getEntityDefFor('Book');
     expect(entity).to.not.be.null;
     let props = entity.getPropertyDefs().map(p => p.id());
     expect(props).to.have.length(5);
@@ -71,7 +71,7 @@ class Form_parseSpec {
 
     require('./schemas/default/Author'); // Book imports Author
     // require('./schemas/default/Summary');
-    let entity = Registry.getEntityDefFor('Author');
+    let entity = EntityRegistry.getEntityDefFor('Author');
     let instance = entity.new<any>();
     let def = EntityDef.resolve(instance);
     expect(def).to.eq(entity);

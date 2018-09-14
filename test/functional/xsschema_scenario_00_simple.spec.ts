@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {IStorageOptions, StorageRef} from 'typexs-base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {EntityManager, Registry} from "../../src";
+import {EntityManager, EntityRegistry} from "../../src";
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   name: 'default',
@@ -28,7 +28,7 @@ class Xsschema_scenario_00_simpleSpec {
 
     let ref = new StorageRef(TEST_STORAGE_OPTIONS);
     await ref.prepare();
-    let schemaDef = Registry.getSchema(TEST_STORAGE_OPTIONS.name);
+    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
     let xsem = new EntityManager(schemaDef, ref);
     await xsem.initialize();
@@ -54,7 +54,7 @@ class Xsschema_scenario_00_simpleSpec {
 
     let ref = new StorageRef(TEST_STORAGE_OPTIONS);
     await ref.prepare();
-    let schemaDef = Registry.getSchema(TEST_STORAGE_OPTIONS.name);
+    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
     let xsem = new EntityManager(schemaDef, ref);
     await xsem.initialize();

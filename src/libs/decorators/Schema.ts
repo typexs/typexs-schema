@@ -1,4 +1,4 @@
-import {Registry} from '../Registry';
+import {EntityRegistry} from '../EntityRegistry';
 
 import {ISchema} from '../ISchema';
 
@@ -6,7 +6,7 @@ import {ISchema} from '../ISchema';
 export function Schema(options:ISchema) {
   return function (object: Function) {
 
-    Registry.createSchema(object,options);
+    EntityRegistry.createSchema(object,options);
     // Registry.register(xsDef);
 
   };

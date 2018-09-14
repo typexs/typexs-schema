@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import {IStorageOptions, StorageRef} from 'typexs-base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {inspect} from 'util';
-import {EntityManager, Registry} from "../../src";
+import {EntityManager, EntityRegistry} from "../../src";
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   name: 'default',
@@ -30,7 +30,7 @@ class Xsschema_scenario_02_indirect_integrationSpec {
 
     let ref = new StorageRef(TEST_STORAGE_OPTIONS);
     await ref.prepare();
-    let schemaDef = Registry.getSchema(TEST_STORAGE_OPTIONS.name);
+    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
     let xsem = new EntityManager(schemaDef, ref);
     await xsem.initialize();
@@ -65,7 +65,7 @@ class Xsschema_scenario_02_indirect_integrationSpec {
 
     let ref = new StorageRef(TEST_STORAGE_OPTIONS);
     await ref.prepare();
-    let schemaDef = Registry.getSchema(TEST_STORAGE_OPTIONS.name);
+    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
     let xsem = new EntityManager(schemaDef, ref);
     await xsem.initialize();
@@ -133,7 +133,7 @@ class Xsschema_scenario_02_indirect_integrationSpec {
 
     let ref = new StorageRef(TEST_STORAGE_OPTIONS);
     await ref.prepare();
-    let schemaDef = Registry.getSchema('integrated_property');
+    let schemaDef = EntityRegistry.getSchema('integrated_property');
 
     let xsem = new EntityManager(schemaDef, ref);
     await xsem.initialize();

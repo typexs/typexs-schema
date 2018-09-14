@@ -20,6 +20,6 @@ export * from "./libs/ops/EntityDefTreeWorker";
 export * from "./libs/ops/FindOp";
 export * from "./libs/ops/SaveOp";
 export * from "./libs/PropertyDef";
-export * from "./libs/Registry";
+export * from "./libs/EntityRegistry";
 export * from "./libs/SchemaDef";
 export * from "./libs/SchemaUtils";

@@ -1,5 +1,5 @@
 
-import {Registry} from '../Registry';
+import {EntityRegistry} from '../EntityRegistry';
 import {IProperty} from '../IProperty';
 
 import * as _ from '../LoDash'
@@ -21,7 +21,7 @@ export function PropertyOf(propertyName:string , entityOrOptions: IProperty | st
       options.propertyName = propertyName;
     }
 
-    let xsDef = Registry.createProperty(options);
-    Registry.register(xsDef);
+    let xsDef = EntityRegistry.createProperty(options);
+    EntityRegistry.register(xsDef);
   };
 }

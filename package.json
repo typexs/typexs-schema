@@ -62,6 +62,7 @@
   },
   "dependencies": {
     "typexs-base": "latest",
+    "typexs-server": "latest",
     "class-validator": "^0.8.5"
   },
   "private": true,
