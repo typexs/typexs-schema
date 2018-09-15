@@ -63,8 +63,8 @@ export abstract class AbstractDef {
 
   id(): string {
     let idKeys: string[] = [];
-    if (_.has(this, 'schemaName')) {
-      if (_.has(this, 'entityName')) {
+    if (this['schemaName']) {
+      if (this['entityName']) {
         idKeys = ['schemaName', 'entityName', 'name'];
       } else {
         idKeys = ['schemaName', 'name'];

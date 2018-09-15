@@ -15,7 +15,7 @@ class Entity_transformationsSpec {
     let data = {id: 1, lastName: 'Engels', firstName: 'Friedrich'};
     let entityDef = registry.getEntityDefByName('author');
     let author = entityDef.build(data);
-    expect(JSON.stringify(author)).to.eq(JSON.stringify(data));
+    expect(author).to.deep.eq(data);
   }
 
 

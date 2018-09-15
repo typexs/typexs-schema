@@ -1,6 +1,8 @@
 
 import {Author} from './Author';
-import {Entity, Property} from "../../../../src";
+import {Entity, Property, Schema} from "../../../../src";
+
+
 @Entity()
 export class Book {
 

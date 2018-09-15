@@ -23,17 +23,24 @@ const REGEX_ID_KG = /((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\',?)/g;
 export class EntityDef extends AbstractDef {
 
 
-  schemaName: string = 'default';
-
 
   constructor(fn: Function, options: IEntity = {}) {
     super('entity', fn.name, fn);
     _.defaults(options, DEFAULT_OPTIONS);
     this.setOptions(options);
-    let schema = <SchemaDef>LookupRegistry.$().find(XS_TYPE_BINDING_SCHEMA_ENTITY, {targetName: fn.name});
+/*
+    let schema = <SchemaDef>LookupRegistry.$().find(XS_TYPE_BINDING_SCHEMA_ENTITY, {target: fn});
     if (schema) {
       this.schemaName = schema.name;
+      console.log('SETSCHEMA',schema.name);
+      this.object.setSchema(schema.name);
     }
+    */
+  }
+
+
+  get schemaName(){
+    return this.object.schema;
   }
 
 
@@ -47,7 +54,7 @@ export class EntityDef extends AbstractDef {
   }
 
   getPropertyDefs(): PropertyDef[] {
-    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, {entityName: this.name});
+    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, {entityName: this.name, schemaName: this.schemaName});
   }
 
   getPropertyDefWithTarget(): PropertyDef[] {

@@ -1,4 +1,3 @@
-
 import {LookupRegistry} from './LookupRegistry';
 import {XS_TYPE_CLASS_REF, XS_TYPE_ENTITY} from './Constants';
 import {EntityDef} from './EntityDef';
@@ -7,7 +6,7 @@ import * as _ from './LoDash'
 
 export class ClassRef {
 
-  readonly schema: string = 'default';
+  schema: string = 'default';
 
   readonly originalValue: string | Function;
 
@@ -23,6 +22,10 @@ export class ClassRef {
 
   }
 
+
+  setSchema(s: string) {
+    this.schema = s;
+  }
 
   machineName() {
     return _.snakeCase(this.className);

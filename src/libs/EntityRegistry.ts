@@ -10,6 +10,7 @@ import {IProperty} from './IProperty';
 import {IEntity} from './IEntity';
 import {ISchema} from './ISchema';
 import * as _ from './LoDash'
+import {ClassRef} from "./ClassRef";
 
 export class EntityRegistry {
 
@@ -74,10 +75,10 @@ export class EntityRegistry {
       schema = new SchemaDef(options);
       schema = this.$()._lookup.add(XS_TYPE_SCHEMA, schema);
     }
-    let binding = Binding.create(XS_TYPE_SCHEMA, schema.name, XS_TYPE_ENTITY, fn.name);
+    let binding = Binding.create(XS_TYPE_SCHEMA, schema.name, XS_TYPE_ENTITY, fn);
     this.register(binding);
-    let entity = <EntityDef>this.$()._lookup.find(XS_TYPE_ENTITY, {name: fn.name});
-    entity.schemaName = schema.name;
+    let classRef = ClassRef.get(fn);
+    classRef.setSchema(schema.name);
     return schema;
   }
 
@@ -135,18 +136,18 @@ export class Binding {
   bindingType: XS_TYPE;
 
   sourceType: XS_TYPE;
-  sourceName: string;
+  source: any;
 
   targetType: XS_TYPE;
-  targetName: string;
+  target: any;
 
-  static create(sType: XS_TYPE, sName: string, tType: XS_TYPE, tName: string) {
+  static create(sType: XS_TYPE, sName: any, tType: XS_TYPE, tName: any) {
     let b = new Binding();
     b.bindingType = <XS_TYPE>[sType, tType].join('_');
     b.sourceType = sType;
     b.targetType = tType;
-    b.sourceName = sName;
-    b.targetName = tName;
+    b.source = sName;
+    b.target = tName;
     return b;
   }
 }

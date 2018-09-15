@@ -1,8 +1,8 @@
-import {Entity, Property} from "../../../../../../src";
+import {Entity, Property, Schema} from "../../../../../../src";
 
-
+@Schema({name:'literature'})
 @Entity()
-export class Book {
+export class Book3 {
 
   @Property({type: 'number', auto: true})
   id: number;

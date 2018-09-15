@@ -5,7 +5,7 @@ import _ = require("lodash");
 
 
 @suite('functional/xsschema/xsschema_registry')
-class Form_parseSpec {
+class Xsschema_registrySpec {
 
 
   @test
@@ -15,10 +15,21 @@ class Form_parseSpec {
     require('./schemas/default/Book');
 
     let registry = EntityRegistry.$();
-    let propNames = registry.listProperties().map(p => p.id());
     let entityNames = registry.listEntities().map(p => p.id());
-    expect(entityNames).to.have.length(2);
-    expect(propNames).to.have.length(7);
+    expect(entityNames).to.be.include.members([
+      'default--author',
+      'default--book'
+    ]);
+    let propNames = registry.listProperties().map(p => p.id());
+    expect(propNames).to.include.members([
+      "default--author--id",
+      "default--author--firstname",
+      "default--author--lastname",
+      "default--book--id",
+      "default--book--label",
+      "default--book--content",
+      "default--book--author"
+    ]);
 
     let entity = EntityRegistry.getEntityDefFor('Author');
     expect(entity).to.not.be.empty;
@@ -35,7 +46,9 @@ class Form_parseSpec {
       name: 'Author',
       type: 'entity',
       machineName: 'author',
-      options: {},
+      options: {
+        storeable: true
+      },
       schemaName: 'default'
     });
 
@@ -59,8 +72,17 @@ class Form_parseSpec {
     let registry = EntityRegistry.$();
     let propNames = registry.listProperties().map(p => p.id());
     let entityNames = registry.listEntities().map(p => p.id());
-    expect(entityNames).to.have.length(2);
-    expect(propNames).to.have.length(7);
+    expect(entityNames).to.include.members(['default--author', 'default--book']);
+    expect(propNames).to.include.members([
+      "default--author--id",
+      "default--author--firstname",
+      "default--author--lastname",
+      "default--book--id",
+      "default--book--label",
+      "default--book--content",
+      "default--book--author"
+
+    ]); // 5 before and 2 from summary and summary as new prop of book
 
     let entity = EntityRegistry.getEntityDefFor('Author');
     expect(entity).to.not.be.null;
@@ -78,13 +100,32 @@ class Form_parseSpec {
     let registry = EntityRegistry.$();
     let propNames = registry.listProperties().map(p => p.id());
     let entityNames = registry.listEntities().map(p => p.id());
-    expect(entityNames).to.have.length(2);
-    expect(propNames).to.have.length(10); // 5 before and 2 from summary and summary as new prop of book
+
+    expect(entityNames).to.include.members(['default--author', 'default--book']);
+    expect(propNames).to.include.members([
+      "default--book--id",
+      "default--book--label",
+      "default--book--content",
+      "default--book--author",
+      "default--summary--size",
+      "default--summary--content",
+      "default--book--summary",
+
+    ]); // 5 before and 2 from summary and summary as new prop of book
 
     let entity = EntityRegistry.getEntityDefFor('Book');
     expect(entity).to.not.be.null;
+
     let props = entity.getPropertyDefs().map(p => p.id());
-    expect(props).to.have.length(5);
+
+
+    expect(props).to.include.members([
+      "default--book--id",
+      "default--book--label",
+      "default--book--content",
+      "default--book--author",
+      "default--book--summary"
+    ]); // 5 before and 2 from summary and summary as new prop of book
 
   }
 

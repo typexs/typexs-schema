@@ -11,6 +11,11 @@ const settingsTemplate: any = {
       synchronize: true,
       type: 'sqlite',
       database: ':memory:'
+    },
+    literature: {
+      synchronize: true,
+      type: 'sqlite',
+      database: ':memory:'
     }
   },
 
@@ -89,10 +94,10 @@ class ApiserverSpec {
 
     const url = server.url();
 
-    let res = await request.post(url + '/api/entity/book', {json: data});
+    let res = await request.post(url + '/api/entity/book3', {json: data});
     expect(res).to.deep.include({id: 1});
 
-    res = await request.get(url + `/api/entity/book/${res.id}`,{json:true});
+    res = await request.get(url + `/api/entity/book3/${res.id}`, {json: true});
     expect(res).to.deep.include({id: 1});
     expect(res).to.deep.include(data);
 
@@ -107,10 +112,10 @@ class ApiserverSpec {
       }
     ];
 
-    res = await request.post(url + '/api/entity/book', {json: arrData});
+    res = await request.post(url + '/api/entity/book3', {json: arrData});
     expect(_.map(res, r => r.id)).to.deep.eq([2, 3]);
 
-    res = await request.get(url + `/api/entity/book/1,2,3`,{json:true});
+    res = await request.get(url + `/api/entity/book3/1,2,3`, {json: true});
     expect(_.map(res, r => r.id)).to.deep.eq([1, 2, 3]);
 
   }

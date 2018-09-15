@@ -8,10 +8,8 @@ import {NotSupportedError} from "typexs-base/libs/exceptions/NotSupportedError";
 import * as _ from './LoDash';
 import {EntityDef} from "./EntityDef";
 
+
 export class PropertyDef extends AbstractDef {
-
-
-  schemaName: string = 'default';
 
   readonly cardinality: number = 1;
 
@@ -25,15 +23,19 @@ export class PropertyDef extends AbstractDef {
 
   joinRef: ClassRef = null;
 
-
   readonly identifier: boolean;
 
   readonly generated: boolean;
+
+  get schemaName() {
+    return this.object.schema;
+  }
 
   constructor(options: IProperty) {
     super('property', options.propertyName, options.sourceClass);
     this.setOptions(options);
     this.entityName = this.object.className;
+
 
     if (!options.type) {
 
@@ -88,8 +90,6 @@ export class PropertyDef extends AbstractDef {
       this.identifier = false;
       this.generated = false;
     }
-
-    //console.log(this.name, this.dataType);
   }
 
 
@@ -146,7 +146,7 @@ export class PropertyDef extends AbstractDef {
       if (_.isString(data)) {
         return data;
       } else {
-        throw new NotYetImplementedError('value '+data);
+        throw new NotYetImplementedError('value ' + data);
       }
     } else if (this.dataType == 'number') {
       if (_.isString(data)) {
@@ -155,16 +155,16 @@ export class PropertyDef extends AbstractDef {
         } else if (/^\d+$/.test(data)) {
           return parseInt(data);
         } else {
-          throw new NotYetImplementedError('value '+data);
+          throw new NotYetImplementedError('value ' + data);
         }
       } else if (_.isNumber(data)) {
         return data;
       } else {
-        throw new NotYetImplementedError('value '+data);
+        throw new NotYetImplementedError('value ' + data);
       }
 
     } else {
-      throw new NotYetImplementedError('value '+data);
+      throw new NotYetImplementedError('value ' + data);
     }
   }
 
@@ -174,7 +174,7 @@ export class PropertyDef extends AbstractDef {
     if (!name) {
       if (this.isReference()) {
         if (this.isEntityReference()) {
-          name = ['p', _.snakeCase(this.name), this.targetRef.getEntity().storingName()].join('_');
+          name = ['p', _.snakeCase(this.name), this.targetRef.getEntity().storingName].join('_');
         } else {
           name = ['p', _.snakeCase(this.name), this.targetRef.machineName()].join('_');
         }
