@@ -1,4 +1,4 @@
-import {EntityManager} from '../EntityManager';
+import {EntityController} from '../EntityController';
 import {ClassRef} from '../ClassRef';
 import {EntityDef} from '../EntityDef';
 
@@ -11,11 +11,11 @@ import * as _ from '../LoDash';
 
 export class FindOp<T> extends EntityDefTreeWorker {
 
-  readonly em: EntityManager;
+  readonly em: EntityController;
 
   private c: ConnectionWrapper;
 
-  constructor(em: EntityManager) {
+  constructor(em: EntityController) {
     super();
     this.em = em;
   }
@@ -24,7 +24,7 @@ export class FindOp<T> extends EntityDefTreeWorker {
   async onEntityReference(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]) {
     let propEntityDef = propertyDef.targetRef.getEntity();
 
-   // let conditions: any[] = [];
+    // let conditions: any[] = [];
 
     // parent and child must be saved till relations can be inserted
     //let objectIds: number[] = SchemaUtils.get('id', objects);
@@ -68,7 +68,7 @@ export class FindOp<T> extends EntityDefTreeWorker {
     for (let object of objects) {
       let condition: any = {};
       entityDef.getPropertyDefIdentifier().forEach(x => {
-        let [sourceId, ] = this.em.nameResolver().forSource(x);
+        let [sourceId,] = this.em.nameResolver().forSource(x);
         condition[sourceId] = x.get(object);
       });
       let _results = _.remove(results, condition);
@@ -79,7 +79,7 @@ export class FindOp<T> extends EntityDefTreeWorker {
       _results.forEach(r => {
         let _cond: any = {};
         pIds.forEach(id => {
-          let [targetId,] = this.em.nameResolver().forTarget( id);
+          let [targetId,] = this.em.nameResolver().forTarget(id);
           _cond[id] = r[targetId];
         });
         let entry = _.filter(targets, _cond);
@@ -135,7 +135,7 @@ export class FindOp<T> extends EntityDefTreeWorker {
 
     // TODO if revision support beachte dies an der stellle
     let results = await queryBuilder.orderBy(sourceSeqNrName, 'ASC').getMany();
-    if(results.length == 0){
+    if (results.length == 0) {
       return;
     }
     conditions = [];
@@ -153,7 +153,7 @@ export class FindOp<T> extends EntityDefTreeWorker {
             results.map(result => {
               let condition: any = {};
               subIdProperties.forEach(idProp => {
-                let [targetId, targetName] = this.em.nameResolver().for(subPropertyDef.machineName(), idProp);
+                let [targetId, targetName] = this.em.nameResolver().for(subPropertyDef.machineName, idProp);
                 condition[idProp.name] = result[targetId];
               });
               queryBuilder.orWhere(Object.keys(condition).map(k => `${k} = '${condition[k]}'`).join(' AND '));
@@ -162,14 +162,14 @@ export class FindOp<T> extends EntityDefTreeWorker {
             let targets = await queryBuilder.getMany();
             targets = await this.loadEntityDef(targetEntity, targets);
 
-            if(targets.length == 0){
+            if (targets.length == 0) {
               continue;
             }
 
             results.map(result => {
               let condition: any = {};
               subIdProperties.forEach(idProp => {
-                let [targetId, targetName] = this.em.nameResolver().for(subPropertyDef.machineName(), idProp);
+                let [targetId, targetName] = this.em.nameResolver().for(subPropertyDef.machineName, idProp);
                 condition[idProp.name] = result[targetId];
               });
               let subResults = _.filter(targets, condition);
@@ -179,7 +179,7 @@ export class FindOp<T> extends EntityDefTreeWorker {
               delete result[sourceSeqNrId];
 
               subIdProperties.forEach(idProp => {
-                let [targetId,] = this.em.nameResolver().for(subPropertyDef.machineName(), idProp);
+                let [targetId,] = this.em.nameResolver().for(subPropertyDef.machineName, idProp);
                 delete result[targetId];
               });
 
@@ -210,7 +210,7 @@ export class FindOp<T> extends EntityDefTreeWorker {
 
       // cleanup
       subResults.map(sub => {
-        [XS_P_TYPE,XS_P_SEQ_NR,XS_P_PROPERTY].forEach(prop => {
+        [XS_P_TYPE, XS_P_SEQ_NR, XS_P_PROPERTY].forEach(prop => {
           let [sourceId,] = this.em.nameResolver().forSource(prop);
           delete sub[sourceId];
         });
@@ -229,7 +229,7 @@ export class FindOp<T> extends EntityDefTreeWorker {
 
   }
 
-  private static conditionToQuery(condition:any):string{
+  private static conditionToQuery(condition: any): string {
     return Object.keys(condition).map(k => `${k} = '${condition[k]}'`).join(' AND ')
   }
 
@@ -245,19 +245,19 @@ export class FindOp<T> extends EntityDefTreeWorker {
   }
 
 
-  async run(entityType: Function | string, findConditions: any = null, limit:number = 100): Promise<T[]> {
+  async run(entityType: Function | string, findConditions: any = null, limit: number = 100): Promise<T[]> {
     let xsEntityDef = ClassRef.get(entityType).getEntity();
     this.c = await this.em.storageRef.connect();
     let qb = this.c.manager.getRepository(xsEntityDef.object.getClass()).createQueryBuilder();
-    if(_.isArray(findConditions)){
+    if (_.isArray(findConditions)) {
       findConditions.forEach(c => {
         qb.orWhere(FindOp.conditionToQuery(c));
       })
-    }else if(findConditions){
+    } else if (findConditions) {
       qb.where(FindOp.conditionToQuery(findConditions));
     }
     xsEntityDef.getPropertyDefIdentifier().forEach(x => {
-      qb.addOrderBy(x.storingName(),'ASC');
+      qb.addOrderBy(x.storingName, 'ASC');
     })
     let results = <any[]>await qb.limit(limit).getMany();
     //let results = <any[]>await this.c.manager.find(xsEntityDef.object.getClass(), {where: findConditions});

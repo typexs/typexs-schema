@@ -1,7 +1,7 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {EntityDef, EntityRegistry} from "../../src";
-
+import _ = require("lodash");
 
 
 @suite('functional/xsschema/xsschema_registry')
@@ -21,10 +21,32 @@ class Form_parseSpec {
     expect(propNames).to.have.length(7);
 
     let entity = EntityRegistry.getEntityDefFor('Author');
-    expect(entity).to.not.be.null;
+    expect(entity).to.not.be.empty;
+
     let props = entity.getPropertyDefs();
     expect(props).to.have.length(3);
 
+    entity = registry.getEntityDefByName('author');
+    expect(entity).to.not.be.empty;
+
+    let eJson = entity.toJson();
+    expect(eJson).to.deep.include({
+      id: 'default--author',
+      name: 'Author',
+      type: 'entity',
+      machineName: 'author',
+      options: {},
+      schemaName: 'default'
+    });
+
+    expect(eJson.properties).to.have.length(3);
+    expect(_.map(eJson.properties, x => x.machineName)).to.deep.eq(['id', 'first_name', 'last_name']);
+
+    props = entity.getPropertyDefs();
+    expect(props).to.have.length(3);
+
+    let pJsons = _.map(props, p => p.toJson());
+    expect(pJsons).to.have.length(3);
   }
 
   @test

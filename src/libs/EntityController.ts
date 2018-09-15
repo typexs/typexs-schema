@@ -12,7 +12,7 @@ import {TypeOrmNameResolver} from './framework/TypeOrmNameResolver';
  *
  *
  */
-export class EntityManager {
+export class EntityController {
 
   // revision support
   readonly storageRef: StorageRef;
@@ -21,8 +21,10 @@ export class EntityManager {
 
   readonly mapper: TypeOrmSchemaMapper;
 
+  readonly name: string;
 
-  constructor(schema: SchemaDef = null, storageRef: StorageRef = null) {
+  constructor(name: string, schema: SchemaDef = null, storageRef: StorageRef = null) {
+    this.name = name;
     this.storageRef = storageRef;
     this.schemaDef = schema;
     this.mapper = new TypeOrmSchemaMapper(this.storageRef, this.schemaDef);
@@ -47,8 +49,8 @@ export class EntityManager {
   }
 
 
-  async find<T>(fn: Function, conditions: any = null, limit:number=100): Promise<T[]> {
-    return new FindOp<T>(this).run(fn, conditions,limit);
+  async find<T>(fn: Function | string, conditions: any = null, limit: number = 100): Promise<T[]> {
+    return new FindOp<T>(this).run(fn, conditions, limit);
   }
 
 

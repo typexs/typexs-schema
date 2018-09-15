@@ -1,4 +1,3 @@
-
 import {PropertyDef} from './PropertyDef';
 import {LookupRegistry} from './LookupRegistry';
 import {AbstractDef} from './AbstractDef';
@@ -6,6 +5,20 @@ import {XS_TYPE_BINDING_SCHEMA_ENTITY, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from '.
 import {IEntity} from './IEntity';
 import {SchemaDef} from './SchemaDef';
 import * as _ from './LoDash'
+import {NotYetImplementedError} from "typexs-base";
+
+import {Type, plainToClass} from "class-transformer";
+import {TransformExecutor} from "./TransformExecutor";
+
+const DEFAULT_OPTIONS: IEntity = {
+  storeable: true
+}
+
+const REGEX_ID = /(([\w_]+)=((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\'),?)/;
+const REGEX_ID_G = /(([\w_]+)=((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\'),?)/g;
+
+const REGEX_ID_K = /((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\',?)/;
+const REGEX_ID_KG = /((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\',?)/g;
 
 export class EntityDef extends AbstractDef {
 
@@ -15,9 +28,10 @@ export class EntityDef extends AbstractDef {
 
   constructor(fn: Function, options: IEntity = {}) {
     super('entity', fn.name, fn);
+    _.defaults(options, DEFAULT_OPTIONS);
     this.setOptions(options);
-    let schema = <SchemaDef>LookupRegistry.$().find(XS_TYPE_BINDING_SCHEMA_ENTITY,{targetName:fn.name});
-    if(schema){
+    let schema = <SchemaDef>LookupRegistry.$().find(XS_TYPE_BINDING_SCHEMA_ENTITY, {targetName: fn.name});
+    if (schema) {
       this.schemaName = schema.name;
     }
   }
@@ -28,6 +42,9 @@ export class EntityDef extends AbstractDef {
     return false;
   }
 
+  isStoreable() {
+    return this.getOptions('storeable');
+  }
 
   getPropertyDefs(): PropertyDef[] {
     return LookupRegistry.$().filter(XS_TYPE_PROPERTY, {entityName: this.name});
@@ -70,10 +87,70 @@ export class EntityDef extends AbstractDef {
     let id = this.id();
     // TODO make constant of xs:entity_id
     Reflect.defineProperty(instance, 'xs:entity_name', {value: this.name});
-    Reflect.defineProperty(instance, 'xs:entity_id', {value: id, writable: false, enumerable: false, configurable: false});
+    Reflect.defineProperty(instance, 'xs:entity_id', {
+      value: id,
+      writable: false,
+      enumerable: false,
+      configurable: false
+    });
     return instance;
   }
 
+  createLookupConditions(id: string): any | any[] {
+    let idProps = this.getPropertyDefIdentifier();
+    if (/^\(.*(\)\s*,\s*\()?.*\)$/.test(id)) {
+      let ids = id.replace(/^\(|\)$/g, '').split(/\)\s*,\s*\(/);
+      return _.map(ids, _id => this.createLookupConditions(_id));
+    } else if (REGEX_ID.test(id)) {
+      let cond = {};
+      let e;
+      let keys = {};
+      while ((e = REGEX_ID_G.exec(id)) !== null) {
+        keys[e[2]] = e[4] || e[5] || e[7];
+      }
+
+      for (let idp of idProps) {
+        if (keys[idp.name]) {
+          cond[idp.machineName] = idp.convert(keys[idp.name]);
+        }
+      }
+      return cond;
+    } else if (/^\d+(,\d+)+$/.test(id)) {
+      let ids = id.split(",");
+      return _.map(ids, _id => this.createLookupConditions(_id));
+    } else if (REGEX_ID_K.test(id)) {
+      if (/^\'.*\'$/.test(id)) {
+        id = id.replace(/^\'|\'$/g, '');
+      }
+      let cond = {}
+      let e;
+      let c = 0;
+      while ((e = REGEX_ID_KG.exec(id)) !== null) {
+        let p = idProps[c];
+        let v = e[2] || e[3] || e[5];
+        c += 1;
+        cond[p.machineName] = p.convert(v);
+      }
+      return cond;
+
+    } else {
+      let cond = {};
+      if (idProps.length == 1) {
+        const prop = _.first(idProps);
+        cond[prop.machineName] = prop.convert(id);
+        return cond;
+      } else {
+
+      }
+    }
+    throw new NotYetImplementedError('for ' + id)
+
+  }
+
+  build(data: any) {
+    let t = new TransformExecutor();
+    return t.transform(this, data);
+  }
 
   static resolveId(instance: any) {
     if (_.has(instance, 'xs:entity_id')) {
@@ -103,4 +180,13 @@ export class EntityDef extends AbstractDef {
     return null;
   }
 
+
+  toJson(withProperties: boolean = true) {
+    let o = super.toJson();
+    o.schemaName = this.schemaName;
+    if (withProperties) {
+      o.properties = this.getPropertyDefs().map(p => p.toJson());
+    }
+    return o;
+  }
 }

@@ -1,4 +1,3 @@
-
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
 import {XS_TYPE, XS_TYPE_CLASS_REF, XS_TYPE_ENTITY, XS_TYPE_PROPERTY, XS_TYPE_SCHEMA} from './Constants';
 
@@ -92,6 +91,22 @@ export class EntityRegistry {
     return new PropertyDef(options);
   }
 
+  getSchemaDefByName(name: string): SchemaDef {
+    return this._lookup.find(XS_TYPE_SCHEMA, (e: EntityDef) => {
+      return e.machineName == _.snakeCase(name)
+    });
+  }
+
+  getEntityDefByName(name: string): EntityDef {
+    return this._lookup.find(XS_TYPE_ENTITY, (e: EntityDef) => {
+      return e.machineName == _.snakeCase(name)
+    });
+  }
+
+  getPropertyDefsFor(entity: EntityDef): PropertyDef[] {
+    return this._lookup.find(XS_TYPE_PROPERTY, {entityName: entity.name});
+  }
+
 
   static getEntityDefFor(instance: Object | string): EntityDef {
     let cName = null;
@@ -105,7 +120,7 @@ export class EntityRegistry {
 
 
   static getPropertyDefsFor(entity: EntityDef) {
-    return this.$()._lookup.filter(XS_TYPE_PROPERTY, {entityName: entity.name});
+    return this.$().getPropertyDefsFor(entity);
   }
 
   static reset() {

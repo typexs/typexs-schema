@@ -31,7 +31,7 @@ export class TypeOrmSchemaMapper {
 
 
   async initialize() {
-    for (let entity of this.schemaDef.getEntities()) {
+    for (let entity of this.schemaDef.getStoreableEntities()) {
       this.checkOrCreateEntity(entity);
     }
 
@@ -43,7 +43,7 @@ export class TypeOrmSchemaMapper {
     // TODO check if entities are registered or not
     // register as entity
     // TODO can use other table name! Define an override attribute
-    let tName = entityDef.storingName();
+    let tName = entityDef.storingName;
     let entityClass = entityDef.object.getClass();
     Entity(tName)(entityClass);
 
@@ -99,7 +99,7 @@ export class TypeOrmSchemaMapper {
     /**
      * Default variant if nothing else given generate or use p_{propertyName}_{entityName}
      */
-    let pName = propertyDef.storingName();
+    let pName = propertyDef.storingName;
     let clazz = TypeOrmSchemaMapper.clazz(pName);
     propertyDef.joinRef = ClassRef.get(clazz);
     Entity(pName)(propertyDef.joinRef.getClass());
@@ -148,7 +148,7 @@ export class TypeOrmSchemaMapper {
     if (prop.identifier) {
       let orm = prop.getOptions('typeorm', {});
       orm = _.merge(orm, this.detectDataTypeFromProperty(prop));
-      orm.name = prop.storingName();
+      orm.name = prop.storingName;
       if (prop.generated) {
         // TODO resolve strategy for generation
         PrimaryGeneratedColumn(orm)(propClass, prop.name);
@@ -156,7 +156,7 @@ export class TypeOrmSchemaMapper {
         PrimaryColumn(orm)(propClass, prop.name);
       }
     } else {
-      this.ColumnDef(prop,prop.storingName())(propClass, prop.name);
+      this.ColumnDef(prop,prop.storingName)(propClass, prop.name);
     }
   }
 
@@ -165,7 +165,7 @@ export class TypeOrmSchemaMapper {
 
     let storeClass = TypeOrmSchemaMapper.clazz(_.capitalize(propertyDef.name) + entityDef.name);
     propertyDef.joinRef = ClassRef.get(storeClass);
-    let storingName = propertyDef.storingName();
+    let storingName = propertyDef.storingName;
     Entity(storingName)(storeClass);
     this.attachPrimaryKeys(entityDef, propertyDef, storeClass);
 
@@ -175,7 +175,7 @@ export class TypeOrmSchemaMapper {
         if (property.isReference()) {
           if (property.isEntityReference()) {
             if (!property.isCollection()) {
-              this.attachTargetPrefixedKeys(property.machineName(), property.targetRef.getEntity(), storeClass);
+              this.attachTargetPrefixedKeys(property.machineName, property.targetRef.getEntity(), storeClass);
             } else {
               throw new NotSupportedError('not supported; entity reference ');
             }

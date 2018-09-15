@@ -1,4 +1,4 @@
-import {Entity, Property} from "../../../../../src";
+import {Entity, Property} from "../../../../../../src";
 
 
 @Entity()

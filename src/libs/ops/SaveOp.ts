@@ -3,9 +3,9 @@ import {EntityDef} from '../EntityDef';
 import {ConnectionWrapper} from 'typexs-base';
 import {SchemaUtils} from '../SchemaUtils';
 import {PropertyDef} from '../PropertyDef';
-import {EntityManager} from '../EntityManager';
+import {EntityController} from '../EntityController';
 import {EntityDefTreeWorker} from './EntityDefTreeWorker';
-import {NotYetImplementedError,NotSupportedError} from 'typexs-base';
+import {NotYetImplementedError, NotSupportedError} from 'typexs-base';
 import {XS_P_PROPERTY, XS_P_SEQ_NR, XS_P_TYPE} from '../Constants';
 import * as _ from '../LoDash';
 
@@ -37,7 +37,7 @@ export class PropertyRefenceRelation implements IRelation {
 
 export class SaveOp<T> extends EntityDefTreeWorker {
 
-  readonly em: EntityManager;
+  readonly em: EntityController;
 
   private objects: T[] = [];
 
@@ -46,7 +46,7 @@ export class SaveOp<T> extends EntityDefTreeWorker {
   private relations: { [className: string]: IRelation[] } = {};
 
 
-  constructor(em: EntityManager) {
+  constructor(em: EntityController) {
     super();
     this.em = em;
   }
@@ -280,7 +280,7 @@ export class SaveOp<T> extends EntityDefTreeWorker {
         if (prop.isReference()) {
           if (prop.isEntityReference()) {
             prop.targetRef.getEntity().getPropertyDefIdentifier().forEach(_prop => {
-              [id, name] = this.em.nameResolver().for(prop.machineName(), _prop);
+              [id, name] = this.em.nameResolver().for(prop.machineName, _prop);
               joinObj[id] = _prop.get(entry[prop.name]);
             });
           } else {
@@ -319,7 +319,7 @@ export class SaveOp<T> extends EntityDefTreeWorker {
     this.relations = {};
     this.objects = this.prepare(object);
 
-    let resolveByEntityDef = EntityManager.resolveByEntityDef(this.objects);
+    let resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
     let entityNames = Object.keys(resolveByEntityDef);
     this.c = await this.em.storageRef.connect();
 

@@ -1,10 +1,9 @@
-import * as path from 'path'
 import {suite, test, timeout} from "mocha-typescript";
-import {Bootstrap, Container, RuntimeLoader} from "typexs-base";
-import {expect} from "chai";
-import {C_DEFAULT, K_ROUTE_CONTROLLER, ServerRegistry, WebServer} from "typexs-server";
+import {Bootstrap, Container} from "typexs-base";
+import {K_ROUTE_CONTROLLER, Server, ServerRegistry} from "typexs-server";
 import * as _ from "lodash";
-
+import * as request from 'request-promise-native';
+import {expect} from 'chai';
 
 const settingsTemplate: any = {
   storage: {
@@ -17,7 +16,12 @@ const settingsTemplate: any = {
 
   app: {name: 'demo', path: __dirname + '/../../..'},
 
-  paths:[__dirname],
+  modules: {
+    paths: [
+      __dirname + '/packages'
+    ],
+  },
+
 
   logging: {
     enable: true,
@@ -39,30 +43,22 @@ const settingsTemplate: any = {
         routePrefix: 'api'
       }]
     }
-  },
-
-  //paths: [path.resolve(__dirname + '/../../..')]
+  }
 
 }
 
 let bootstrap: Bootstrap = null;
+let server: Server = null;
 
 @suite('functional/server/apiserver')
 class ApiserverSpec {
 
 
-  before() {
-  }
+  static async before() {
 
-  after() {
-    Bootstrap.reset();
-
-  }
-
-  @test @timeout(300000)
-  async 'start'() {
     let settings = _.clone(settingsTemplate);
-    console.log(settings)
+
+
     bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])
       .configure(settings)
@@ -73,9 +69,50 @@ class ApiserverSpec {
     await bootstrap.activateStorage();
     await bootstrap.startup();
 
-    const serverRegistry:ServerRegistry = Bootstrap.getContainer().get('ServerRegistry');
-    const server = serverRegistry.get('default');
+    server = Container.get('server.default');
     await server.start();
+  }
+
+  static async after() {
+    await server.stop();
+    Bootstrap.reset();
+
+  }
+
+  @test @timeout(300000)
+  async 'create a entity'() {
+
+    let data = {
+      label: 'Prinz',
+      content: 'Der kleine Prinz'
+    }
+
+    const url = server.url();
+
+    let res = await request.post(url + '/api/entity/book', {json: data});
+    expect(res).to.deep.include({id: 1});
+
+    res = await request.get(url + `/api/entity/book/${res.id}`,{json:true});
+    expect(res).to.deep.include({id: 1});
+    expect(res).to.deep.include(data);
+
+    let arrData = [
+      {
+        label: 'Bilanzierung',
+        content: 'Kostenrechnung und Bilanzierung'
+      },
+      {
+        label: 'Odyssee',
+        content: 'Homers Odyssee'
+      }
+    ];
+
+    res = await request.post(url + '/api/entity/book', {json: arrData});
+    expect(_.map(res, r => r.id)).to.deep.eq([2, 3]);
+
+    res = await request.get(url + `/api/entity/book/1,2,3`,{json:true});
+    expect(_.map(res, r => r.id)).to.deep.eq([1, 2, 3]);
+
   }
 
 

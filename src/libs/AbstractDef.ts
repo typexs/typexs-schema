@@ -8,7 +8,6 @@ export abstract class AbstractDef {
 
   private readonly _baseType: XS_TYPE;
 
-
   readonly name: string;
 
   private _options: any = {};
@@ -37,19 +36,18 @@ export abstract class AbstractDef {
   }
 
 
-  machineName() {
+  get machineName() {
     return _.snakeCase(this.name);
   }
 
 
-  storingName() {
+  get storingName() {
     let name = this.getOptions('name');
     if (!name) {
       name = _.snakeCase(this.name);
     }
     return name;
   }
-
 
 
   get baseType() {
@@ -65,10 +63,10 @@ export abstract class AbstractDef {
 
   id(): string {
     let idKeys: string[] = [];
-    if (_.has(this,'schemaName')) {
-      if(_.has(this,'entityName')){
+    if (_.has(this, 'schemaName')) {
+      if (_.has(this, 'entityName')) {
         idKeys = ['schemaName', 'entityName', 'name'];
-      }else{
+      } else {
         idKeys = ['schemaName', 'name'];
       }
 
@@ -78,6 +76,17 @@ export abstract class AbstractDef {
     return _.map(idKeys, (k): string => this[k]).join(XS_ID_SEPARATOR).toLocaleLowerCase();
   }
 
+
+  toJson() {
+    let o: any = {
+      id:this.id(),
+      name: this.name,
+      type: this.baseType,
+      machineName: this.machineName,
+      options: this.getOptions()
+    }
+    return o;
+  }
 
 }
 

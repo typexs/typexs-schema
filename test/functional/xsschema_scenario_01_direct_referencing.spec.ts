@@ -4,7 +4,8 @@ import * as _ from 'lodash';
 import {IStorageOptions, StorageRef} from 'typexs-base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {inspect} from 'util';
-import {EntityManager, EntityRegistry} from "../../src";
+import {EntityRegistry} from "../../src";
+import {EntityController} from "../../src/libs/EntityController";
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   name: 'default',
@@ -32,7 +33,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -64,7 +65,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -117,7 +118,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -166,7 +167,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema('direct_property');
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -204,7 +205,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema('direct_property');
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -250,7 +251,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -294,7 +295,7 @@ class Xsschema_scenario_01_direct_referencingSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();

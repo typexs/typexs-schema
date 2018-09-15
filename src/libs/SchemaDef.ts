@@ -23,9 +23,22 @@ export class SchemaDef extends AbstractDef {
     return LookupRegistry.$().filter(XS_TYPE_ENTITY, {schemaName: this.name});
   }
 
+  getStoreableEntities(): EntityDef[] {
+    return LookupRegistry.$().filter(XS_TYPE_ENTITY, {schemaName: this.name});
+  }
+
 
   getPropertiesFor(fn: Function): PropertyDef[] {
     return LookupRegistry.$().filter(XS_TYPE_PROPERTY, {entityName: fn.name});
+  }
+
+
+  toJson(withEntities: boolean = true, withProperties: boolean = true) {
+    let o = super.toJson();
+    if(withEntities){
+      o.entities = this.getEntities().map(p => p.toJson(withProperties));
+    }
+    return o;
   }
 
 

@@ -2,8 +2,8 @@ import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {IStorageOptions, StorageRef} from 'typexs-base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {inspect} from 'util';
-import {EntityManager, EntityRegistry} from "../../src";
+import {EntityRegistry} from "../../src";
+import {EntityController} from "../../src/libs/EntityController";
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   name: 'default',
@@ -32,7 +32,7 @@ class Xsschema_scenario_02_indirect_integrationSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -67,11 +67,10 @@ class Xsschema_scenario_02_indirect_integrationSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
-
 
 
     let a = new Author();
@@ -91,7 +90,7 @@ class Xsschema_scenario_02_indirect_integrationSpec {
 
     // console.log(book)
 
-   // let data2 = await c.connection.query('SELECT name FROM sqlite_master WHERE type=\'table\';');
+    // let data2 = await c.connection.query('SELECT name FROM sqlite_master WHERE type=\'table\';');
     // expect(data2).to.have.length(5);
 
     let data = await c.connection.query('select * from author');
@@ -135,12 +134,12 @@ class Xsschema_scenario_02_indirect_integrationSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema('integrated_property');
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
-   // let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
-   // console.log(tables);
+    // let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
+    // console.log(tables);
 
     let r = new Room();
     r.equipment = [];

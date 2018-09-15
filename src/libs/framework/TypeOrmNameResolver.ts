@@ -24,7 +24,7 @@ export class TypeOrmNameResolver {
       sourceName = prefix + '_' + _.snakeCase(property);
     } else {
       sourceId = prefix + _.capitalize(property.name);
-      sourceName = prefix + '_' + property.machineName();
+      sourceName = prefix + '_' + property.machineName;
     }
     return [sourceId, sourceName];
   }

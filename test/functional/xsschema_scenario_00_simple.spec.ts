@@ -3,7 +3,8 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {IStorageOptions, StorageRef} from 'typexs-base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {EntityManager, EntityRegistry} from "../../src";
+import { EntityRegistry} from "../../src";
+import {EntityController} from "../../src/libs/EntityController";
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   name: 'default',
@@ -30,7 +31,7 @@ class Xsschema_scenario_00_simpleSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
     await xsem.initialize();
 
 
@@ -55,8 +56,7 @@ class Xsschema_scenario_00_simpleSpec {
     let ref = new StorageRef(TEST_STORAGE_OPTIONS);
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-
-    let xsem = new EntityManager(schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
     await xsem.initialize();
     let c = await ref.connect();
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');

@@ -120,6 +120,9 @@ export class PropertyDef extends AbstractDef {
   }
 
   getSubPropertyDef(): PropertyDef[] {
+    if (!this.propertyRef) {
+      return [];
+    }
     return LookupRegistry.$().filter(XS_TYPE_PROPERTY, {entityName: this.propertyRef.className});
   }
 
@@ -138,7 +141,35 @@ export class PropertyDef extends AbstractDef {
   }
 
 
-  storingName() {
+  convert(data: any): any {
+    if (this.dataType == 'string') {
+      if (_.isString(data)) {
+        return data;
+      } else {
+        throw new NotYetImplementedError('value '+data);
+      }
+    } else if (this.dataType == 'number') {
+      if (_.isString(data)) {
+        if (/^\d+\.|\,\d+$/.test(data)) {
+          return parseFloat(data.replace(',', '.'))
+        } else if (/^\d+$/.test(data)) {
+          return parseInt(data);
+        } else {
+          throw new NotYetImplementedError('value '+data);
+        }
+      } else if (_.isNumber(data)) {
+        return data;
+      } else {
+        throw new NotYetImplementedError('value '+data);
+      }
+
+    } else {
+      throw new NotYetImplementedError('value '+data);
+    }
+  }
+
+
+  get storingName() {
     let name = this.getOptions('name');
     if (!name) {
       if (this.isReference()) {
@@ -189,5 +220,21 @@ export class PropertyDef extends AbstractDef {
     return label;
   }
 
+
+  toJson(withSubProperties: boolean = true) {
+    let o = super.toJson();
+    o.schemaName = this.schemaName;
+    o.entityName = this.entityName;
+    o.label = this.label;
+    o.dataType = this.dataType;
+    o.generated = this.generated;
+    o.identifier = this.identifier;
+
+    if (withSubProperties && this.isReference()) {
+      o.embedded = this.getSubPropertyDef().map(x => x.toJson());
+    }
+
+    return o;
+  }
 
 }
