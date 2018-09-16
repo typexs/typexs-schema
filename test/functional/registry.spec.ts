@@ -5,7 +5,7 @@ import _ = require("lodash");
 
 
 @suite('functional/xsschema/xsschema_registry')
-class Xsschema_registrySpec {
+class RegistrySpec {
 
 
   @test

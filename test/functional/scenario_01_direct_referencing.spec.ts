@@ -19,8 +19,8 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 };
 
 
-@suite('functional/xsschema/xsschema_scenario_01_direct_referencing')
-class Xsschema_scenario_01_direct_referencingSpec {
+@suite('functional/scenario_01_direct_referencing')
+class Scenario_01_direct_referencingSpec {
 
   @test
   async 'initializing a schema with entity referencing property'() {

@@ -9,6 +9,7 @@ import {EntityDefTreeWorker} from './EntityDefTreeWorker';
 import {XS_P_PROPERTY, XS_P_SEQ_NR, XS_P_TYPE} from '../Constants';
 import * as _ from '../LoDash';
 
+
 export class FindOp<T> extends EntityDefTreeWorker {
 
   readonly em: EntityController;
@@ -134,10 +135,13 @@ export class FindOp<T> extends EntityDefTreeWorker {
     }
 
     // TODO if revision support beachte dies an der stellle
-    let results = await queryBuilder.orderBy(sourceSeqNrName, 'ASC').getMany();
-    if (results.length == 0) {
+    let _results = await queryBuilder.orderBy(sourceSeqNrName, 'ASC').getMany();
+    if (_results.length == 0) {
       return;
     }
+
+    let results = _.map(_results,_result => _.assign(<any>Reflect.construct(propClass,[]),<any>_result));
+
     conditions = [];
 
     let subPropertyDefs = this.em.schemaDef.getPropertiesFor(propClass);
@@ -192,7 +196,21 @@ export class FindOp<T> extends EntityDefTreeWorker {
             });
 
           } else {
-            throw new NotSupportedError('other then direct entity integration not allowed in property referencing ... ' + subPropertyDef.name);
+            if (!subPropertyDef.isCollection()) {
+              let subProps = this.em.schema().getPropertiesFor(subPropertyDef.targetRef.getClass());
+              let prefix = subPropertyDef.targetRef.machineName();
+              results.map(result => {
+                result[subPropertyDef.name] = Reflect.construct(subPropertyDef.targetRef.getClass(), []);
+                subProps.forEach(subProp => {
+                  const subId = [prefix, subProp.name].join('__');
+                  result[subPropertyDef.name][subProp.name] = result[subId];
+                  delete result[subId];
+                })
+              })
+            } else {
+
+              throw new NotSupportedError('other then direct entity integration not allowed in property referencing ... ' + subPropertyDef.name);
+            }
           }
         }
       } else {

@@ -17,8 +17,8 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 };
 
 
-@suite('functional/xsschema/xsschema_scenario_02_indirect_integration')
-class Xsschema_scenario_02_indirect_integrationSpec {
+@suite('functional/scenario_02_indirect_integration')
+class Scenario_02_indirect_integrationSpec {
 
 
   @test

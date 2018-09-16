@@ -18,8 +18,8 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 };
 
 
-@suite('functional/xsschema/xsschema_scenario_00_simple')
-class Xsschema_scenario_00_simpleSpec {
+@suite('functional/scenario_00_simple')
+class Scenario_00_simpleSpec {
 
 
   @test

@@ -1,0 +1,33 @@
+import {Speed} from "./Speed";
+import {PointFeature} from "./PointFeature";
+import {Entity, Property} from "../../../../src";
+
+
+export class PathFeature {
+
+  @Property({type: 'number'})
+  id: number;
+
+  @Property({type: 'number',nullable:true})
+  unixtime: number;
+
+  @Property({type: 'string',nullable:true})
+  datetime: string;
+
+  @Property({type: 'number'})
+  offset: number;
+
+  @Property({targetClass: Speed,nullable:true})
+  speed: Speed;
+
+  @Property({type: 'number',nullable:true})
+  altitude: number;
+
+  @Property({type: 'string',nullable:true})
+  track: string;
+
+  @Property({targetClass: PointFeature})
+  geometry: PointFeature;
+
+
+}

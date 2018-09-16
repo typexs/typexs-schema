@@ -51,8 +51,8 @@ export class SaveOp<T> extends EntityDefTreeWorker {
     this.em = em;
   }
 
-  extractPropertyObjects(propertyDef: PropertyDef, objects: any[]): [number[][], any[]] {
-    let innerObjects: any[] = SchemaUtils.get(propertyDef.name, objects);
+  extractPropertyObjects(propertyDef: PropertyDef, objects: any[], prefixed: string = null): [number[][], any[]] {
+    let innerObjects: any[] = SchemaUtils.get(prefixed ? [prefixed, propertyDef.name].join('__') : propertyDef.name, objects);
 
     let map: number[][] = [];
     let flattenObjects: any[] = [];
@@ -79,8 +79,7 @@ export class SaveOp<T> extends EntityDefTreeWorker {
     flattenObjects = await this.saveByEntityDef(propertyDef.targetRef.getEntity(), flattenObjects);
     // TODO write back
 
-
-    this.remap(propertyDef, flattenObjects, map, objects);
+    SaveOp.remap(propertyDef, flattenObjects, map, objects);
     this.createBindingRelation(EntityRefenceRelation, entityDef, propertyDef, objects);
 
   }
@@ -102,20 +101,21 @@ export class SaveOp<T> extends EntityDefTreeWorker {
   }
 
 
-  remap(propertyDef: PropertyDef,
-        flattenObjects: any[], map: number[][], objects: any[]) {
+  static remap(propertyDef: PropertyDef, flattenObjects: any[], map: number[][], objects: any[], prefixed: string = null) {
+    let propName = prefixed ? [prefixed,propertyDef.name].join('__') : propertyDef.name;
+
     for (let i = 0; i < flattenObjects.length; i++) {
       let mapping = map[i];
       let sourceIdx = mapping[0];
 
       if (propertyDef.isCollection()) {
-        if (!objects[sourceIdx][propertyDef.name]) {
-          objects[sourceIdx][propertyDef.name] = [];
+        if (!objects[sourceIdx][propName]) {
+          objects[sourceIdx][propName] = [];
         }
         let posIdx = mapping[1];
-        _.set(<any>objects[sourceIdx], propertyDef.name + '[' + posIdx + ']', flattenObjects[i]);
+        _.set(<any>objects[sourceIdx], propName + '[' + posIdx + ']', flattenObjects[i]);
       } else {
-        _.set(<any>objects[sourceIdx], propertyDef.name, flattenObjects[i]);
+        _.set(<any>objects[sourceIdx], propName, flattenObjects[i]);
       }
 
     }
@@ -141,7 +141,6 @@ export class SaveOp<T> extends EntityDefTreeWorker {
       return;
     }
 
-
     let properties = this.em.schema().getPropertiesFor(targetRefClass);
     for (let property of properties) {
 
@@ -151,19 +150,25 @@ export class SaveOp<T> extends EntityDefTreeWorker {
             if (!property.isCollection()) {
               let [subMap, subFlattenObjects] = this.extractPropertyObjects(property, propertyObjects);
               subFlattenObjects = await this.saveByEntityDef(property.targetRef.getEntity(), subFlattenObjects);
-              this.remap(property, subFlattenObjects, subMap, propertyObjects);
+              SaveOp.remap(property, subFlattenObjects, subMap, propertyObjects);
             } else {
               throw new NotSupportedError('entity reference; cardinality > 1 ');
             }
           } else {
-            throw new NotSupportedError('embedding reference ');
+            if (!property.isCollection()) {
+              // joinObj is build under createPropertyReferenceStorageObject
+            } else {
+              throw new NotSupportedError('not supported; embedding reference;cardinality > 1  ');
+              //throw new NotSupportedError('entity reference; cardinality > 1 ');
+            }
           }
         }
       } else {
         throw new NotSupportedError('shouldn\'t happen');
       }
     }
-    this.remap(propertyDef, propertyObjects, map, objects);
+
+    SaveOp.remap(propertyDef, propertyObjects, map, objects);
     this.createBindingRelation(PropertyRefenceRelation, entityDef, propertyDef, objects);
   }
 
@@ -217,7 +222,6 @@ export class SaveOp<T> extends EntityDefTreeWorker {
           } else {
             rels.push(this.createPropertyReferenceStorageObject(targetRefClass, relation, relation.source[propertyDef.name], 0));
           }
-
 
           // TODO if revision ass id
 
@@ -277,17 +281,29 @@ export class SaveOp<T> extends EntityDefTreeWorker {
     for (let prop of properties) {
 
       if (prop.isInternal()) {
+        let obj = prop.get(entry);
         if (prop.isReference()) {
+
           if (prop.isEntityReference()) {
             prop.targetRef.getEntity().getPropertyDefIdentifier().forEach(_prop => {
               [id, name] = this.em.nameResolver().for(prop.machineName, _prop);
-              joinObj[id] = _prop.get(entry[prop.name]);
+              joinObj[id] = _prop.get(obj/*[prop.name]*/);
             });
           } else {
-            throw new NotSupportedError('not allowed');
+
+            if(!prop.isCollection()){
+              let prefix = prop.targetRef.machineName();
+              let subProps = this.em.schema().getPropertiesFor(prop.targetRef.getClass());
+              for (let subProp of subProps) {
+                const prefixedId = [prefix,subProp.name].join('__')
+                joinObj[prefixedId] = subProp.get(obj);
+              }
+            }else{
+              throw new NotSupportedError('embedded properties in properties; cardinality > 1')
+            }
           }
         } else {
-          joinObj[prop.name] = prop.get(entry);
+          joinObj[prop.name] = obj;
         }
       }
     }

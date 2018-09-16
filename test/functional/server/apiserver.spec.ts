@@ -85,7 +85,7 @@ class ApiserverSpec {
   }
 
   @test @timeout(300000)
-  async 'create a entity'() {
+  async 'create simple entity'() {
 
     let data = {
       label: 'Prinz',

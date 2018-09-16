@@ -117,8 +117,6 @@ export class TypeOrmSchemaMapper {
     let refTargetClass = propertyDef.targetRef.getClass();
 
 
-
-
     // members from target class
     this._attachSubProperty(entityDef, propertyDef, refTargetClass);
   }
@@ -136,27 +134,32 @@ export class TypeOrmSchemaMapper {
     let propClass = propertyDef.propertyRef.getClass();
 
 
-
-    this._attachSubProperty(entityDef, propertyDef,  propClass);
+    this._attachSubProperty(entityDef, propertyDef, propClass);
 
   }
 
 
-  private onLocalProperty(prop: PropertyDef, entityClass: Function, entityDef: EntityDef = null) {
+  private onLocalProperty(prop: PropertyDef, entityClass: Function, includeClass: ClassRef = null) {
     let propClass = {constructor: entityClass};
+
+    const hasPrefix = includeClass ? true : false;
+
+    let propName = hasPrefix ? [includeClass.machineName(), prop.name].join('__') : prop.name;
+    let propStoreName = hasPrefix ? [includeClass.machineName(), prop.storingName].join('__') : prop.storingName;
 
     if (prop.identifier) {
       let orm = prop.getOptions('typeorm', {});
       orm = _.merge(orm, this.detectDataTypeFromProperty(prop));
-      orm.name = prop.storingName;
+      orm.name = propStoreName;
+
       if (prop.generated) {
         // TODO resolve strategy for generation
-        PrimaryGeneratedColumn(orm)(propClass, prop.name);
+        PrimaryGeneratedColumn(orm)(propClass, propName);
       } else {
-        PrimaryColumn(orm)(propClass, prop.name);
+        PrimaryColumn(orm)(propClass, propName);
       }
     } else {
-      this.ColumnDef(prop,prop.storingName)(propClass, prop.name);
+      this.ColumnDef(prop, propStoreName)(propClass, propName);
     }
   }
 
@@ -180,7 +183,21 @@ export class TypeOrmSchemaMapper {
               throw new NotSupportedError('not supported; entity reference ');
             }
           } else {
-            throw new NotSupportedError('not supported; embedding reference ');
+            if (!property.isCollection()) {
+              // deep embedded class
+              const baseClass = property.targetRef.getClass();
+              let _properties = this.schemaDef.getPropertiesFor(baseClass);
+              for (let _prop of _properties) {
+                if(_prop.isInternal() && !_prop.isReference()){
+                  this.onLocalProperty(_prop, storeClass, property.targetRef);
+                }else{
+                  throw new NotSupportedError('not supported; deep embedding reference for property '+_prop.name);
+                }
+
+              }
+            } else {
+              throw new NotSupportedError('not supported; embedding reference ');
+            }
           }
         } else {
           this.onLocalProperty(property, storeClass);
@@ -197,8 +214,9 @@ export class TypeOrmSchemaMapper {
   private ColumnDef(property: PropertyDef, name: string) {
     let def = _.clone(property.getOptions('typeorm', {}));
     let dbType = this.detectDataTypeFromProperty(property);
+
     def = _.merge(def, {name: name}, dbType);
-    if(property.isNullable()){
+    if (property.isNullable()) {
       def.nullable = true;
     }
     return Column(def);

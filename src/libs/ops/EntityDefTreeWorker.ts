@@ -17,6 +17,7 @@ export abstract class EntityDefTreeWorker {
     throw new NotYetImplementedError();
   }
 
+
   onPropertyOfReference(entityDef: EntityDef, property: PropertyDef, objects: any[]):void {
     throw new NotYetImplementedError();
   }
