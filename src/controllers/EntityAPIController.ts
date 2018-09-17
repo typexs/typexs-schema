@@ -121,8 +121,16 @@ export class EntityAPIController {
    */
   @Credentials(['allow update entity :name', 'allow update entity'])
   @Post('/entity/:name/:id')
-  update() {
-    throw new NotYetImplementedError()
+  update(@Param('name') name: string, @Param('id') id:string, @Body() data: any) {
+    const entityDef = this.getEntityDef(name);
+//    const conditions = entityDef.createLookupConditions(id);
+    if (_.isArray(data)) {
+      let entities = _.map(data, d => entityDef.build(d));
+      return this.getController(entityDef.schemaName).save(entities);
+    } else {
+      let entity = entityDef.build(data);
+      return this.getController(entityDef.schemaName).save(entity);
+    }
   }
 
 
@@ -143,6 +151,7 @@ export class EntityAPIController {
     }
     throw new Error('no controller defined for ' + name);
   }
+
 
   private getEntityDef(entityName: string): EntityDef {
     const entityDef = this.registry.getEntityDefByName(entityName);

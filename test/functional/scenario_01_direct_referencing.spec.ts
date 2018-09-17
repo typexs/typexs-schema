@@ -1,7 +1,7 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-import {IStorageOptions, StorageRef} from 'typexs-base';
+import {IStorageOptions, SqliteSchemaHandler, StorageRef} from "typexs-base";
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {inspect} from 'util';
 import {EntityRegistry} from "../../src";
@@ -30,6 +30,9 @@ class Scenario_01_direct_referencingSpec {
     require('./schemas/default/Book');
 
     let ref = new StorageRef(TEST_STORAGE_OPTIONS);
+
+    ref.setSchemaHandler(new SqliteSchemaHandler(ref));
+
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
@@ -37,8 +40,7 @@ class Scenario_01_direct_referencingSpec {
     await xsem.initialize();
 
     let c = await ref.connect();
-    let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
-    let tableNames = tables.map(x => x.name);
+    let tableNames = await ref.getSchemaHandler().getCollectionNames();
     expect(tableNames).to.have.length.greaterThan(1);
     expect(tableNames).to.contain('p_author_author');
 

@@ -26,16 +26,8 @@ export class EntityDef extends AbstractDef {
 
   constructor(fn: Function, options: IEntity = {}) {
     super('entity', fn.name, fn);
-    _.defaults(options, DEFAULT_OPTIONS);
+    options = _.defaults(options, DEFAULT_OPTIONS);
     this.setOptions(options);
-/*
-    let schema = <SchemaDef>LookupRegistry.$().find(XS_TYPE_BINDING_SCHEMA_ENTITY, {target: fn});
-    if (schema) {
-      this.schemaName = schema.name;
-      console.log('SETSCHEMA',schema.name);
-      this.object.setSchema(schema.name);
-    }
-    */
   }
 
 

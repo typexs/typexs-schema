@@ -31,7 +31,8 @@ export class TypeOrmSchemaMapper {
 
 
   async initialize() {
-    for (let entity of this.schemaDef.getStoreableEntities()) {
+    let entities = this.schemaDef.getStoreableEntities();
+    for (let entity of entities) {
       this.checkOrCreateEntity(entity);
     }
 

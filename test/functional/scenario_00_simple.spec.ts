@@ -29,13 +29,11 @@ class Scenario_00_simpleSpec {
 
     let ref = new StorageRef(TEST_STORAGE_OPTIONS);
     await ref.prepare();
+
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
     let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
     await xsem.initialize();
-
-
-    // console.log(ref['options'],getMetadataArgsStorage());
 
     let c = await ref.connect();
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');

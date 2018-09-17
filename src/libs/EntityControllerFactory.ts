@@ -18,12 +18,14 @@ export class EntityControllerFactory {
     const storages = this.storage.getNames();
     for (let storageName of storages) {
       let schemaDef = this.registry.getSchemaDefByName(storageName);
-      let storageRef = this.storage.get(storageName);
-      Log.debug('generating schema for ' + storageName);
-      let xsem = new EntityController(storageName, schemaDef, storageRef);
-      await xsem.initialize();
-      Container.set('EntityController.' + storageName, xsem);
-      this.controller.push(xsem);
+      if(schemaDef){
+        let storageRef = this.storage.get(storageName);
+        Log.debug('generating schema for ' + storageName);
+        let xsem = new EntityController(storageName, schemaDef, storageRef);
+        await xsem.initialize();
+        Container.set('EntityController.' + storageName, xsem);
+        this.controller.push(xsem);
+      }
     }
   }
 

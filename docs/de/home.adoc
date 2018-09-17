@@ -107,19 +107,28 @@ Entity:
 
 *Einfaches Schema*
 
+[plantuml, images/erm_01_simple, png]
+....
+object e_author {
+  id: integer
+  first_name: text
+  last_name: text
+}
+....
+
 [cols="a,a"]
 |===
 |
 ```js
-@XsEntity()
+@Entity()
 class Author {
-  @XsProperty({type:'number', id:true})
+  @Property({type:'number', id:true})
   id: number;
 
-  @XsProperty({type:'string'})
+  @Property({type:'string'})
   firstName: string;
 
-  @XsProperty({type:'string'})
+  @Property({type:'string'})
   lastName: string;
 }
 ```
@@ -142,7 +151,11 @@ class Author {
 
 
 
-[plantuml, images/erm_01_simple, png]
+
+
+*Schema mit direkter Referenz auf andere Entität*
+
+[plantuml, images/erm_02_schema_with_join, png]
 ....
 
 object e_author {
@@ -151,37 +164,41 @@ object e_author {
   last_name: text
 }
 
+object e_book {
+  id: integer
+  content: text
+  author_id: integer
+}
+
+e_book::author_id -right-> e_author::id
 ....
-
-
-*Schema mit direkter Referenz auf andere Entität*
 
 [cols="a,a"]
 |===
 |
 ```js
-@XsEntity()
+@Entity()
 class Author {
-  @XsProperty({type:'number', id:true})
+  @Property({type:'number', id:true})
   id: number;
 
-  @XsProperty({type:'string'})
+  @Property({type:'string'})
   firstName: string;
 
-  @XsProperty({type:'string'})
+  @Property({type:'string'})
   lastName: string;
 }
 
-@XsEntity()
+@Entity()
 class Book {
-  @XsProperty({type:'number', id:true})
+  @Property({type:'number', id:true})
   id: number;
 
-  @XsProperty({type:'string'})
+  @Property({type:'string'})
   content: string;
 
   // reuseable allows other
-  @XsProperty({type:'Author', direct: true})
+  @Property({targetClass: Author, direct: true})
   author: Author;
 }
 ```
@@ -215,7 +232,12 @@ class Book {
 |===
 
 
-[plantuml, images/erm_02_schema_with_join, png]
+
+*Schema mit indirekter Referenz  auf andere Entität*
+
+
+
+[plantuml, images/erm_03_schema_with_join, png]
 ....
 
 object e_author {
@@ -224,50 +246,56 @@ object e_author {
   last_name: text
 }
 
-object e_book {
+object p_author {
   id: integer
-  content: text
+  src_id: integer
+  src_type:varchar(64)
+  seqnr: integer
   author_id: integer
 }
 
-e_book::author_id -right-> e_author::id
+object e_book {
+  id: integer
+  content: text
+}
 
+
+e_book::id -right-> p_author::src_id : "src_id = id &&\n src_type = 'author'"
+p_author::author_id -right-> e_author::id : "author_id = id"
 
 ....
 
-
-*Schema mit indirekter Referenz  auf andere Entität*
 
 [cols="a,a"]
 |===
 |
 ```js
-@XsEntity()
+@Entity()
 class Author {
 
-  @XsProperty({type:'number', id:true})
+  @Property({type:'number', id:true})
   id: number;
 
-  @XsProperty({type:'string'})
+  @Property({type:'string'})
   firstName: string;
 
-  @XsProperty({type:'string'})
+  @Property({type:'string'})
   lastName: string;
 
 }
 
 
-@XsEntity()
+@Entity()
 class Book {
 
-  @XsProperty({type:'number', id:true})
+  @Property({type:'number', id:true})
   id: number;
 
-  @XsProperty({type:'string'})
+  @Property({type:'string'})
   content: string;
 
   // reuseable allows other
-  @XsProperty({type:'Author', reuseable: true})
+  @Property({type:'Author', reuseable: true})
   author: Author;
 
 }
@@ -325,21 +353,19 @@ class Author {
 |===
 
 
-[plantuml, images/erm_03_schema_with_join, png]
+
+
+*Schema mit indirekter Referenz auf eingebettete Entität*
+
+[plantuml, images/erm_04_schema_with_join, png]
 ....
-
-object e_author {
-  id: integer
-  first_name: text
-  last_name: text
-}
-
 object p_author {
   id: integer
   src_id: integer
   src_type:varchar(64)
   seqnr: integer
-  author_id: integer
+  first_name: text
+  last_name: text
 }
 
 object e_book {
@@ -347,29 +373,24 @@ object e_book {
   content: text
 }
 
-
 e_book::id -right-> p_author::src_id : "src_id = id &&\n src_type = 'author'"
-p_author::author_id -right-> e_author::id : "author_id = id"
-
 ....
 
-
-*Schema mit indirekter Referenz auf eingebettete Entität*
 
 [cols="a,a"]
 |===
 |
 ```js
-@XsEntity()
+@Entity()
 class Book {
 
-  @XsProperty({type:'number', id:true})
+  @Property({type:'number', id:true})
   id: number;
 
-  @XsProperty({type:'string'})
+  @Property({type:'string'})
   content: string;
 
-  @XsProperty({type:'Author'})
+  @Property({targetClass: Author})
   author: Author;
 
 }
@@ -412,28 +433,6 @@ class Book {
 |===
 
 
-[plantuml, images/erm_04_schema_with_join, png]
-....
-
-
-object p_author {
-  id: integer
-  src_id: integer
-  src_type:varchar(64)
-  seqnr: integer
-  first_name: text
-  last_name: text
-}
-
-object e_book {
-  id: integer
-  content: text
-}
-
-
-e_book::id -right-> p_author::src_id : "src_id = id &&\n src_type = 'author'"
-
-....
 
 
 

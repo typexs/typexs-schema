@@ -15,16 +15,16 @@ export class SchemaDef extends AbstractDef {
 
 
   getEntity(name: string): EntityDef {
-    return LookupRegistry.$().find(XS_TYPE_ENTITY, {schemaName: this.name, name: name});
+    return LookupRegistry.$().find(XS_TYPE_ENTITY, (x:EntityDef) => x.schemaName == this.name && x.name == name);
   }
 
 
   getEntities(): EntityDef[] {
-    return LookupRegistry.$().filter(XS_TYPE_ENTITY, {schemaName: this.name});
+    return LookupRegistry.$().filter(XS_TYPE_ENTITY, (x:EntityDef) => x.schemaName == this.name);
   }
 
   getStoreableEntities(): EntityDef[] {
-    return LookupRegistry.$().filter(XS_TYPE_ENTITY, {schemaName: this.name});
+    return LookupRegistry.$().filter(XS_TYPE_ENTITY, (x:EntityDef) => x.schemaName == this.name && x.isStoreable());
   }
 
 
@@ -35,7 +35,7 @@ export class SchemaDef extends AbstractDef {
 
   toJson(withEntities: boolean = true, withProperties: boolean = true) {
     let o = super.toJson();
-    if(withEntities){
+    if (withEntities) {
       o.entities = this.getEntities().map(p => p.toJson(withProperties));
     }
     return o;
