@@ -1,13 +1,10 @@
 import {PropertyDef} from './PropertyDef';
 import {LookupRegistry} from './LookupRegistry';
 import {AbstractDef} from './AbstractDef';
-import {XS_TYPE_BINDING_SCHEMA_ENTITY, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from './Constants';
+import {XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from './Constants';
 import {IEntity} from './IEntity';
-import {SchemaDef} from './SchemaDef';
 import * as _ from './LoDash'
-import {NotYetImplementedError} from "typexs-base";
-
-import {Type, plainToClass} from "class-transformer";
+import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
 import {TransformExecutor} from "./TransformExecutor";
 
 const DEFAULT_OPTIONS: IEntity = {

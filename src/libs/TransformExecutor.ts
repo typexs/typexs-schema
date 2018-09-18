@@ -1,6 +1,6 @@
 import {EntityDef} from "./EntityDef";
-import {NotYetImplementedError} from "typexs-base";
-import * as _ from "lodash";
+import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
+import * as _ from "./LoDash";
 
 
 export class TransformExecutor {

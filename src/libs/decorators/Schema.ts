@@ -1,5 +1,4 @@
 import {EntityRegistry} from '../EntityRegistry';
-
 import {ISchema} from '../ISchema';
 
 
