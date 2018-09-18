@@ -247,11 +247,13 @@ object e_author {
 }
 
 object p_author {
-  id: integer
-  src_id: integer
-  src_type:varchar(64)
-  seqnr: integer
-  author_id: integer
+  source_id: integer
+  source_rev_id: integer
+  source_type:varchar(64)
+  source_seqnr: integer
+  target_id: integer
+  target_rev_id: integer
+  target_type:varchar(64)
 }
 
 object e_book {
@@ -360,10 +362,10 @@ class Author {
 [plantuml, images/erm_04_schema_with_join, png]
 ....
 object p_author {
-  id: integer
-  src_id: integer
-  src_type:varchar(64)
-  seqnr: integer
+  source_id: integer (PKs der Quelle)
+  source_rev_id: integer
+  source_type:varchar(64)
+  source_seqnr: integer
   first_name: text
   last_name: text
 }
@@ -397,6 +399,15 @@ class Book {
 ```
 |
 ```js
+@Entity('e_book')
+class Book {
+
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  content: string;
+}
 
 @Entity('p_author') // name by entity referencing type
 class PropertyAuthor {
@@ -415,24 +426,81 @@ class PropertyAuthor {
 
   @Column('text')
   last_name: string;
-
 }
 
-@Entity('e_book')
-class Book {
-
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column('text')
-  content: string;
-
-}
 ```
 
 |===
 
 
+
+*Schema mit indirekter Referenz auf eingebettete Entität, welche wieder Subelemente besitzt*
+
+[plantuml, images/erm_05, png]
+....
+object e_book {
+  id: integer
+  content: text
+}
+
+object p_author {
+  id: number
+
+  source_id: integer (PKs der Quelle)
+  source_rev_id: integer
+  source_type:varchar(64)
+  source_seqnr: integer
+
+  first_name: text
+  last_name: text
+
+}
+
+
+object p_author_category {
+  property_id: number
+  source_seqnr: number
+  context: string
+  tag : string
+}
+
+
+e_book::id -right-> p_author::src_id : "src_id = id &&\n src_type = 'author'"
+p_author -right-> p_author_category
+....
+
+
+
+
+*Schema mit indirekter Referenz auf eingebettete Entität,
+welche wieder Subelemente besitzt*
+
+[plantuml, images/erm_06, png]
+....
+object e_book {
+  id: integer
+  content: text
+}
+
+object p_author {
+  id: number
+
+  source_id: integer (PKs der Quelle)
+  source_rev_id: integer
+  source_type:varchar(64)
+  source_seqnr: integer
+
+  first_name: text
+  last_name: text
+
+  category__context:string
+  category__tag: string
+
+}
+
+
+e_book::id -right-> p_author::src_id : "src_id = id &&\n src_type = 'author'"
+....
 
 
 

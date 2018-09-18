@@ -8,13 +8,18 @@ import {XS_P_PROPERTY, XS_P_SEQ_NR, XS_P_TYPE} from '../Constants';
 
 import {ClassRef} from '../ClassRef';
 import {TypeOrmNameResolver} from './TypeOrmNameResolver';
+import {EntityDefTreeWorker, SchemaUtils} from "../..";
 
 interface DBType {
   type: string;
   length?: number;
 }
 
-export class TypeOrmSchemaMapper {
+export interface TreeSchemaContext{
+  entityClass: EntityDef;
+}
+
+export class TypeOrmSchemaMapper extends EntityDefTreeWorker {
 
   private storageRef: StorageRef;
 
@@ -25,6 +30,7 @@ export class TypeOrmSchemaMapper {
   private globalRelationsEnabled: boolean = false;
 
   constructor(storageRef: StorageRef, schemaDef: SchemaDef) {
+    super()
     this.storageRef = storageRef;
     this.schemaDef = schemaDef;
   }
@@ -33,14 +39,15 @@ export class TypeOrmSchemaMapper {
   async initialize() {
     let entities = this.schemaDef.getStoreableEntities();
     for (let entity of entities) {
-      this.checkOrCreateEntity(entity);
+      let entityClass = await this.walk(entity,null);
+      this.storageRef.addEntityType(entityClass);
     }
 
     return this.storageRef.reload();
   }
 
 
-  private checkOrCreateEntity(entityDef: EntityDef) {
+  async visitEntity(entityDef: EntityDef) {
     // TODO check if entities are registered or not
     // register as entity
     // TODO can use other table name! Define an override attribute
@@ -49,42 +56,46 @@ export class TypeOrmSchemaMapper {
     Entity(tName)(entityClass);
 
     // TODO add p_relations
-    this.storageRef.addEntityType(entityClass);
 
+    return entityClass
+
+    /*
     // TODO identifier, complex primary keys
     let props = entityDef.getPropertyDefs();
     for (let prop of props) {
       this.onProperty(prop, entityClass, entityDef);
     }
+    */
   }
 
+  visitDataProperty(propertyDef:PropertyDef, sourceDef: PropertyDef | EntityDef, sources?:any, results?:any):void{
+    let entityClass = results;
+    let propClass = {constructor: entityClass};
 
-  private onProperty(propertyDef: PropertyDef, entityClass: Function, entityDef: EntityDef) {
-    if (propertyDef.isInternal()) {
-      // todo set multiple primary keys
-      if (propertyDef.isReference()) {
-        let typeorm = propertyDef.getOptions('typeorm');
-        if (propertyDef.isEntityReference()) {
-          this.onPropertyReferencingEntity(entityDef, propertyDef);
-        } else {
-          this.onPropertyReferencingProperty(entityDef, propertyDef);
-        }
+
+
+    const hasPrefix = sourceDef instanceof PropertyDef  ? true : false;
+    let propName = hasPrefix ? [includeClass.machineName(), propertyDef.name].join('__') : propertyDef.name;
+    let propStoreName = hasPrefix ? [includeClass.machineName(), propertyDef.storingName].join('__') : propertyDef.storingName;
+
+    if (propertyDef.identifier) {
+      let orm = propertyDef.getOptions('typeorm', {});
+      orm = _.merge(orm, this.detectDataTypeFromProperty(propertyDef));
+      orm.name = propStoreName;
+
+      if (propertyDef.generated) {
+        // TODO resolve strategy for generation
+        PrimaryGeneratedColumn(orm)(propClass, propName);
       } else {
-        this.onLocalProperty(propertyDef, entityClass);
+        PrimaryColumn(orm)(propClass, propName);
       }
     } else {
-      this.onPropertyOfReference(propertyDef, entityDef);
+      this.ColumnDef(propertyDef, propStoreName)(propClass, propName);
     }
+
   }
 
 
-  private static clazz(str: string) {
-    function X() {
-    }
-
-    Object.defineProperty(X, 'name', {value: str});
-    return X;
-  }
 
   private onPropertyReferencingEntity(entityDef: EntityDef, propertyDef: PropertyDef) {
 
@@ -101,7 +112,7 @@ export class TypeOrmSchemaMapper {
      * Default variant if nothing else given generate or use p_{propertyName}_{entityName}
      */
     let pName = propertyDef.storingName;
-    let clazz = TypeOrmSchemaMapper.clazz(pName);
+    let clazz = SchemaUtils.clazz(pName);
     propertyDef.joinRef = ClassRef.get(clazz);
     Entity(pName)(propertyDef.joinRef.getClass());
     this.attachPrimaryKeys(entityDef, propertyDef, propertyDef.joinRef.getClass());
@@ -128,7 +139,7 @@ export class TypeOrmSchemaMapper {
    *
    * @param {PropertyDef} propertyDef
    */
-  private onPropertyOfReference(propertyDef: PropertyDef, entityDef: EntityDef) {
+  private onExternalProperty(propertyDef: PropertyDef, entityDef: EntityDef) {
     // TODO generated id field
     // TODO resolve names and resolve types
     // TODO  it is an extending Property, adding new fields to entity class; or a property which holding data in a seperate table/collection
@@ -140,34 +151,10 @@ export class TypeOrmSchemaMapper {
   }
 
 
-  private onLocalProperty(prop: PropertyDef, entityClass: Function, includeClass: ClassRef = null) {
-    let propClass = {constructor: entityClass};
-
-    const hasPrefix = includeClass ? true : false;
-
-    let propName = hasPrefix ? [includeClass.machineName(), prop.name].join('__') : prop.name;
-    let propStoreName = hasPrefix ? [includeClass.machineName(), prop.storingName].join('__') : prop.storingName;
-
-    if (prop.identifier) {
-      let orm = prop.getOptions('typeorm', {});
-      orm = _.merge(orm, this.detectDataTypeFromProperty(prop));
-      orm.name = propStoreName;
-
-      if (prop.generated) {
-        // TODO resolve strategy for generation
-        PrimaryGeneratedColumn(orm)(propClass, propName);
-      } else {
-        PrimaryColumn(orm)(propClass, propName);
-      }
-    } else {
-      this.ColumnDef(prop, propStoreName)(propClass, propName);
-    }
-  }
-
 
   private _attachSubProperty(entityDef: EntityDef, propertyDef: PropertyDef, propClass: Function) {
 
-    let storeClass = TypeOrmSchemaMapper.clazz(_.capitalize(propertyDef.name) + entityDef.name);
+    let storeClass = SchemaUtils.clazz(_.capitalize(propertyDef.name) + entityDef.name);
     propertyDef.joinRef = ClassRef.get(storeClass);
     let storingName = propertyDef.storingName;
     Entity(storingName)(storeClass);
@@ -194,7 +181,6 @@ export class TypeOrmSchemaMapper {
                 }else{
                   throw new NotSupportedError('not supported; deep embedding reference for property '+_prop.name);
                 }
-
               }
             } else {
               throw new NotSupportedError('not supported; embedding reference ');
@@ -203,7 +189,6 @@ export class TypeOrmSchemaMapper {
         } else {
           this.onLocalProperty(property, storeClass);
         }
-
       } else {
         throw new Error('not supported; shouldn\'t happen');
       }
@@ -315,4 +300,24 @@ export class TypeOrmSchemaMapper {
     return false;
   }
 
+
+  /*
+    private onProperty(propertyDef: PropertyDef, entityClass: Function, entityDef: EntityDef) {
+      if (propertyDef.isInternal()) {
+        // todo set multiple primary keys
+        if (propertyDef.isReference()) {
+          let typeorm = propertyDef.getOptions('typeorm');
+          if (propertyDef.isEntityReference()) {
+            this.onPropertyReferencingEntity(entityDef, propertyDef);
+          } else {
+            this.onPropertyReferencingProperty(entityDef, propertyDef);
+          }
+        } else {
+          this.onLocalProperty(propertyDef, entityClass);
+        }
+      } else {
+        this.onExternalProperty(propertyDef, entityDef);
+      }
+    }
+  */
 }
