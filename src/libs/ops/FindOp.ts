@@ -96,14 +96,14 @@ export class FindOp<T> extends EntityDefTreeWorker {
   }
 
 
-  async onPropertyReference(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]) {
+  async onObjectReference(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]) {
     let propClass = propertyDef.targetRef.getClass();
     await this._onPropertyRefGeneral(propClass, entityDef, propertyDef, objects);
 
   }
 
 
-  async onPropertyOfReference(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]) {
+  async onExternalProperty(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]) {
     let propertyClass = propertyDef.propertyRef.getClass();
     await this._onPropertyRefGeneral(propertyClass, entityDef, propertyDef, objects);
   }

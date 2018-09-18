@@ -5,7 +5,7 @@ import {XS_TYPE_BINDING_SCHEMA_ENTITY, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from '.
 import {IEntity} from './IEntity';
 import {SchemaDef} from './SchemaDef';
 import * as _ from './LoDash'
-import {NotYetImplementedError} from "typexs-base";
+import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
 
 import {Type, plainToClass} from "class-transformer";
 import {TransformExecutor} from "./TransformExecutor";

@@ -51,35 +51,14 @@ export class SaveOp<T> extends EntityDefTreeWorker {
     this.em = em;
   }
 
-  extractPropertyObjects(propertyDef: PropertyDef, objects: any[], prefixed: string = null): [number[][], any[]] {
-    let innerObjects: any[] = SchemaUtils.get(prefixed ? [prefixed, propertyDef.name].join('__') : propertyDef.name, objects);
 
-    let map: number[][] = [];
-    let flattenObjects: any[] = [];
-    for (let i = 0; i < innerObjects.length; i++) {
-      let obj = innerObjects[i];
-      if (obj) {
-        // ignoring null and undefined values
-        if (_.isArray(obj)) {
-          for (let j = 0; j < obj.length; j++) {
-            map.push([i, j]);
-            flattenObjects.push(obj[j]);
-          }
-        } else {
-          map.push([i]);
-          flattenObjects.push(obj);
-        }
-      }
-    }
-    return [map, flattenObjects];
-  }
 
   async onEntityReference(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]) {
-    let [map, flattenObjects] = this.extractPropertyObjects(propertyDef, objects);
+    let [map, flattenObjects] = SchemaUtils.extractPropertyObjects(propertyDef, objects);
     flattenObjects = await this.saveByEntityDef(propertyDef.targetRef.getEntity(), flattenObjects);
     // TODO write back
 
-    SaveOp.remap(propertyDef, flattenObjects, map, objects);
+    SchemaUtils.remap(propertyDef, flattenObjects, map, objects);
     this.createBindingRelation(EntityRefenceRelation, entityDef, propertyDef, objects);
 
   }
@@ -101,41 +80,23 @@ export class SaveOp<T> extends EntityDefTreeWorker {
   }
 
 
-  static remap(propertyDef: PropertyDef, flattenObjects: any[], map: number[][], objects: any[], prefixed: string = null) {
-    let propName = prefixed ? [prefixed,propertyDef.name].join('__') : propertyDef.name;
-
-    for (let i = 0; i < flattenObjects.length; i++) {
-      let mapping = map[i];
-      let sourceIdx = mapping[0];
-
-      if (propertyDef.isCollection()) {
-        if (!objects[sourceIdx][propName]) {
-          objects[sourceIdx][propName] = [];
-        }
-        let posIdx = mapping[1];
-        _.set(<any>objects[sourceIdx], propName + '[' + posIdx + ']', flattenObjects[i]);
-      } else {
-        _.set(<any>objects[sourceIdx], propName, flattenObjects[i]);
-      }
-
-    }
-  }
 
 
-  async onPropertyReference(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]): Promise<void> {
+
+  async onObjectReference(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]): Promise<void> {
     let targetRefClass = propertyDef.targetRef.getClass();
     await this._onPropertyRefGeneral(targetRefClass, entityDef, propertyDef, objects);
   }
 
 
-  async onPropertyOfReference(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]): Promise<void> {
+  async onExternalProperty(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]): Promise<void> {
     let propertyRefClass = propertyDef.propertyRef.getClass();
     await this._onPropertyRefGeneral(propertyRefClass, entityDef, propertyDef, objects);
   }
 
 
   private async _onPropertyRefGeneral(targetRefClass: Function, entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]) {
-    let [map, propertyObjects] = this.extractPropertyObjects(propertyDef, objects);
+    let [map, propertyObjects] = SchemaUtils.extractPropertyObjects(propertyDef, objects);
 
     if (propertyObjects.length == 0) {
       return;
@@ -148,9 +109,9 @@ export class SaveOp<T> extends EntityDefTreeWorker {
         if (property.isReference()) {
           if (property.isEntityReference()) {
             if (!property.isCollection()) {
-              let [subMap, subFlattenObjects] = this.extractPropertyObjects(property, propertyObjects);
+              let [subMap, subFlattenObjects] = SchemaUtils.extractPropertyObjects(property, propertyObjects);
               subFlattenObjects = await this.saveByEntityDef(property.targetRef.getEntity(), subFlattenObjects);
-              SaveOp.remap(property, subFlattenObjects, subMap, propertyObjects);
+              SchemaUtils.remap(property, subFlattenObjects, subMap, propertyObjects);
             } else {
               throw new NotSupportedError('entity reference; cardinality > 1 ');
             }
@@ -168,7 +129,7 @@ export class SaveOp<T> extends EntityDefTreeWorker {
       }
     }
 
-    SaveOp.remap(propertyDef, propertyObjects, map, objects);
+    SchemaUtils.remap(propertyDef, propertyObjects, map, objects);
     this.createBindingRelation(PropertyRefenceRelation, entityDef, propertyDef, objects);
   }
 
