@@ -85,4 +85,11 @@ export class ClassRef {
   getEntity(): EntityDef {
     return LookupRegistry.$().find(XS_TYPE_ENTITY, {name: this.className});
   }
+
+  new(){
+    let klass = this.getClass();
+    let instance = Reflect.construct(klass, []);
+    return instance;
+
+  }
 }

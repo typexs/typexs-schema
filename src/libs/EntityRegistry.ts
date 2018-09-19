@@ -104,8 +104,13 @@ export class EntityRegistry {
     });
   }
 
-  getPropertyDefsFor(entity: EntityDef): PropertyDef[] {
-    return this._lookup.find(XS_TYPE_PROPERTY, {entityName: entity.name});
+  getPropertyDefsFor(entity: EntityDef | ClassRef): PropertyDef[] {
+    if(entity instanceof EntityDef){
+      return this._lookup.filter(XS_TYPE_PROPERTY, {entityName: entity.name});
+    }else{
+      return this._lookup.filter(XS_TYPE_PROPERTY, {object: entity});
+    }
+
   }
 
 
@@ -120,7 +125,7 @@ export class EntityRegistry {
   }
 
 
-  static getPropertyDefsFor(entity: EntityDef) {
+  static getPropertyDefsFor(entity: EntityDef | ClassRef) {
     return this.$().getPropertyDefsFor(entity);
   }
 

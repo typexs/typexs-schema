@@ -1,10 +1,10 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityDef, EntityRegistry} from "../../src";
-import _ = require("lodash");
+import {ClassRef, EntityDef, EntityRegistry} from "../../src";
+import * as _ from "lodash";
 
 
-@suite('functional/xsschema/xsschema_registry')
+@suite('functional/registry')
 class RegistrySpec {
 
 
@@ -20,6 +20,7 @@ class RegistrySpec {
       'default--author',
       'default--book'
     ]);
+
     let propNames = registry.listProperties().map(p => p.id());
     expect(propNames).to.include.members([
       "default--author--id",
@@ -62,6 +63,7 @@ class RegistrySpec {
     expect(pJsons).to.have.length(3);
   }
 
+
   @test
   async 'load in incorrect order'() {
 
@@ -90,6 +92,7 @@ class RegistrySpec {
     expect(props).to.have.length(3);
 
   }
+
 
   @test
   async 'extend entity through addon property'() {
@@ -141,22 +144,27 @@ class RegistrySpec {
 
   }
 
+
+  @test
+  async 'EntityRegistry get properties for class ref'() {
+    const classRef = ClassRef.get(require('./schemas/direct_property/Driver').Driver); // Book imports Author
+    // require('./schemas/default/Summary');
+    let props = EntityRegistry.getPropertyDefsFor(classRef);
+    expect(props.length).to.be.greaterThan(0)
+  }
+
+
   @test.skip
   async 'create instance with a referencing property'() {
-
     require('./schemas/default/Author'); // Book imports Author
     // require('./schemas/default/Summary');
-
-
   }
+
 
   @test.skip
   async 'create instance with addon property'() {
-
     require('./schemas/default/Author'); // Book imports Author
     // require('./schemas/default/Summary');
-
-
   }
 
 }

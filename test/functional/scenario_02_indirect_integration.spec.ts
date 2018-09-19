@@ -21,39 +21,7 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 class Scenario_02_indirect_integrationSpec {
 
 
-  @test
-  async 'initializing a schema with integrated property'() {
 
-    const Author = require('./schemas/default/Author').Author;
-    const Book = require('./schemas/default/Book').Book;
-    const Summary = require('./schemas/default/Summary').Summary;
-
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
-    await xsem.initialize();
-
-    let c = await ref.connect();
-
-    //let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
-    //console.log(tables);
-
-    let data_author = await c.connection.query('PRAGMA table_info(\'author\')');
-    let data_book = await c.connection.query('PRAGMA table_info(\'book\')');
-    let data_author_author = await c.connection.query('PRAGMA table_info(\'p_author_author\')');
-    let data_summary = await c.connection.query('PRAGMA table_info(\'p_summary\')');
-
-
-    expect(data_author).to.have.length(3);
-    expect(data_author_author).to.have.length(4);
-    expect(data_book).to.have.length(3);
-    expect(data_summary).to.have.length(5);
-
-    await c.close();
-
-  }
 
 
   @test

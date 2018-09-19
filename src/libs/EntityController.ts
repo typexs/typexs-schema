@@ -7,11 +7,6 @@ import {FindOp} from './ops/FindOp';
 import {TypeOrmNameResolver} from './framework/TypeOrmNameResolver';
 
 
-/**
- *
- *
- *
- */
 export class EntityController {
 
   // revision support

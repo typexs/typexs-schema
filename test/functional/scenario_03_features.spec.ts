@@ -23,26 +23,7 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 class Scenario_03_featuresSpec {
 
 
-  @test
-  async 'initializing scenario schema'() {
 
-    const PathFeatureCollection = require('./schemas/features/PathFeatureCollection').PathFeatureCollection;
-
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
-    await xsem.initialize();
-
-    let c = await ref.connect();
-
-    let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
-    console.log(tables);
-
-    await c.close();
-
-  }
 
 
   @test

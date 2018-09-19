@@ -12,8 +12,8 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   type: 'sqlite',
   database: ':memory:',
   synchronize: true,
-  //logger: 'simple-console',
-  //logging: 'all'
+  logger: 'simple-console',
+  logging: 'all'
   // tablesPrefix: ""
 
 };
@@ -22,39 +22,7 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 @suite('functional/scenario_01_direct_referencing')
 class Scenario_01_direct_referencingSpec {
 
-  @test
-  async 'initializing a schema with entity referencing property'() {
 
-
-    require('./schemas/default/Author');
-    require('./schemas/default/Book');
-
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-
-    ref.setSchemaHandler(new SqliteSchemaHandler(ref));
-
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
-    await xsem.initialize();
-
-    let c = await ref.connect();
-    let tableNames = await ref.getSchemaHandler().getCollectionNames();
-    expect(tableNames).to.have.length.greaterThan(1);
-    expect(tableNames).to.contain('p_author_author');
-
-    let data_author = await c.connection.query('PRAGMA table_info(\'author\')');
-    let data_book = await c.connection.query('PRAGMA table_info(\'book\')');
-    let data_relations = await c.connection.query('PRAGMA table_info(\'p_author_author\')');
-
-    expect(data_author).to.have.length(3);
-    expect(data_book).to.have.length(3);
-    expect(data_relations).to.have.length(4);
-
-    await c.close();
-
-  }
 
 
   @test
