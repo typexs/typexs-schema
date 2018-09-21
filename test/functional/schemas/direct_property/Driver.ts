@@ -1,9 +1,7 @@
-
-import {Address} from 'cluster';
 import {Skil} from './Skil';
-import {Entity, Property,Schema} from "../../../../src";
+import {Property, Schema} from "../../../../src";
 
-
+@Schema({name:'direct_property'})
 export class Driver {
 
   @Property({type: 'number'})

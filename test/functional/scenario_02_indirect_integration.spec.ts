@@ -4,6 +4,9 @@ import {IStorageOptions, StorageRef} from 'typexs-base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {EntityRegistry} from "../../src";
 import {EntityController} from "../../src/libs/EntityController";
+import {getMetadataArgsStorage } from 'typeorm';
+import {PlatformTools } from 'typeorm/platform/PlatformTools';
+
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   name: 'default',
@@ -21,6 +24,10 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 class Scenario_02_indirect_integrationSpec {
 
 
+
+  before(){
+    PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
+  }
 
 
 

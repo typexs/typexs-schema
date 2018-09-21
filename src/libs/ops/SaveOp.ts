@@ -4,7 +4,7 @@ import {ConnectionWrapper} from 'typexs-base';
 import {SchemaUtils} from '../SchemaUtils';
 import {PropertyDef} from '../PropertyDef';
 import {EntityController} from '../EntityController';
-import {EntityDefTreeWorker} from './EntityDefTreeWorker';
+import {EntityDefTreeWorker, IDataExchange} from './EntityDefTreeWorker';
 import {NotYetImplementedError, NotSupportedError} from 'typexs-base';
 import {XS_P_PROPERTY, XS_P_SEQ_NR, XS_P_TYPE} from '../Constants';
 import * as _ from '../LoDash';
@@ -26,9 +26,10 @@ export class EntityRefenceRelation implements IRelation {
 }
 
 
-interface ISaveData {
-  saved: any[];
+interface ISaveData extends IDataExchange<any[]> {
+  join?: any[];
   map?: number[][];
+  target?: any[];
 }
 
 export class PropertyRefenceRelation implements IRelation {
@@ -59,26 +60,129 @@ export class SaveOp<T> extends EntityDefTreeWorker {
   }
 
 
-  visitDataProperty(propertyDef: PropertyDef, sourceDef: PropertyDef | EntityDef | ClassRef, sources?: any[], targets?: any[]): void {
+  visitDataProperty(propertyDef: PropertyDef, sourceDef: PropertyDef | EntityDef | ClassRef, sources: ISaveData, targets: ISaveData): void {
   }
 
-  async visitEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: any): Promise<ISaveData> {
+  async visitEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: ISaveData): Promise<ISaveData> {
     let map: number[][] = [];
-    if (_.has(sources, 'saved')) {
-      sources = (<ISaveData>sources).saved;
-    }
+    let saved: any[] = await this.c.manager.save(entityDef.object.getClass(), sources.next);
+    return {next: saved, map: map};
+  }
 
-    if (propertyDef) {
-      let propObjects: any[] = [];
-      [map, propObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources);
-      sources = propObjects;
-    }
-    let saved: any[] = await this.c.manager.save(entityDef.object.getClass(), sources);
-    return {saved: saved, map: map};
+  async leaveEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: ISaveData): Promise<ISaveData> {
+    return sources;
   }
 
 
-  async visitEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources?: ISaveData, targets?: ISaveData): Promise<ISaveData> {
+  async visitEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources?: ISaveData): Promise<ISaveData> {
+
+    let sourceEntityDef: EntityDef;
+    let targetObjects: any[] = [];
+    let map: number[][] = [];
+    if (sourceDef instanceof EntityDef) {
+      sourceEntityDef = sourceDef;
+      [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
+    } else if (sourceDef instanceof ClassRef) {
+      [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
+    } else {
+      throw new NotYetImplementedError()
+    }
+
+    targetObjects = _.uniq(targetObjects);
+
+    let joinObjs: any[] = [];
+    if (propertyDef.joinRef) {
+      // if joinRef is present then a new class must be created
+      for (let x = 0; x < sources.next.length; x++) {
+        let source = sources.next[x];
+        //let localMap = map[x];
+        let seqNr = 0;
+        let targets = propertyDef.get(source);
+        if(targets){
+          if (!_.isArray(targets)) {
+            targets = [targets];
+          }
+        }else{
+          targets = [];
+          if(propertyDef.isCollection()){
+            source[propertyDef.name] = [];
+          }else{
+            source[propertyDef.name] = null;
+          }
+        }
+
+        for (let target of targets) {
+          let joinObj = propertyDef.joinRef.new();
+          joinObjs.push(joinObj);
+          let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
+          joinObj[id] = sourceEntityDef.machineName;
+          sourceEntityDef.getPropertyDefIdentifier().forEach(prop => {
+            [id, name] = this.em.nameResolver().forSource(prop);
+            joinObj[id] = prop.get(source);
+          });
+          [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
+          joinObj[id] = seqNr++;
+          joinObj[propertyDef.name] = target;
+        }
+      }
+
+    } else {
+      joinObjs = sources.join;
+    }
+    return {next: targetObjects, join: joinObjs, target: sources.next, abort:targetObjects.length === 0};
+  }
+
+  async leaveEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources?: ISaveData, visitResult?: ISaveData): Promise<ISaveData> {
+
+    if (propertyDef.joinRef) {
+      if (_.isEmpty(visitResult.join)) return sources;
+
+      let targetIdProps = entityDef.getPropertyDefIdentifier();
+      for (let x = 0; x < visitResult.join.length; x++) {
+        let joinObj = visitResult.join[x];
+        let target = propertyDef.get(joinObj);
+        targetIdProps.forEach(prop => {
+          let [targetId,] = this.em.nameResolver().forTarget(prop);
+          joinObj[targetId] = prop.get(target);
+        });
+      }
+      await this.c.manager.save(propertyDef.joinRef.getClass(), visitResult.join);
+    } else {
+      if (visitResult.join) {
+        let sourcePropsIds: PropertyDef[] = null;
+        if (sourceDef instanceof EntityDef) {
+          sourcePropsIds = sourceDef.getPropertyDefIdentifier();
+        } else if (sourceDef instanceof ClassRef) {
+          sourcePropsIds = this.em.schema().getPropertiesFor(sourceDef.getClass());
+        } else {
+          throw new NotYetImplementedError();
+        }
+
+      //  let [seqNrId, ] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
+        let refIdProps = entityDef.getPropertyDefIdentifier();
+
+        for (let x = 0; x < visitResult.join.length; x++) {
+          let joinObj = visitResult.join[x];
+          let target = propertyDef.get(joinObj);
+          refIdProps.forEach(prop => {
+            let [propId, ] = this.em.nameResolver().for(propertyDef.machineName, prop);
+            joinObj[propId] = prop.get(target)
+          })
+        }
+      }
+    }
+    return sources;
+  }
+
+  async visitExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
+    throw new NotYetImplementedError();
+  }
+
+  async leaveExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: ISaveData): Promise<any> {
+    return sources;
+  }
+
+  async visitObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
 
     let sourceEntityDef: EntityDef;
     if (sourceDef instanceof EntityDef) {
@@ -87,16 +191,20 @@ export class SaveOp<T> extends EntityDefTreeWorker {
       throw new NotYetImplementedError()
     }
 
+    let [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
+    let sourceIdProps = sourceEntityDef.getPropertyDefIdentifier();
+    let embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
+
     let joinObjs: any[] = [];
-    for (let source of sources.saved) {
+    for (let source of sources.next) {
       let seqNr = 0;
-      for (let target of targets.saved) {
+      for (let target of targetObjects) {
         let joinObj = propertyDef.joinRef.new();
         joinObjs.push(joinObj);
         let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
         joinObj[id] = sourceEntityDef.machineName;
 
-        sourceEntityDef.getPropertyDefIdentifier().forEach(prop => {
+        sourceIdProps.forEach(prop => {
           [id, name] = this.em.nameResolver().forSource(prop);
           joinObj[id] = prop.get(source);
         });
@@ -104,256 +212,36 @@ export class SaveOp<T> extends EntityDefTreeWorker {
         [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
         joinObj[id] = seqNr++;
 
-        entityDef.getPropertyDefIdentifier().forEach(prop => {
-          [id, name] = this.em.nameResolver().forTarget(prop);
-          joinObj[id] = prop.get(target);
+        embedProps.forEach(prop => {
+          joinObj[prop.name] = prop.get(target);
         });
       }
     }
 
-    if (joinObjs.length > 0) {
-      let saved: any[] = await this.c.manager.save(propertyDef.joinRef.getClass(), joinObjs);
-      SchemaUtils.remap(propertyDef, targets.saved, targets.map, sources.saved);
-    }
-    targets.map = [];
+    let targets: ISaveData = {
+      next: targetObjects,
+      join: joinObjs,
+      map: map,
+      abort:targetObjects.length === 0
+    };
+
     return targets;
+
   }
 
-  visitExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: any[]): Promise<any[]> {
-    return undefined;
+  async leaveObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
+    if (propertyDef.joinRef && sources.join.length > 0) {
+      let sdf = this.c.manager.connection.getMetadata(propertyDef.joinRef.getClass());
+      console.log(sdf);
+      let saved: any[] = await this.c.manager.save(propertyDef.joinRef.getClass(), sources.join);
+      return {next: saved};
+    }
+    return sources;
   }
-
-  visitObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: any[]): Promise<any[]> {
-    return undefined;
-  }
-
-
-//
-//   async onEntityReference(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]) {
-//     let [map, flattenObjects] = SchemaUtils.extractPropertyObjects(propertyDef, objects);
-//     flattenObjects = await this.saveByEntityDef(propertyDef.targetRef.getEntity(), flattenObjects);
-//     // TODO write back
-//
-//     SchemaUtils.remap(propertyDef, flattenObjects, map, objects);
-//     this.createBindingRelation(EntityRefenceRelation, entityDef, propertyDef, objects);
-//
-//   }
-//
-//   createBindingRelation(klazz: Function, entityDef: EntityDef, propertyDef: PropertyDef,
-//                         objects: any[]) {
-//     let className = propertyDef.joinRef.className;
-//     if (!this.relations[className]) {
-//       this.relations[className] = [];
-//     }
-//
-//     for (let object of objects) {
-//       let rel = Reflect.construct(klazz, []);
-//       rel.sourceRef = entityDef;
-//       rel.propertyRef = propertyDef;
-//       rel.source = object;
-//       this.relations[className].push(rel);
-//     }
-//   }
-//
-//
-//
-//
-//
-//   async onObjectReference(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]): Promise<void> {
-//     let targetRefClass = propertyDef.targetRef.getClass();
-//     await this._onPropertyRefGeneral(targetRefClass, entityDef, propertyDef, objects);
-//   }
-//
-//
-//   async onExternalProperty(entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]): Promise<void> {
-//     let propertyRefClass = propertyDef.propertyRef.getClass();
-//     await this._onPropertyRefGeneral(propertyRefClass, entityDef, propertyDef, objects);
-//   }
-//
-//
-//   private async _onPropertyRefGeneral(targetRefClass: Function, entityDef: EntityDef, propertyDef: PropertyDef, objects: any[]) {
-//     let [map, propertyObjects] = SchemaUtils.extractPropertyObjects(propertyDef, objects);
-//
-//     if (propertyObjects.length == 0) {
-//       return;
-//     }
-//
-//     let properties = this.em.schema().getPropertiesFor(targetRefClass);
-//     for (let property of properties) {
-//
-//       if (property.isInternal()) {
-//         if (property.isReference()) {
-//           if (property.isEntityReference()) {
-//             if (!property.isCollection()) {
-//               let [subMap, subFlattenObjects] = SchemaUtils.extractPropertyObjects(property, propertyObjects);
-//               subFlattenObjects = await this.saveByEntityDef(property.targetRef.getEntity(), subFlattenObjects);
-//               SchemaUtils.remap(property, subFlattenObjects, subMap, propertyObjects);
-//             } else {
-//               throw new NotSupportedError('entity reference; cardinality > 1 ');
-//             }
-//           } else {
-//             if (!property.isCollection()) {
-//               // joinObj is build under createPropertyReferenceStorageObject
-//             } else {
-//               throw new NotSupportedError('not supported; embedding reference;cardinality > 1  ');
-//               //throw new NotSupportedError('entity reference; cardinality > 1 ');
-//             }
-//           }
-//         }
-//       } else {
-//         throw new NotSupportedError('shouldn\'t happen');
-//       }
-//     }
-//
-//     SchemaUtils.remap(propertyDef, propertyObjects, map, objects);
-//     this.createBindingRelation(PropertyRefenceRelation, entityDef, propertyDef, objects);
-//   }
-//
-//
-//   private async processRelations(): Promise<any[]> {
-//
-//     let classNames = Object.keys(this.relations);
-//     let promises: Promise<any>[] = [];
-//
-//     for (let className of classNames) {
-//       let relations = this.relations[className];
-//       let rels: any[] = [];
-//       while (relations.length > 0) {
-//         let relation = relations.shift();
-//         if (relation instanceof EntityRefenceRelation) {
-//
-//           if (relation.propertyRef.isEntityReference()) {
-//             let propertyDef = relation.propertyRef;
-//
-//             let targetRefClass = propertyDef.joinRef.getClass();
-//
-//             // TODO if revision ass id
-//             if (propertyDef.isCollection()) {
-//               let refCollection = relation.source[propertyDef.name];
-//               for (let i = 0; i < refCollection.length; i++) {
-//                 rels.push(this.createEntityReferenceStorageObject(targetRefClass, relation, refCollection[i], i));
-//               }
-//             } else {
-//               rels.push(this.createEntityReferenceStorageObject(targetRefClass, relation, relation.source[propertyDef.name], 0));
-//             }
-//
-//
-//           } else {
-//             throw new NotYetImplementedError();
-//           }
-//         } else if (relation instanceof PropertyRefenceRelation) {
-//           let propertyDef = relation.propertyRef;
-//           let targetRefClass = null;
-//
-//           if (propertyDef.isInternal()) {
-//             targetRefClass = propertyDef.targetRef.getClass();
-//           } else {
-//             targetRefClass = propertyDef.propertyRef.getClass();
-//           }
-//
-//           if (propertyDef.isCollection()) {
-//             let refCollection = relation.source[propertyDef.name];
-//             for (let i = 0; i < refCollection.length; i++) {
-//               rels.push(this.createPropertyReferenceStorageObject(targetRefClass, relation, refCollection[i], i));
-//             }
-//           } else {
-//             rels.push(this.createPropertyReferenceStorageObject(targetRefClass, relation, relation.source[propertyDef.name], 0));
-//           }
-//
-//           // TODO if revision ass id
-//
-//
-//         } else {
-//           throw new NotYetImplementedError();
-//         }
-//       }
-//       promises.push(this.c.manager.save(className, rels));
-//
-//     }
-//
-//     return Promise.all(promises);
-//   }
-//
-//   private createEntityReferenceStorageObject(targetRefClass: Function, relation: PropertyRefenceRelation, entry: any, seqNr: number): any {
-//     let joinObj = Reflect.construct(targetRefClass, []);
-//     let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
-//     joinObj[id] = relation.sourceRef.name;
-//
-//     relation.sourceRef.getPropertyDefIdentifier().forEach(prop => {
-//       [id, name] = this.em.nameResolver().forSource(prop);
-//       joinObj[id] = prop.get((<EntityRefenceRelation>relation).source);
-//     });
-//
-//     [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
-//     joinObj[id] = seqNr;
-//
-//     relation.propertyRef.targetRef.getEntity().getPropertyDefIdentifier().forEach(prop => {
-//       [id, name] = this.em.nameResolver().forTarget(prop);
-//       joinObj[id] = prop.get(entry);
-//     });
-//     return joinObj;
-//   }
-//
-//   private createPropertyReferenceStorageObject(targetRefClass: Function, relation: PropertyRefenceRelation, entry: any, seqNr: number): any {
-//     let clazz = relation.propertyRef.joinRef.getClass();
-//     let joinObj = Reflect.construct(clazz, []);
-//     let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
-//     joinObj[id] = relation.sourceRef.name;
-//
-//     if (!relation.propertyRef.isInternal()) {
-//       // PropertyOf
-//       let [id, name] = this.em.nameResolver().forSource(XS_P_PROPERTY);
-//       joinObj[id] = relation.propertyRef.name;
-//     }
-//
-//     relation.sourceRef.getPropertyDefIdentifier().forEach(prop => {
-//       [id, name] = this.em.nameResolver().forSource(prop);
-//       joinObj[id] = prop.get((<PropertyRefenceRelation>relation).source);
-//     });
-//
-//     [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
-//     joinObj[id] = seqNr;
-//
-//     let properties = this.em.schema().getPropertiesFor(targetRefClass);
-//     for (let prop of properties) {
-//
-//       if (prop.isInternal()) {
-//         let obj = prop.get(entry);
-//         if (prop.isReference()) {
-//
-//           if (prop.isEntityReference()) {
-//             prop.targetRef.getEntity().getPropertyDefIdentifier().forEach(_prop => {
-//               [id, name] = this.em.nameResolver().for(prop.machineName, _prop);
-//               joinObj[id] = _prop.get(obj/*[prop.name]*/);
-//             });
-//           } else {
-//
-//             if(!prop.isCollection()){
-//               let prefix = prop.targetRef.machineName();
-//               let subProps = this.em.schema().getPropertiesFor(prop.targetRef.getClass());
-//               for (let subProp of subProps) {
-//                 const prefixedId = [prefix,subProp.name].join('__')
-//                 joinObj[prefixedId] = subProp.get(obj);
-//               }
-//             }else{
-//               throw new NotSupportedError('embedded properties in properties; cardinality > 1')
-//             }
-//           }
-//         } else {
-//           joinObj[prop.name] = obj;
-//         }
-//       }
-//     }
-//     return joinObj;
-//   }
-
 
   private async saveByEntityDef<T>(entityName: string | EntityDef, objects: T[]): Promise<T[]> {
     let entityDef = SchemaUtils.resolve(this.em.schemaDef, entityName);
-    let data: ISaveData = await this.walk(entityDef, objects);
-    return data.saved;
-//    objects = await this.c.manager.save(entityDef.object.getClass(), objects);
-//    return objects;
+    return await this.walk(entityDef, objects);
   }
 
 
@@ -398,5 +286,6 @@ export class SaveOp<T> extends EntityDefTreeWorker {
 
     return null;
   }
+
 
 }

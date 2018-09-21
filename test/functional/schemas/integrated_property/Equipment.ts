@@ -1,8 +1,8 @@
 import {Room} from './Room';
 
-import {Property, PropertyOf} from "../../../../src";
+import {Property, PropertyOf, Schema} from "../../../../src";
 
-
+@Schema({name:'integrated_property'})
 @PropertyOf('equipment', Room, {cardinality: 0})
 export class Equipment {
 

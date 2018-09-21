@@ -1,7 +1,7 @@
 
 import {Entity, Property,Schema} from "../../../../src";
 
-@Schema({name: 'direct_property'})
+@Schema({name:'direct_property'})
 @Entity()
 export class Skil {
 

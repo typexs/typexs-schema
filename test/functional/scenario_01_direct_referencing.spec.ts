@@ -3,6 +3,8 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {IStorageOptions, SqliteSchemaHandler, StorageRef} from "typexs-base";
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
+import {getMetadataArgsStorage } from 'typeorm';
+import {PlatformTools } from 'typeorm/platform/PlatformTools';
 import {inspect} from 'util';
 import {EntityRegistry} from "../../src";
 import {EntityController} from "../../src/libs/EntityController";
@@ -22,20 +24,23 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 @suite('functional/scenario_01_direct_referencing')
 class Scenario_01_direct_referencingSpec {
 
-
-
+  before(){
+    PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
+  }
 
   @test
   async 'entity lifecycle for entity referencing property E-P-E'() {
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+//    (<any>options).name = 'direct_property';
 
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
+    let ref = new StorageRef(options);
     await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
+    let schemaDef = EntityRegistry.getSchema(options.name);
 
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
+    let xsem = new EntityController(options.name, schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -88,7 +93,7 @@ class Scenario_01_direct_referencingSpec {
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
+    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -101,23 +106,96 @@ class Scenario_01_direct_referencingSpec {
     a2.firstName = 'Josef';
     a2.lastName = 'Bania';
 
-    let book = new Book2();
-    book.content = 'This is a good book';
-    book.authors = [a, a2];
+    let a3 = new Author();
+    a3.firstName = 'Andi';
+    a3.lastName = 'Müller';
 
-    book = await xsem.save(book);
-    expect(book.id).to.be.eq(1);
-    expect(book.authors).to.have.length(2);
-    expect(_.find(book.authors, {lastName: 'Bania', id: 2})).to.deep.include({lastName: 'Bania', id: 2});
-    expect(_.find(book.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
+    let a4 = new Author();
+    a4.firstName = 'Hans';
+    a4.lastName = 'Schmidt';
+
+    let book_save_1 = new Book2();
+    book_save_1.content = 'This is a good book';
+    book_save_1.authors = [a, a2];
+
+    book_save_1 = await xsem.save(book_save_1);
+    console.log(book_save_1);
+    expect(book_save_1.id).to.be.eq(1);
+    expect(book_save_1.authors).to.have.length(2);
+    expect(_.find(book_save_1.authors, {lastName: 'Bania', id: 2})).to.deep.include({lastName: 'Bania', id: 2});
+    expect(_.find(book_save_1.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
 
     let books: any[] = await xsem.find(Book2, {id: 1});
+    console.log(books);
     expect(books).to.have.length(1);
-    let book2 = books.shift();
-    expect(book2.id).to.be.eq(1);
-    expect(book2.authors).to.have.length(2);
-    expect(_.find(book2.authors, {lastName: 'Bania', id: 2})).to.deep.include({lastName: 'Bania', id: 2});
-    expect(_.find(book2.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
+    let book_find_1 = books.shift();
+    expect(book_find_1.id).to.be.eq(1);
+    expect(book_find_1.authors).to.have.length(2);
+    expect(_.find(book_find_1.authors, {lastName: 'Bania', id: 2})).to.deep.include({lastName: 'Bania', id: 2});
+    expect(_.find(book_find_1.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
+
+    let book_save_2 = new Book2();
+    book_save_2.content = 'Robi tobi und das Fliwatüt';
+    book_save_2.authors = [a];
+    book_save_2 = await xsem.save(book_save_2);
+    console.log(book_save_2);
+    expect(book_save_2.id).to.be.eq(2);
+    expect(book_save_2.authors).to.have.length(1);
+    expect(_.find(book_save_2.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
+
+    books = await xsem.find(Book2, {id: 2});
+    console.log(books);
+    expect(books).to.have.length(1);
+    let book_find_3 = books.shift();
+    expect(book_find_3.id).to.be.eq(2);
+    expect(book_find_3.authors).to.have.length(1);
+    expect(_.find(book_find_3.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
+
+    // save multiple books
+
+    let book_save_3 = new Book2();
+    book_save_3.content = 'Mittelalter';
+    book_save_3.authors = [a3, a2];
+
+    let book_save_4 = new Book2();
+    book_save_4.content = 'Kurz Geschichte der Zeit';
+    book_save_4.authors = [a3, a4];
+
+
+    let books_saved = await xsem.save([book_save_3, book_save_4]);
+    console.log(inspect(books_saved, false, 10));
+    expect(books_saved).to.have.length(2);
+
+    let books_found = await xsem.find(Book2, [{id: 3}, {id: 4}]);
+    console.log(inspect(books_found, false, 10));
+    expect(books_found).to.have.length(2);
+    expect(books_saved).to.deep.eq(books_found);
+
+    // book without author
+    let book_save_5 = new Book2();
+    book_save_5.content = 'Karate';
+
+    books_saved = await xsem.save([book_save_5]);
+    console.log(inspect(books_saved, false, 10));
+    expect(books_saved).to.have.length(1);
+
+    books_found = await xsem.find(Book2, [{id: 5}]);
+    console.log(inspect(books_found, false, 10));
+    expect(books_found).to.have.length(1);
+    expect(books_saved).to.deep.eq(books_found);
+
+    // book empty author
+    let book_save_6 = new Book2();
+    book_save_6.content = 'Karate';
+    book_save_6.authors = [];
+
+    books_saved = await xsem.save([book_save_6]);
+    console.log(inspect(books_saved, false, 10));
+
+    books_found = await xsem.find(Book2, [{id: 6}]);
+    console.log(inspect(books_found, false, 10));
+    expect(books_found).to.have.length(1);
+    expect(books_saved).to.deep.eq(books_found);
 
     await c.close();
 
@@ -129,62 +207,76 @@ class Scenario_01_direct_referencingSpec {
   @test
   async 'entity lifecycle for referencing property E-P-SP-E'() {
 
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'direct_property';
+
     const Car = require('./schemas/direct_property/Car').Car;
     const Skil = require('./schemas/direct_property/Skil').Skil;
     const Driver = require('./schemas/direct_property/Driver').Driver;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
+    let ref = new StorageRef(options);
     await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema('direct_property');
+    let schemaDef = EntityRegistry.getSchema(options.name);
 
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
+    let xsem = new EntityController(options.name, schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
 
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
-    console.log(tables);
+    expect(tables).to.have.length(5);
+    expect(_.map(tables, table => table.name)).to.have.include.members(['car', 'skil', 'p_driver_driver', 'p_drivers_driver']);
 
-    let car = new Car();
-    car.producer = 'Volvo';
-    car.driver = new Driver();
-    car.driver.age = 30;
-    car.driver.nickName = 'Fireball';
-    car.driver.skill = new Skil();
-    car.driver.skill.label = 'ASD';
-    car.driver.skill.quality = 123;
+    let car_save_1 = new Car();
+    car_save_1.producer = 'Volvo';
+    car_save_1.driver = new Driver();
+    car_save_1.driver.age = 30;
+    car_save_1.driver.nickName = 'Fireball';
+    car_save_1.driver.skill = new Skil();
+    car_save_1.driver.skill.label = 'ASD';
+    car_save_1.driver.skill.quality = 123;
 
-    car = await xsem.save(car);
-    console.log(car);
+    car_save_1 = await xsem.save(car_save_1);
+    console.log(car_save_1);
 
-    let car2 = await xsem.find(Car, {id: 1});
-    console.log(inspect(car2, false, 10));
+    let cars_found = await xsem.find(Car, {id: 1});
+    console.log(inspect(cars_found, false, 10));
+
+    let car_find_1 = cars_found.shift();
+    expect(car_save_1).to.deep.eq(car_find_1);
 
     await c.close();
+
 
   }
 
   @test
   async 'entity lifecycle for referencing property E-P-SP[]-E'() {
 
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'direct_property';
+
     const Car = require('./schemas/direct_property/Car').Car;
     const Skil = require('./schemas/direct_property/Skil').Skil;
     const Driver = require('./schemas/direct_property/Driver').Driver;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema('direct_property');
 
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
+    let ref = new StorageRef(options);
+    await ref.prepare();
+    let schemaDef = EntityRegistry.getSchema(options.name);
+
+    let xsem = new EntityController(options.name, schemaDef, ref);
     await xsem.initialize();
+
+    //console.log(ref.getOptions(),getMetadataArgsStorage());
+
 
     let c = await ref.connect();
 
-    //let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
-    //console.log(tables);
 
-    let car = new Car();
-    car.producer = 'Volvo';
+    let car_save_1 = new Car();
+    car_save_1.producer = 'Volvo';
+
     let driver1 = new Driver();
     driver1.age = 30;
     driver1.nickName = 'Fireball';
@@ -199,13 +291,15 @@ class Scenario_01_direct_referencingSpec {
     driver2.skill.label = 'lose';
     driver2.skill.quality = 12;
 
-    car.drivers = [driver1, driver2];
+    car_save_1.drivers = [driver1, driver2];
+    car_save_1 = await xsem.save(car_save_1);
+    expect(car_save_1.drivers).to.have.length(2);
+    console.log(inspect(car_save_1, false, 10));
 
-    car = await xsem.save(car);
-
-    let car2 = await xsem.find(Car, {id: 1});
-    let car3 = car2.shift();
-    expect(car).to.deep.eq(car3);
+    let cars_found = await xsem.find(Car, {id: 1});
+    let car_find_1 = cars_found.shift();
+    console.log(inspect(car_find_1, false, 10));
+    expect(car_save_1).to.deep.eq(car_find_1);
 
     await c.close();
 
@@ -214,14 +308,17 @@ class Scenario_01_direct_referencingSpec {
 
   @test
   async 'saving multiple entities with and without refrences'() {
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
+    let ref = new StorageRef(options);
     await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
+    let schemaDef = EntityRegistry.getSchema(options.name);
 
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
+    let xsem = new EntityController(options.name, schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -258,14 +355,17 @@ class Scenario_01_direct_referencingSpec {
 
   @test
   async 'saving multiple entities with shared entity refrences'() {
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
+    let ref = new StorageRef(options);
     await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
+    let schemaDef = EntityRegistry.getSchema(options.name);
 
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
+    let xsem = new EntityController(options.name, schemaDef, ref);
     await xsem.initialize();
 
     let c = await ref.connect();
@@ -285,7 +385,7 @@ class Scenario_01_direct_referencingSpec {
 
     let booksToSave = [book, book2];
     let books = await xsem.save(booksToSave);
-    let booksFound = await xsem.find(Book);
+    let booksFound = await xsem.find(Book, []);
 
     expect(books).to.be.deep.eq(booksFound);
 

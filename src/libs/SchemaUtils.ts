@@ -1,4 +1,3 @@
-
 import {SchemaDef} from './SchemaDef';
 import {EntityDef} from './EntityDef';
 import * as _ from './LoDash'
@@ -51,7 +50,7 @@ export class SchemaUtils {
   }
 
   static remap(propertyDef: PropertyDef, flattenObjects: any[], map: number[][], objects: any[], prefixed: string = null) {
-    let propName = prefixed ? [prefixed,propertyDef.name].join('__') : propertyDef.name;
+    let propName = prefixed ? [prefixed, propertyDef.name].join('__') : propertyDef.name;
 
     for (let i = 0; i < flattenObjects.length; i++) {
       let mapping = map[i];
@@ -70,7 +69,7 @@ export class SchemaUtils {
     }
   }
 
-  static clazz(str: string) {
+  static clazz(str: string): Function {
     function X() {
     }
 

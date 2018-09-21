@@ -8,7 +8,7 @@ import {XS_P_PROPERTY, XS_P_SEQ_NR, XS_P_TYPE} from '../Constants';
 
 import {ClassRef} from '../ClassRef';
 import {TypeOrmNameResolver} from './TypeOrmNameResolver';
-import {EntityDefTreeWorker} from "../ops/EntityDefTreeWorker";
+import {EntityDefTreeWorker, IDataExchange} from "../ops/EntityDefTreeWorker";
 import {SchemaUtils} from "../SchemaUtils";
 
 
@@ -17,8 +17,7 @@ interface DBType {
   length?: number;
 }
 
-export interface XContext {
-  clazz: Function;
+export interface XContext extends IDataExchange<Function> {
   prefix?: boolean;
 }
 
@@ -45,20 +44,21 @@ export class TypeOrmSchemaMapper extends EntityDefTreeWorker {
     let entities = this.schemaDef.getStoreableEntities();
     for (let entity of entities) {
       let entityClass = await this.walk(entity, null);
-      this.addType(entityClass.clazz);
+      this.addType(entityClass);
     }
     this.clear();
     return this.storageRef.reload();
   }
 
   addType(fn: Function) {
+    console.log(fn);
     if (!this.isDone(fn)) {
       this.storageRef.addEntityType(fn);
       this.done(fn);
     }
   }
 
-  async visitEntity(entityDef: EntityDef):Promise<XContext> {
+  async visitEntity(entityDef: EntityDef): Promise<XContext> {
     // TODO check if entities are registered or not
     // register as entity
     // TODO can use other table name! Define an override attribute
@@ -68,12 +68,17 @@ export class TypeOrmSchemaMapper extends EntityDefTreeWorker {
 
     // TODO add p_relations
 
-    return {clazz:entityClass}
+    return {next: entityClass}
 
   }
 
+  async leaveEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: XContext): Promise<XContext> {
+    return sources;
+  }
+
+
   visitDataProperty(propertyDef: PropertyDef, sourceDef: PropertyDef | EntityDef | ClassRef, sources?: XContext, results?: XContext): void {
-    let entityClass = results.clazz;
+    let entityClass = results.next;
     let propClass = {constructor: entityClass};
 
     // TODO prefix support?
@@ -104,8 +109,7 @@ export class TypeOrmSchemaMapper extends EntityDefTreeWorker {
   }
 
 
-  async visitEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources?: XContext, target?: XContext): Promise<XContext> {
-
+  async visitEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext): Promise<XContext> {
     /**
      * different variants to use the relation between 2 entities
      * - use a global p_relations table which can connect multiple elements with each other
@@ -115,26 +119,40 @@ export class TypeOrmSchemaMapper extends EntityDefTreeWorker {
      * - if notthing is defined the global variant is prefered
      */
 
+      // TODO e->p => e.p_id => p.id
+    const allowDirectReference = propertyDef.getOptions('direct', false);
+
     /**
      * Default variant if nothing else given generate or use p_{propertyName}_{entityName}
      */
     if (sourceDef instanceof EntityDef) {
       // TODO check property configuration, if exists!
       let pName = propertyDef.storingName;
-      let clazz = SchemaUtils.clazz(pName);
-      propertyDef.joinRef = ClassRef.get(clazz);
+
+      propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(pName));
+      let clazz = propertyDef.joinRef.getClass();
 
       Entity(pName)(clazz);
       this.attachPrimaryKeys(sourceDef, propertyDef, clazz);
       this.attachTargetKeys(propertyDef, entityDef, clazz);
 
       this.addType(clazz);
-      return {clazz: clazz}
+      return {next: clazz}
     } else if (sourceDef instanceof PropertyDef) {
       if (!propertyDef.isCollection()) {
-        this.attachTargetPrefixedKeys(propertyDef.machineName, propertyDef.targetRef.getEntity(), sources.clazz);
+        this.attachTargetPrefixedKeys(propertyDef.machineName, entityDef, sources.next);
+        return sources;
       } else {
         throw new NotYetImplementedError('not supported; entity reference collection ');
+      }
+
+    } else if (sourceDef instanceof ClassRef) {
+
+      if (!propertyDef.isCollection()) {
+        this.attachTargetPrefixedKeys(propertyDef.machineName, entityDef, sources.next);
+        return sources;
+      } else {
+        throw new NotYetImplementedError('not supported; entity reference collection in object');
       }
 
     }
@@ -143,21 +161,27 @@ export class TypeOrmSchemaMapper extends EntityDefTreeWorker {
 
   }
 
+  async leaveEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext, visitResult: XContext): Promise<XContext> {
+    return sources;
+  }
+
   async visitObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: XContext): Promise<XContext> {
 
     if (sourceDef instanceof EntityDef) {
       const className = sourceDef.name + _.capitalize(propertyDef.name);
-      let storeClass = SchemaUtils.clazz(className);
-      propertyDef.joinRef = ClassRef.get(storeClass);
+
+      propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(className));
+      let storeClass = propertyDef.joinRef.getClass();
+
       let storingName = propertyDef.storingName;
       Entity(storingName)(storeClass);
       this.attachPrimaryKeys(sourceDef, propertyDef, storeClass);
       this.addType(storeClass);
-      return {clazz: storeClass};
+      return {next: storeClass};
     } else if (sourceDef instanceof ClassRef) {
       if (!propertyDef.isCollection()) {
         // first variant deep embedded class
-        return {clazz: sources.clazz, prefix: true};
+        return {next: sources.next, prefix: true};
         /*
         const baseClass = propertyDef.targetRef.getClass();
         return baseClass;
@@ -179,22 +203,31 @@ export class TypeOrmSchemaMapper extends EntityDefTreeWorker {
     throw new NotYetImplementedError('object reference for ' + sourceDef)
   }
 
+  async leaveObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
+    return sources;
+  }
 
-  async visitExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: XContext): Promise<XContext> {
+
+  async visitExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
 
     if (sourceDef instanceof EntityDef) {
       const className = sourceDef.name + _.capitalize(propertyDef.name);
-      let storeClass = SchemaUtils.clazz(className);
-      propertyDef.joinRef = ClassRef.get(storeClass);
+
+      propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(className));
+      let storeClass = propertyDef.joinRef.getClass();
+
       let storingName = propertyDef.storingName;
       Entity(storingName)(storeClass);
       this.attachPrimaryKeys(sourceDef, propertyDef, storeClass);
       this.addType(storeClass);
-      return {clazz: storeClass};
+      return {next: storeClass};
     }
     throw new NotYetImplementedError('external reference for ' + sourceDef);
   }
 
+  async leaveExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
+    return sources;
+  }
 
   /*
   private onPropertyReferencingProperty(entityDef: EntityDef, propertyDef: PropertyDef) {
@@ -275,7 +308,7 @@ export class TypeOrmSchemaMapper extends EntityDefTreeWorker {
       Column({name: targetName, type: 'int'})(refTargetClassDescr, targetId);
       uniqueIndex.push(targetId);
     }
-    Index(uniqueIndex, {unique: true})(refTargetClass)
+    Index(uniqueIndex)(refTargetClass)
 
   }
 
