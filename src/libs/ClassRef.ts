@@ -12,6 +12,8 @@ export class ClassRef {
 
   readonly className: string;
 
+  isEntity: boolean = false;
+
   constructor(klass: string | Function) {
     this.className = ClassRef.getClassName(klass);
     if (_.isString(klass)) {
@@ -86,7 +88,7 @@ export class ClassRef {
     return LookupRegistry.$().find(XS_TYPE_ENTITY, {name: this.className});
   }
 
-  new(){
+  new() {
     let klass = this.getClass();
     let instance = Reflect.construct(klass, []);
     return instance;

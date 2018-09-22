@@ -1,9 +1,9 @@
+import {PropertyDef} from '../../PropertyDef';
+import {XS_REL_SOURCE_PREFIX, XS_REL_TARGET_PREFIX} from '../../Constants';
+import * as _ from '../../LoDash'
+import {INameResolver} from "./../INameResolver";
 
-import {PropertyDef} from '../PropertyDef';
-import {XS_REL_SOURCE_PREFIX, XS_REL_TARGET_PREFIX} from '../Constants';
-import * as _ from '../LoDash'
-
-export class TypeOrmNameResolver {
+export class NameResolver implements INameResolver {
 
 
   forTarget(property: PropertyDef | string, prefix:string = null): [string, string] {

@@ -5,6 +5,8 @@ import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOpt
 import {EntityRegistry} from "../../src";
 import {EntityController} from "../../src/libs/EntityController";
 import {inspect} from "util";
+import {TestHelper} from "./TestHelper";
+import * as _ from "lodash";
 
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
@@ -28,19 +30,21 @@ class Scenario_03_featuresSpec {
 
   @test
   async 'entity lifecycle for scenario'() {
+
+
+
     const PathFeatureCollection = require('./schemas/features/PathFeatureCollection').PathFeatureCollection;
     const PathFeature = require('./schemas/features/PathFeature').PathFeature;
     const PointFeature = require('./schemas/features/PointFeature').PointFeature;
     const Speed = require('./schemas/features/Speed').Speed;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
 
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
+
 
 
     let a = new PathFeatureCollection();
@@ -79,16 +83,12 @@ class Scenario_03_featuresSpec {
     const Room = require('./schemas/integrated_property/Room').Room;
     const Equipment = require('./schemas/integrated_property/Equipment').Equipment;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema('integrated_property');
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'integrated_property';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
-    // let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
-    // console.log(tables);
 
     let r = new Room();
     r.equipment = [];

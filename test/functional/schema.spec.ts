@@ -3,8 +3,11 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {IStorageOptions, SqliteSchemaHandler, StorageRef} from 'typexs-base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import { EntityRegistry} from "../../src";
+import {EntityRegistry} from "../../src";
 import {EntityController} from "../../src/libs/EntityController";
+import {TestHelper} from "./TestHelper";
+import {PlatformTools} from 'typeorm/platform/PlatformTools';
+
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   name: 'default',
@@ -22,20 +25,22 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 class SchemaSpec {
 
 
+  before() {
+    PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
+  }
+
   @test
   async 'simple schema with one entity'() {
 
     require('./schemas/default/Author');
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
-    await xsem.initialize();
-
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'default';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
+
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
     let tableNames = tables.map(x => x.name);
     expect(tableNames).to.contain('author');
@@ -51,12 +56,13 @@ class SchemaSpec {
 
     require('./schemas/default/AuthorRename');
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
-    await xsem.initialize();
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'default';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
+
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
 
     let tableNames = tables.map(x => x.name);
@@ -76,17 +82,13 @@ class SchemaSpec {
     require('./schemas/default/Author');
     require('./schemas/default/Book');
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-
-    ref.setSchemaHandler(new SqliteSchemaHandler(ref));
-
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name,schemaDef, ref);
-    await xsem.initialize();
-
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'default';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
+
     let tableNames = await ref.getSchemaHandler().getCollectionNames();
     expect(tableNames).to.have.length.greaterThan(1);
     expect(tableNames).to.contain('p_author_author');
@@ -111,13 +113,11 @@ class SchemaSpec {
     const Book = require('./schemas/default/Book').Book;
     const Summary = require('./schemas/default/Summary').Summary;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'default';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
 
     //let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
@@ -144,20 +144,42 @@ class SchemaSpec {
 
     const PathFeatureCollection = require('./schemas/features/PathFeatureCollection').PathFeatureCollection;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'default';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
 
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
+    expect(_.map(tables, t => t.name)).to.have.include.members(['path_feature_collection', 'p_features_path_feature']);
     console.log(tables);
 
     await c.close();
 
   }
+
+  @test
+  async 'complex entity with multiple object integrations E-P[]-P[]'() {
+
+    const Person  = require('./schemas/complex_entity/Person').Person;
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'complex_entity';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+    let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
+
+    console.log(tables);
+    expect(_.map(tables, t => t.name)).to.have.include.members(['person', 'p_jobs_job','i_language']);
+
+    await c.close();
+
+  }
+
+
 }
 

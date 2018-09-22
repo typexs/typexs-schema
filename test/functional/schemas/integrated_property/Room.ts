@@ -8,4 +8,7 @@ export class Room {
   @Property({type: 'number', auto: true})
   id: number;
 
+  @Property({type: 'number'})
+  number: number;
+
 }

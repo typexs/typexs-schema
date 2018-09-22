@@ -8,22 +8,22 @@ export class PathFeature {
   @Property({type: 'number'})
   id: number;
 
-  @Property({type: 'number',nullable:true})
+  @Property({type: 'number', nullable: true})
   unixtime: number;
 
-  @Property({type: 'string',nullable:true})
+  @Property({type: 'string', nullable: true})
   datetime: string;
 
   @Property({type: 'number'})
   offset: number;
 
-  @Property({targetClass: Speed,nullable:true})
+  @Property({targetClass: Speed, nullable: true})
   speed: Speed;
 
-  @Property({type: 'number',nullable:true})
+  @Property({type: 'number', nullable: true})
   altitude: number;
 
-  @Property({type: 'string',nullable:true})
+  @Property({type: 'string', nullable: true})
   track: string;
 
   @Property({targetClass: PointFeature})

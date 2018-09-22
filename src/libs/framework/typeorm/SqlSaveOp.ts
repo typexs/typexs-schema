@@ -1,29 +1,14 @@
-import {EntityDef} from '../EntityDef';
-
-import {ConnectionWrapper} from 'typexs-base';
-import {SchemaUtils} from '../SchemaUtils';
-import {PropertyDef} from '../PropertyDef';
-import {EntityController} from '../EntityController';
-import {EntityDefTreeWorker, IDataExchange} from './EntityDefTreeWorker';
-import {NotYetImplementedError, NotSupportedError} from 'typexs-base';
-import {XS_P_PROPERTY, XS_P_SEQ_NR, XS_P_TYPE} from '../Constants';
-import * as _ from '../LoDash';
-import {ClassRef} from "../ClassRef";
-
-
-export interface IRelation {
-
-}
-
-export class EntityRefenceRelation implements IRelation {
-
-  sourceRef: EntityDef;
-
-  propertyRef: PropertyDef;
-
-  source: any;
-
-}
+import {ConnectionWrapper, NotYetImplementedError} from 'typexs-base';
+import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
+import {ISaveOp} from "../ISaveOp";
+import {EntityController} from "../../EntityController";
+import {PropertyDef} from "../../PropertyDef";
+import {EntityDef} from "../../EntityDef";
+import {ClassRef} from "../../ClassRef";
+import {SchemaUtils} from "../../SchemaUtils";
+import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from "../../Constants";
+import * as _ from "lodash";
+import {IDataExchange} from "../IDataExchange";
 
 
 interface ISaveData extends IDataExchange<any[]> {
@@ -32,26 +17,14 @@ interface ISaveData extends IDataExchange<any[]> {
   target?: any[];
 }
 
-export class PropertyRefenceRelation implements IRelation {
 
-  sourceRef: EntityDef;
-
-  propertyRef: PropertyDef;
-
-  source: any;
-
-}
-
-
-export class SaveOp<T> extends EntityDefTreeWorker {
+export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
   readonly em: EntityController;
 
   private objects: T[] = [];
 
   private c: ConnectionWrapper;
-
-  private relations: { [className: string]: IRelation[] } = {};
 
 
   constructor(em: EntityController) {
@@ -98,15 +71,15 @@ export class SaveOp<T> extends EntityDefTreeWorker {
         //let localMap = map[x];
         let seqNr = 0;
         let targets = propertyDef.get(source);
-        if(targets){
+        if (targets) {
           if (!_.isArray(targets)) {
             targets = [targets];
           }
-        }else{
+        } else {
           targets = [];
-          if(propertyDef.isCollection()){
+          if (propertyDef.isCollection()) {
             source[propertyDef.name] = [];
-          }else{
+          } else {
             source[propertyDef.name] = null;
           }
         }
@@ -129,7 +102,7 @@ export class SaveOp<T> extends EntityDefTreeWorker {
     } else {
       joinObjs = sources.join;
     }
-    return {next: targetObjects, join: joinObjs, target: sources.next, abort:targetObjects.length === 0};
+    return {next: targetObjects, join: joinObjs, target: sources.next, abort: targetObjects.length === 0};
   }
 
   async leaveEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources?: ISaveData, visitResult?: ISaveData): Promise<ISaveData> {
@@ -158,14 +131,14 @@ export class SaveOp<T> extends EntityDefTreeWorker {
           throw new NotYetImplementedError();
         }
 
-      //  let [seqNrId, ] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
+        //  let [seqNrId, ] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
         let refIdProps = entityDef.getPropertyDefIdentifier();
 
         for (let x = 0; x < visitResult.join.length; x++) {
           let joinObj = visitResult.join[x];
           let target = propertyDef.get(joinObj);
           refIdProps.forEach(prop => {
-            let [propId, ] = this.em.nameResolver().for(propertyDef.machineName, prop);
+            let [propId,] = this.em.nameResolver().for(propertyDef.machineName, prop);
             joinObj[propId] = prop.get(target)
           })
         }
@@ -174,70 +147,159 @@ export class SaveOp<T> extends EntityDefTreeWorker {
     return sources;
   }
 
+
   async visitExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
-    throw new NotYetImplementedError();
+    return this._visitReference(sourceDef, propertyDef, classRef, sources);
   }
+
 
   async leaveExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: ISaveData): Promise<any> {
-    return sources;
+    return this._leaveReference(sourceDef, propertyDef, classRef, sources);
   }
+
 
   async visitObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
+    return this._visitReference(sourceDef, propertyDef, classRef, sources);
+  }
 
-    let sourceEntityDef: EntityDef;
+
+  async leaveObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
+    return this._leaveReference(sourceDef, propertyDef, classRef, sources);
+  }
+
+
+  async _visitReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
     if (sourceDef instanceof EntityDef) {
-      sourceEntityDef = sourceDef;
-    } else {
-      throw new NotYetImplementedError()
-    }
+      let [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
 
-    let [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
-    let sourceIdProps = sourceEntityDef.getPropertyDefIdentifier();
-    let embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
+      let sourceIdProps = sourceDef.getPropertyDefIdentifier();
+      let embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
+      let metadata = this.c.manager.connection.getMetadata(propertyDef.joinRef.getClass());
+      let notNullProps = metadata.ownColumns
+        .filter(x => !x.isNullable && !x.propertyName.startsWith('source') && !x.propertyName.startsWith('property') && !x.propertyName.startsWith('target') && x.propertyName !== 'id')
+        .map(x => x.propertyName);
 
-    let joinObjs: any[] = [];
-    for (let source of sources.next) {
-      let seqNr = 0;
-      for (let target of targetObjects) {
-        let joinObj = propertyDef.joinRef.new();
-        joinObjs.push(joinObj);
-        let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
-        joinObj[id] = sourceEntityDef.machineName;
+      embedProps.forEach(prop => {
+        _.remove(notNullProps, x => x == prop.name);
+      });
 
-        sourceIdProps.forEach(prop => {
-          [id, name] = this.em.nameResolver().forSource(prop);
-          joinObj[id] = prop.get(source);
-        });
+      let joinObjs: any[] = [];
+      for (let source of sources.next) {
+        let seqNr = 0;
 
-        [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
-        joinObj[id] = seqNr++;
+        for (let target of targetObjects) {
+          let nullable = _.clone(notNullProps);
+          let joinObj = propertyDef.joinRef.new();
+          joinObjs.push(joinObj);
+          let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
+          joinObj[id] = sourceDef.machineName;
 
-        embedProps.forEach(prop => {
-          joinObj[prop.name] = prop.get(target);
-        });
+          sourceIdProps.forEach(prop => {
+            [id, name] = this.em.nameResolver().forSource(prop);
+            joinObj[id] = prop.get(source);
+          });
+
+          [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
+          joinObj[id] = seqNr++;
+
+
+          embedProps.forEach(prop => {
+            _.remove(nullable, x => x == prop.name);
+            joinObj[prop.name] = prop.get(target);
+          });
+
+          notNullProps.forEach(notNullProp => {
+            joinObj[notNullProp] = '0';
+          });
+        }
       }
+
+      joinObjs = await this.c.manager.save(propertyDef.joinRef.getClass(), joinObjs);
+
+      let targets: ISaveData = {
+        next: targetObjects,
+        join: joinObjs,
+        map: map,
+        abort: targetObjects.length === 0
+      };
+
+      return targets;
+
+    } else if (sourceDef instanceof ClassRef) {
+
+      let [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
+      let embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
+      let metadata = this.c.manager.connection.getMetadata(propertyDef.joinRef.getClass());
+      let notNullProps = metadata.ownColumns
+        .filter(x => !x.isNullable && !x.propertyName.startsWith('source') && !x.propertyName.startsWith('property') && !x.propertyName.startsWith('target') && x.propertyName !== 'id')
+        .map(x => x.propertyName);
+
+      embedProps.forEach(prop => {
+        _.remove(notNullProps, x => x == prop.name);
+      });
+
+
+      let joinObjs: any[] = [];
+
+
+      for (let join of sources.join) {
+        let seqNr = 0;
+        let targets = propertyDef.get(join);
+
+        for (let target of targets) {
+          let joinObj = propertyDef.joinRef.new();
+          joinObj['__property__'] = join;
+          joinObjs.push(joinObj);
+
+          let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
+          joinObj[id] = sourceDef.machineName();
+
+          [id, name] = this.em.nameResolver().forSource(XS_P_PROPERTY);
+          joinObj[id] = propertyDef.machineName;
+
+          [id, name] = this.em.nameResolver().forSource(XS_P_PROPERTY_ID);
+          joinObj[id] = join.id;
+
+          [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
+          joinObj[id] = seqNr++;
+
+
+          embedProps.forEach(prop => {
+            joinObj[prop.name] = prop.get(target);
+          });
+
+          // for initial save we must fill nullables
+          notNullProps.forEach(notNullProp => {
+            joinObj[notNullProp] = '0';
+          });
+        }
+      }
+
+      joinObjs = await this.c.manager.save(propertyDef.joinRef.getClass(), joinObjs);
+
+      let targets: ISaveData = {
+        next: targetObjects,
+        join: joinObjs,
+        map: map,
+        abort: targetObjects.length === 0
+      };
+      return targets;
+
     }
-
-    let targets: ISaveData = {
-      next: targetObjects,
-      join: joinObjs,
-      map: map,
-      abort:targetObjects.length === 0
-    };
-
-    return targets;
+    throw new NotYetImplementedError()
 
   }
 
-  async leaveObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
+  async _leaveReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
     if (propertyDef.joinRef && sources.join.length > 0) {
-      let sdf = this.c.manager.connection.getMetadata(propertyDef.joinRef.getClass());
-      console.log(sdf);
+      // TODO fetch existent data and find records for removally
+      // Save join again because new data could be attached!
       let saved: any[] = await this.c.manager.save(propertyDef.joinRef.getClass(), sources.join);
       return {next: saved};
     }
     return sources;
   }
+
 
   private async saveByEntityDef<T>(entityName: string | EntityDef, objects: T[]): Promise<T[]> {
     let entityDef = SchemaUtils.resolve(this.em.schemaDef, entityName);
@@ -258,7 +320,7 @@ export class SaveOp<T> extends EntityDefTreeWorker {
 
   async run(object: T | T[]): Promise<T | T[]> {
     let isArray = _.isArray(object);
-    this.relations = {};
+
     this.objects = this.prepare(object);
 
     let resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
@@ -272,10 +334,7 @@ export class SaveOp<T> extends EntityDefTreeWorker {
         let p = this.saveByEntityDef(entityName, resolveByEntityDef[entityName]);
         promises.push(p);
       }
-      return Promise.all(promises)
-        .then(x => {
-          //return this.processRelations();
-        });
+      return Promise.all(promises);
     });
 
 
@@ -283,8 +342,6 @@ export class SaveOp<T> extends EntityDefTreeWorker {
       return this.objects.shift();
     }
     return this.objects;
-
-    return null;
   }
 
 

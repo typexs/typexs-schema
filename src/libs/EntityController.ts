@@ -1,10 +1,10 @@
 import {StorageRef} from 'typexs-base/libs/storage/StorageRef';
 import {SchemaDef} from './SchemaDef';
 import {EntityDef} from './EntityDef';
-import {TypeOrmSchemaMapper} from './framework/TypeOrmSchemaMapper';
-import {SaveOp} from './ops/SaveOp';
-import {FindOp} from './ops/FindOp';
-import {TypeOrmNameResolver} from './framework/TypeOrmNameResolver';
+import {ISchemaMapper} from "./framework/ISchemaMapper";
+import {INameResolver} from "./framework/INameResolver";
+import {IFramework} from "./framework/IFramework";
+import {NotSupportedError} from "typexs-base";
 
 
 export class EntityController {
@@ -14,19 +14,27 @@ export class EntityController {
 
   readonly schemaDef: SchemaDef;
 
-  readonly mapper: TypeOrmSchemaMapper;
+   readonly mapper: ISchemaMapper;
 
   readonly name: string;
 
-  constructor(name: string, schema: SchemaDef = null, storageRef: StorageRef = null) {
+  readonly framework: IFramework;
+
+  constructor(name: string, schema: SchemaDef = null, storageRef: StorageRef = null, framework: IFramework = null) {
     this.name = name;
     this.storageRef = storageRef;
     this.schemaDef = schema;
-    this.mapper = new TypeOrmSchemaMapper(this.storageRef, this.schemaDef);
+    if(framework){
+      this.framework = framework;
+      this.mapper = framework.getSchemaMapper(this.storageRef,this.schemaDef);
+    }
   }
 
-  nameResolver(): TypeOrmNameResolver {
-    return this.mapper.nameResolver;
+  nameResolver(): INameResolver {
+    if(this.mapper){
+      return this.mapper.nameResolver;
+    }
+    throw new NotSupportedError('no framework support')
   }
 
   schema(): SchemaDef {
@@ -34,18 +42,23 @@ export class EntityController {
   }
 
   async initialize() {
+    if(!this.mapper){
+      throw new NotSupportedError('no framework support')
+    }
     await this.mapper.initialize();
   }
 
   async save<T>(object: T): Promise<T>;
   async save<T>(object: T[]): Promise<T[]>;
   async save<T>(object: T | T[]): Promise<T | T[]> {
-    return new SaveOp<T>(this).run(object);
+    if(!this.framework) throw new NotSupportedError('no framework support');
+    return this.framework.getSaveOp<T>(this).run(object);
   }
 
 
   async find<T>(fn: Function | string, conditions: any = null, limit: number = 100): Promise<T[]> {
-    return new FindOp<T>(this).run(fn, conditions, limit);
+    if(!this.framework) throw new NotSupportedError('no framework support');
+    return this.framework.getFindOp<T>(this).run(fn, conditions, limit);
   }
 
 
@@ -62,14 +75,6 @@ export class EntityController {
     return resolved;
   }
 
-}
-
-export class Bindings {
-  variant: string;
-  source: any;
-  propertyName: string;
-  index: number = -1;
-  target: any;
 }
 
 

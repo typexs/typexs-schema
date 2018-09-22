@@ -4,8 +4,10 @@ import {IStorageOptions, StorageRef} from 'typexs-base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {EntityRegistry} from "../../src";
 import {EntityController} from "../../src/libs/EntityController";
-import {getMetadataArgsStorage } from 'typeorm';
-import {PlatformTools } from 'typeorm/platform/PlatformTools';
+import {getMetadataArgsStorage} from 'typeorm';
+import {PlatformTools} from 'typeorm/platform/PlatformTools';
+import * as _ from "lodash";
+import {TestHelper} from "./TestHelper";
 
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
@@ -13,8 +15,8 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   type: 'sqlite',
   database: ':memory:',
   synchronize: true,
-  //logger: 'simple-console',
-  //logging: 'all'
+  logger: 'simple-console',
+  logging: 'all'
   // tablesPrefix: ""
 
 };
@@ -24,46 +26,45 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 class Scenario_02_indirect_integrationSpec {
 
 
-
-  before(){
+  before() {
     PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
   }
-
 
 
   @test
   async 'entity lifecycle for integrated property'() {
 
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+//    (<any>options).name = 'direct_property';
+
+
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
     const Summary = require('./schemas/default/Summary').Summary;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
+
 
 
     let a = new Author();
     a.firstName = 'Robert';
     a.lastName = 'Kania';
 
-    let book = new Book();
-    book.content = 'This is a good book';
-    book.author = a;
+    let book_save_1 = new Book();
+    book_save_1.content = 'This is a good book';
+    book_save_1.author = a;
 
     let summary = new Summary();
     summary.size = 1000;
     summary.content = 'This is a good summary';
-    book.summary = summary;
+    book_save_1.summary = summary;
 
-    book = await xsem.save(book);
+    book_save_1 = await xsem.save(book_save_1);
 
-    // console.log(book)
+    console.log(book_save_1)
 
     // let data2 = await c.connection.query('SELECT name FROM sqlite_master WHERE type=\'table\';');
     // expect(data2).to.have.length(5);
@@ -88,11 +89,12 @@ class Scenario_02_indirect_integrationSpec {
     expect(data[0].source_seq_nr).to.eq(0);
 
 
-    let book2 = await xsem.find(Book, {id: 1});
-    expect(book2).to.have.length(1);
-    let _book2 = book2.shift();
-    expect((_book2 as any).summary.size).to.be.eq(summary.size);
-    expect(book).to.deep.eq(_book2);
+    let books_found = await xsem.find(Book, {id: 1});
+    expect(books_found).to.have.length(1);
+    let book_find_1 = books_found.shift();
+    console.log(book_find_1);
+    expect((book_find_1 as any).summary.size).to.be.eq(summary.size);
+    expect(book_save_1).to.deep.eq(book_find_1);
 
     await c.close();
 
@@ -102,43 +104,44 @@ class Scenario_02_indirect_integrationSpec {
   @test
   async 'entity lifecycle for integrated property with multiple references'() {
 
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'integrated_property';
+
+
     const Room = require('./schemas/integrated_property/Room').Room;
     const Equipment = require('./schemas/integrated_property/Equipment').Equipment;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema('integrated_property');
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
-    // let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
-    // console.log(tables);
 
-    let r = new Room();
-    r.equipment = [];
+    let room_save_1 = new Room();
+    room_save_1.number = 123;
+    room_save_1.equipment = [];
 
     let s = new Equipment();
     s.label = 'Seats';
     s.amount = 100;
-    r.equipment.push(s);
+    room_save_1.equipment.push(s);
 
     s = new Equipment();
     s.label = 'Beamer';
     s.amount = 2;
-    r.equipment.push(s);
+    room_save_1.equipment.push(s);
 
-    r = await xsem.save(r);
-
+    room_save_1 = await xsem.save(room_save_1);
+    console.log(room_save_1);
     let data = await c.connection.query('select * from p_equipment');
     expect(data).to.have.length(2);
 
-    let roomsIn = await xsem.find(Room, {id: 1});
-    expect(roomsIn).to.have.length(1);
+    let room_found = await xsem.find(Room, {id: 1});
+    expect(room_found).to.have.length(1);
 
-    let roomIn = roomsIn.shift();
-    expect(roomIn).to.deep.eq(r);
+    let room_find_1 = room_found.shift();
+    console.log(room_find_1);
+    expect(room_find_1).to.deep.eq(room_save_1);
 
     await c.close();
 

@@ -18,5 +18,6 @@ export const XS_P_TYPE = 'type';
 export const XS_P_REV_ID = 'revId';
 export const XS_P_SEQ_NR = 'seqNr';
 export const XS_P_PROPERTY = 'property';
+export const XS_P_PROPERTY_ID = 'propertyId';
 
 

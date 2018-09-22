@@ -3,11 +3,12 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {IStorageOptions, SqliteSchemaHandler, StorageRef} from "typexs-base";
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {getMetadataArgsStorage } from 'typeorm';
-import {PlatformTools } from 'typeorm/platform/PlatformTools';
+import {getMetadataArgsStorage} from 'typeorm';
+import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import {inspect} from 'util';
-import {EntityRegistry} from "../../src";
+import {EntityRegistry, FrameworkFactory} from "../../src";
 import {EntityController} from "../../src/libs/EntityController";
+import {TestHelper} from "./TestHelper";
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   name: 'default',
@@ -24,8 +25,12 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 @suite('functional/scenario_01_direct_referencing')
 class Scenario_01_direct_referencingSpec {
 
-  before(){
+  before() {
     PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
+  }
+
+  async connect(options: any): Promise<{ ref: StorageRef, controller: EntityController }> {
+    return TestHelper.connect(options);
   }
 
   @test
@@ -36,13 +41,9 @@ class Scenario_01_direct_referencingSpec {
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
 
-    let ref = new StorageRef(options);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(options.name);
-
-    let xsem = new EntityController(options.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let connect = await this.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
 
     let a = new Author();
@@ -85,17 +86,14 @@ class Scenario_01_direct_referencingSpec {
 
   @test
   async 'entity lifecycle for entity referencing property E-P-E[]'() {
+    let options = _.clone(TEST_STORAGE_OPTIONS);
 
     const Author = require('./schemas/default/Author').Author;
     const Book2 = require('./schemas/default/Book2').Book2;
 
-    let ref = new StorageRef(TEST_STORAGE_OPTIONS);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(TEST_STORAGE_OPTIONS.name);
-
-    let xsem = new EntityController(TEST_STORAGE_OPTIONS.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let connect = await this.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
 
     let a = new Author();
@@ -214,13 +212,9 @@ class Scenario_01_direct_referencingSpec {
     const Skil = require('./schemas/direct_property/Skil').Skil;
     const Driver = require('./schemas/direct_property/Driver').Driver;
 
-    let ref = new StorageRef(options);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(options.name);
-
-    let xsem = new EntityController(options.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let connect = await this.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
 
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
@@ -261,16 +255,9 @@ class Scenario_01_direct_referencingSpec {
     const Driver = require('./schemas/direct_property/Driver').Driver;
 
 
-    let ref = new StorageRef(options);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(options.name);
-
-    let xsem = new EntityController(options.name, schemaDef, ref);
-    await xsem.initialize();
-
-    //console.log(ref.getOptions(),getMetadataArgsStorage());
-
-
+    let connect = await this.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
 
 
@@ -314,13 +301,9 @@ class Scenario_01_direct_referencingSpec {
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
 
-    let ref = new StorageRef(options);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(options.name);
-
-    let xsem = new EntityController(options.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let connect = await this.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
 
     let a = new Author();
@@ -361,13 +344,9 @@ class Scenario_01_direct_referencingSpec {
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
 
-    let ref = new StorageRef(options);
-    await ref.prepare();
-    let schemaDef = EntityRegistry.getSchema(options.name);
-
-    let xsem = new EntityController(options.name, schemaDef, ref);
-    await xsem.initialize();
-
+    let connect = await this.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
     let c = await ref.connect();
 
     let a = new Author();

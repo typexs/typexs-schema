@@ -23,6 +23,7 @@ export class EntityDef extends AbstractDef {
 
   constructor(fn: Function, options: IEntity = {}) {
     super('entity', fn.name, fn);
+    this.object.isEntity = true;
     options = _.defaults(options, DEFAULT_OPTIONS);
     this.setOptions(options);
   }

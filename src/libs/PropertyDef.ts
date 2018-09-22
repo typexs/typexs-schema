@@ -172,16 +172,26 @@ export class PropertyDef extends AbstractDef {
   get storingName() {
     let name = this.getOptions('name');
     if (!name) {
+      const prefix = this.object.isEntity ? 'p' : 'i';// + _.snakeCase(this.object.className);
+
       if (this.isReference()) {
         if (this.isEntityReference()) {
-          name = ['p', _.snakeCase(this.name), this.targetRef.getEntity().storingName].join('_');
+          if (this.object.isEntity) {
+            name = [prefix, _.snakeCase(this.name), this.targetRef.getEntity().storingName].join('_');
+          } else {
+            name = [prefix, this.targetRef.getEntity().storingName].join('_');
+          }
         } else {
-          name = ['p', _.snakeCase(this.name), this.targetRef.machineName()].join('_');
+          if (this.object.isEntity) {
+            name = [prefix, _.snakeCase(this.name), this.targetRef.machineName()].join('_');
+          } else {
+            name = [prefix, this.targetRef.machineName()].join('_');
+          }
         }
       } else if (this.propertyRef) {
-        name = ['p', _.snakeCase(this.name)].join('_');
+        name = [prefix, _.snakeCase(this.name)].join('_');
       } else {
-        name = [_.snakeCase(this.name)].join('_');
+        name = _.snakeCase(this.name);
       }
     }
     return name;

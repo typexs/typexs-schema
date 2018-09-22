@@ -1,12 +1,12 @@
 // TODO prevent circulations
-import {NotYetImplementedError} from 'typexs-base';
 import {EntityDef} from '../EntityDef';
 import {PropertyDef} from '../PropertyDef';
 import {ClassRef} from "../ClassRef";
 import {EntityRegistry} from "../EntityRegistry";
-import _ = require("lodash");
+import * as _ from "lodash";
+import {IDataExchange} from "./IDataExchange";
 
-export interface IQEntry {
+interface IQEntry {
   def: EntityDef | PropertyDef | ClassRef,
   refer?: PropertyDef
   sources?: IDataExchange<any>,
@@ -14,22 +14,9 @@ export interface IQEntry {
 }
 
 
-export interface IDataExchange<T> {
-  next: T,
-  abort?: boolean
-}
-
 export abstract class EntityDefTreeWorker {
 
-  context: any;
-
-  sourceDef: EntityDef | PropertyDef;
-
-  propertyDef: PropertyDef;
-
   queue: IQEntry[] = [];
-
-  sourceObjects: any[];
 
   cache: any[] = [];
 
@@ -50,7 +37,6 @@ export abstract class EntityDefTreeWorker {
     if (!this.isDone(o)) {
       this.cache.push(o);
     }
-
   }
 
   abstract visitEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
@@ -109,15 +95,12 @@ export abstract class EntityDefTreeWorker {
       result = visitResult;
     }
     await this.leaveEntityReference(previous.def, property, entityDef, result, visitResult);
-
-    // return def.result;
   }
 
 
   abstract visitObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
 
   abstract leaveObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
-
 
   private async onObjectReference(property: PropertyDef, previous: IQEntry): Promise<void> {
     let classDef = property.targetRef;
