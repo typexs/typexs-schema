@@ -14,8 +14,8 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
   type: 'sqlite',
   database: ':memory:',
   synchronize: true,
-  //logger: 'simple-console',
-  //logging: 'all'
+  logger: 'simple-console',
+  logging: 'all'
   // tablesPrefix: ""
 
 };
@@ -24,6 +24,10 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 @suite('functional/scenario_03_features')
 class Scenario_03_featuresSpec {
 
+
+  before() {
+    TestHelper.resetTypeorm();
+  }
 
 
 
@@ -65,7 +69,7 @@ class Scenario_03_featuresSpec {
     a.features[0].geometry.longitude = 13.15;
 
     a = await xsem.save(a);
-    console.log(a);
+    console.log(inspect(a,false,10));
 
     let b = await xsem.find(PathFeatureCollection,{id:1});
     console.log(inspect(b,false,10));
@@ -91,6 +95,7 @@ class Scenario_03_featuresSpec {
     let c = await ref.connect();
 
     let r = new Room();
+    r.number = 123;
     r.equipment = [];
 
     let s = new Equipment();

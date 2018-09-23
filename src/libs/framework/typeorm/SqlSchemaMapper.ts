@@ -19,7 +19,7 @@ interface DBType {
 }
 
 export interface XContext extends IDataExchange<Function> {
-  prefix?: boolean;
+  prefix?: string;
 }
 
 
@@ -82,13 +82,14 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     let propClass = {constructor: entityClass};
 
     // TODO prefix support?
-    const hasPrefix = _.has(results, 'prefix') && results.prefix;
+    const hasPrefix = _.has(results, 'prefix');
     let propName = propertyDef.name;
     let propStoreName = propertyDef.storingName;
     if (hasPrefix) {
-      const prefixClass = (<ClassRef>sourceDef);
-      propName = [prefixClass.machineName(), propertyDef.name].join('__');
-      propStoreName = [prefixClass.machineName(), propertyDef.storingName].join('__');
+      [propName, propStoreName] = this.nameResolver.for(results.prefix, propertyDef);
+
+      //propName = [prefixClass.machineName(), propertyDef.name].join('__');
+      //propStoreName = [prefixClass.machineName(), propertyDef.storingName].join('__');
     }
 
     if (propertyDef.identifier) {
@@ -166,19 +167,19 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
   async visitObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: XContext): Promise<XContext> {
-    return this._visitReference(sourceDef,propertyDef,classRef,sources);
+    return this._visitReference(sourceDef, propertyDef, classRef, sources);
   }
 
   async leaveObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
-    return this._leaveReference(sourceDef,propertyDef,classRef,sources);
+    return this._leaveReference(sourceDef, propertyDef, classRef, sources);
   }
 
   async visitExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
-    return this._visitReference(sourceDef,propertyDef,classRef,sources);
+    return this._visitReference(sourceDef, propertyDef, classRef, sources);
   }
 
   async leaveExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
-    return this._leaveReference(sourceDef,propertyDef,classRef,sources);
+    return this._leaveReference(sourceDef, propertyDef, classRef, sources);
   }
 
   async _visitReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
@@ -197,7 +198,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       if (!propertyDef.isCollection()) {
         // TODO if marked as 'indirect' then change to collection mode
         // first variant deep embedded class
-        return {next: sources.next, prefix: true};
+        return {next: sources.next, prefix: propertyDef.name};
       } else {
         const className = _.capitalize(propertyDef.name) + classRef.className;
         propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(className));

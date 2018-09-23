@@ -341,6 +341,15 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         }
         return {next: _results, target: sources.next, lookup: lookups, abort: _results.length === 0}
 
+      } else {
+        return sources;
+        /*
+        if (sources.next) {
+          for (let next of sources.next) {
+
+          }
+        }
+        */
       }
 
     }
@@ -385,13 +394,14 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         }
         return;
       }
-    }else if(sourceDef instanceof ClassRef){
+    } else if (sourceDef instanceof ClassRef) {
+      let classProp = this.em.schema().getPropertiesFor(classRef.getClass());
+
       if (propertyDef.joinRef) {
         if (_.isEmpty(sources.target)) {
           return;
         }
         let [sourceSeqNrId, sourceSeqNrName] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
-        let classProp = this.em.schema().getPropertiesFor(classRef.getClass());
 
         for (let x = 0; x < sources.lookup.length; x++) {
           let lookup = sources.lookup[x];
@@ -416,6 +426,28 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
           }
 
+
+        }
+        return;
+      }else{
+        const direct = true;
+        for(let next of sources.next){
+          if(!propertyDef.isCollection()){
+            if(direct){
+              let entry = classRef.new();
+              classProp.forEach(prop => {
+                let [id, name] = this.em.nameResolver().for(propertyDef.machineName, prop);
+                entry[prop.name] = next[id];
+              })
+              next[propertyDef.name] = entry;
+
+            }else{
+              throw new NotYetImplementedError();
+            }
+
+          }else{
+            throw new NotYetImplementedError();
+          }
 
         }
         return;
