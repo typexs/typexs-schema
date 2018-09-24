@@ -1,0 +1,20 @@
+
+*Properties*
+
+* type - Datatype of the property
+* targetClass - Class of the property objects
+* auto - Auto-generated primary key
+* id - Primary key
+* direct - skip join table generation, keep join id/pks in the table
+* name - change property name for the storage (complex pks are prefixes)
+* depth - on entity property than level
+* idKey - member of object to be used as referencing key, use when direct = true
+* readonly - use property only for FindOp and not for SaveOp or DeleteOp.
+
+
+When property refers to an entity then abort condition must at some level
+break the fetching (circular references or very very interleaved).
+
+* by level depth
+* by source entity
+

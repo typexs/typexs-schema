@@ -1,0 +1,201 @@
+
+=== One-to-One between entities
+
+
+[plantuml, images/rdbs_o2o_entities_01, png]
+....
+
+object author {
+  id: integer
+  first_name: text
+  last_name: text
+}
+
+object book {
+  id: integer
+  content: text
+  author_id: integer
+}
+
+book::author_id -right-> author::id
+....
+
+
+[cols="a,a"]
+|===
+|
+```js
+@Entity()
+class Author {
+  @Property({type:'number', id:true})
+  id: number;
+
+  @Property({type:'string'})
+  firstName: string;
+
+  @Property({type:'string'})
+  lastName: string;
+}
+
+@Entity()
+class Book {
+  @Property({type:'number', id:true})
+  id: number;
+
+  @Property({type:'string'})
+  content: string;
+
+  // reuseable allows other
+  @Property({targetClass: Author})
+  author: Author;
+}
+```
+|
+```js
+@Entity('author')
+class Author {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  firstName: string;
+
+  @Column('text')
+  lastName: string;
+}
+
+@Entity('book')
+class Book {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  content: string;
+
+  @JoinColumn(Author)
+  author: Author;
+}
+```
+
+|===
+
+
+[plantuml, images/rdbs_o2o_entities_02, png]
+....
+
+object author {
+  id: integer
+  first_name: text
+  last_name: text
+}
+
+
+object p_author_author {
+  id: integer
+  source_type: string
+  source_id: number
+  source_seq_nr: number
+  target_id: integer
+}
+
+
+object book {
+  id: integer
+  content: text
+}
+
+book::id -right-> p_author_author::sourceId
+p_author_author::targetId -right-> author::id
+....
+
+
+
+[cols="a,a"]
+|===
+|
+```js
+@Entity()
+class Author {
+  @Property({type:'number', auto:true})
+  id: number;
+
+  @Property({type:'string'})
+  firstName: string;
+
+  @Property({type:'string'})
+  lastName: string;
+}
+
+@Entity()
+class Book {
+  @Property({type:'number', auto:true})
+  id: number;
+
+  @Property({type:'string'})
+  content: string;
+
+  // reuseable allows other
+  @Property({targetClass: Author})
+  author: Author;
+}
+```
+|
+```js
+
+@Entity('author')
+class Author {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  firstName: string;
+
+  @Column('text')
+  lastName: string;
+}
+
+/**
+ * name = r_{property.name}_{targetClass.name} as snakeCase
+ */
+@Entity('p_author_author')
+class Author {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  sourceType: string;
+
+  @Column('int')
+  sourceId: number;
+
+  @Column('int')
+  sourceSeqNr: number;
+
+  @Column('int')
+  targetId: number;
+}
+
+
+@Entity('book')
+class Book {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column('text')
+  content: string;
+
+  @JoinColumn(Author)
+  author: Author;
+}
+```
+
+|===
+
+
+[NOTE]
+====
+
+* add revision support
+
+====
+

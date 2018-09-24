@@ -1,0 +1,176 @@
+
+
+k_abstgv => k_abschl
+
+
+veranstaltung => k_abstgv
+=> org
+=> category
+
+=> blobs
+
+
+=== Examples
+
+[plantuml, images/rdbs_example_lsf_01, png]
+....
+
+object veranstaltung {
+  veranstid: integer
+
+}
+
+object customatts {
+  ownertab: string
+  ownerid: integer
+}
+
+veranstaltung -right-> customatts : ownertab = 'veranstaltung'\nAND ownerid = veranstid
+
+....
+
+[plantuml, images/rdbs_example_lsf_01_design, png]
+....
+
+top to bottom direction
+
+class Course<Entity{name=veranstaltung}> {
+  {field} @Property(type:number,auto:true)
+  veranstid: integer
+
+  {field} @Property(targetClass:Semester,skipJoin:true,local:Key('semester'))
+  semester_: Semester;
+
+  {field} @Property{targetClass:Attribute, cardinality:0,conditions:
+  {field} And(Eq('ownertab',Value('veranstaltung')),Eq('ownerid',Key('veranstid')))
+  {field} }
+  attributes: Attribute[];
+
+  {field} @Property{targetClass:Event,cardinality:0,conditions:
+  {field} And(Eq('tabelle',Value('veranstaltung')),Eq('tabpk',Key('veranstid'))),
+  {field} order:[Asc(Key('sort')),Asc(Key('vtid'))]
+  {field} }
+  events: Event[];
+
+  {field} @Property{targetClass:ContentRef,cardinality:0,conditions:
+  {field} And(Eq('tabelle',Value('veranstaltung')),Eq('tabpk',Key('veranstid')))
+  {field} }
+  contents: ContentRef[];
+
+  {field} @Property(type:date,name:'zeitstempel')
+  modified: Date;
+
+  {field} @Property{targetClass:Person,cardinality:0,
+  {field} order:[Asc(Key('sortierung')),Asc(Key('beltoid'))],
+  {field} join: Join('r_belongsto' | RBelongsTo, From('tabpk','veranstid'),
+  {field} To('ownerid','pid'),
+  {field} And(Eq('ownertab',Value('personal')),Eq('tabelle',Value('veranstaltung'))),
+  {field} }
+  persons:Person[];
+
+  ...
+}
+
+class RBelongsTo<Object{name=r_belongsto}> {
+  {field} @Property(type:number, auto:true)
+  beltoid: number;
+
+  sortierung: number;
+
+  ownertab: string;
+
+  ownerid: number;
+
+  tabelle: string;
+
+  tabpk: number;
+
+  zeitstempel: Date;
+
+}
+
+class Attribute<Object{name=customatts}> {
+
+  {field} @Property{type:string}
+  ownertab: string;
+
+  {field} @Property{type:number}
+  ownerid: number;
+
+  ...
+}
+
+class Event<Entity{name=veransttermin}> {
+  {field} @Property{type:number,auto:true}
+  vtid: integer
+
+  {field} @Property{type:string}
+  tabelle: string;
+
+  {field} @Property{type:number}
+  tabpk:number
+  ...
+}
+
+class Semester<Entity{name=k_semester}> {
+  {field} @Property{type:number,id:true}
+  semid: integer
+
+  {field} @Property{type:string}
+  ktxt: string;
+
+  {field} @Property{targetClass:FreeDay,cardinality:0,readonly:true,conditions:
+  {field} And(Ge('freiertag_datum',Key('von'),{hint:'dateformat'}),
+  {field} Le('freiertag_datum',Key('bis'),{hint:'dateformat'}))
+  {field} }
+  freeDays: FreeDay[];
+  ...
+}
+
+
+class Content<Object{name=blobs}> {
+  {field} @Property(type:number,auto:true)
+  blobid:number;
+}
+
+class ContentRef<Object{name=r_blob}> {
+  {field} @Property(type:number,auto:true)
+  rblobid:number;
+
+  {field} @Property(targetClass:Content,skipJoin:true,idKey:Key('blobid'))
+  content: Content;
+
+
+}
+
+
+
+class FreeDay<Object{name=freiertag}> {
+  {field} @Property(type:number, auto:true)
+  freiertagid: number;
+}
+
+
+class Person<Entity{name=personal}> {
+  {field} @Property(type:number, auto:true)
+  pid: number;
+
+}
+
+
+ContentRef "1" ---> "1" Content
+
+Course::semester_ "1" -up-> "1" Semester
+Course::attributes "1" -left-> "n" Attribute
+Course::events "1" -up-> "n" Event
+Course::contents "1" --> "n" ContentRef
+
+Semester::freeDays -up-> FreeDay
+Course::persons --> Person
+
+
+....
+
+
+
+

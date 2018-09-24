@@ -3,6 +3,7 @@ import {XS_TYPE_CLASS_REF, XS_TYPE_ENTITY} from './Constants';
 import {EntityDef} from './EntityDef';
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
 import * as _ from './LoDash'
+import {IObject} from "./IObject";
 
 export class ClassRef {
 
@@ -11,6 +12,8 @@ export class ClassRef {
   readonly originalValue: string | Function;
 
   readonly className: string;
+
+  options: any = {};
 
   isEntity: boolean = false;
 
@@ -22,6 +25,16 @@ export class ClassRef {
       this.originalValue = ClassRef.getFunction(klass);
     }
 
+  }
+
+
+  setOptions(options: IObject) {
+    this.options = options;
+  }
+
+  get storingName() {
+    let name = _.get(this.options, 'name', this.className);
+    return _.snakeCase(name);
   }
 
 
@@ -63,6 +76,7 @@ export class ClassRef {
       throw new Error('class not found! 01');
     }
   }
+
 
   getClass(): Function {
     if (_.isFunction(this.originalValue)) {
