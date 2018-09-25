@@ -1,3 +1,3 @@
 export interface IObject {
-  name?:string;
+  name?: string;
 }

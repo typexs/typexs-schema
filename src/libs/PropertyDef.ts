@@ -27,18 +27,17 @@ export class PropertyDef extends AbstractDef {
 
   readonly generated: boolean;
 
-  get schemaName() {
-    return this.object.schema;
-  }
+  readonly embed: boolean;
+
+
+
 
   constructor(options: IProperty) {
     super('property', options.propertyName, options.sourceClass);
     this.setOptions(options);
     this.entityName = this.object.className;
 
-
     if (!options.type) {
-
       // TODO find a better way to detect the type
       if (_.isFunction(options.sourceClass)) {
         let reflectMetadataType = Reflect && Reflect.getMetadata ? Reflect.getMetadata('design:dataType', options.sourceClass, this.name) : undefined;
@@ -47,19 +46,9 @@ export class PropertyDef extends AbstractDef {
         } else {
           // default
           this.dataType = 'string';
-//        reflectMetadataType = Reflect && Reflect.getOwnPropertyDescriptor ? Reflect.getOwnPropertyDescriptor(fn, propertyName) : undefined;
-//         let value = fn.constructor[propertyName]
-//         if(value != undefined){
-//           if(_.isString(value)){
-//
-//           }
-//         }
-
-          //
-          // }
         }
       }
-    } else {
+    } else if(_.isString(options.type)){
       this.dataType = options.type;
     }
 
@@ -67,16 +56,22 @@ export class PropertyDef extends AbstractDef {
       this.cardinality = options.cardinality;
     }
 
-    if (_.isFunction(options.targetClass)) {
-      this.targetRef = ClassRef.get(options.targetClass);
+    if (_.isFunction(options.type) || _.isFunction(options.targetClass)) {
+      const targetClass = options.type || options.targetClass;
+      this.targetRef = ClassRef.get(targetClass);
     }
 
     if (_.isFunction(options.propertyClass)) {
       this.propertyRef = ClassRef.get(options.propertyClass);
     }
 
-    if (_.isBoolean(options.embedded) && options.embedded) {
-      throw new NotYetImplementedError();
+    if ((_.isBoolean(options.embed) && options.embed) || this.getOptions('idKey')) {
+      this.embed = true;
+      if(this.isCollection()){
+        throw new NotSupportedError('embedded property can not be a selection')
+      }
+    }else{
+      this.embed = false;
     }
 
     if ((_.isBoolean(options.id) && options.id) || (_.isBoolean(options.pk) && options.pk) || (_.isBoolean(options.auto) && options.auto)) {
@@ -92,6 +87,10 @@ export class PropertyDef extends AbstractDef {
     }
   }
 
+
+  get schemaName() {
+    return this.object.schema;
+  }
 
   isReference(): boolean {
     return this.targetRef != null;
@@ -111,12 +110,41 @@ export class PropertyDef extends AbstractDef {
     return false;
   }
 
+  isEmbedded(){
+    return this.embed;
+  }
+
+  hasIdKeys(){
+    return this.embed && this.getOptions('idKey',false) !== false
+  }
+
+  hasJoinRef(){
+    return this.joinRef != null;
+  }
+
+  getIdKeys():string[]{
+    let keys = this.getOptions('idKey');
+    if(!_.isArray(keys)){
+      return [keys.key];
+    }else{
+      return keys.map(k => k.key);
+    }
+
+  }
 
   getEntity(): EntityDef {
     if (this.isEntityReference()) {
       return this.targetRef.getEntity();
     }
     throw new NotSupportedError('no entity')
+  }
+
+  getTargetClass(){
+
+    if(this.isReference()){
+      return this.targetRef.getClass();
+    }
+    throw new NotSupportedError('no  target class')
   }
 
   getSubPropertyDef(): PropertyDef[] {
@@ -170,11 +198,11 @@ export class PropertyDef extends AbstractDef {
 
 
   get storingName() {
-    let name = this.getOptions('name');
+    let name = this.getOptions('name',null);
     if (!name) {
       const prefix = this.object.isEntity ? 'p' : 'i';// + _.snakeCase(this.object.className);
 
-      if (this.isReference()) {
+      if (this.isReference() && !this.isEmbedded()) {
         if (this.isEntityReference()) {
           if (this.object.isEntity) {
             name = [prefix, _.snakeCase(this.name), this.targetRef.getEntity().storingName].join('_');

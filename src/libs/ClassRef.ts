@@ -37,6 +37,9 @@ export class ClassRef {
     return _.snakeCase(name);
   }
 
+  hasName() {
+    return _.get(this.options, 'name');
+  }
 
   setSchema(s: string) {
     this.schema = s;

@@ -2,6 +2,8 @@ import {XS_ID_SEPARATOR, XS_TYPE} from './Constants';
 
 import {ClassRef} from './ClassRef';
 import * as _ from './LoDash';
+import {IProperty} from "./IProperty";
+import {IEntity} from "./IEntity";
 
 
 export abstract class AbstractDef {
@@ -54,7 +56,7 @@ export abstract class AbstractDef {
     return this._baseType;
   }
 
-  getOptions(key: string = null, defaultValue: any = null) {
+  getOptions(key: keyof IProperty | keyof IEntity = null, defaultValue: any = null) {
     if (key) {
       return _.get(this._options, key, defaultValue);
     }

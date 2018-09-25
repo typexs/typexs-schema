@@ -48,6 +48,22 @@ export class OrDesc extends CondDesc {
   }
 }
 
+export class Selector implements IDesc {
+}
+
+export class KeyDesc extends Selector {
+  readonly key: string;
+
+  constructor(key: string) {
+    super();
+    this.key = key
+  }
+
+}
+
+export class ValueDesc extends Selector {
+
+}
 
 export function Eq() {
 }
@@ -67,12 +83,13 @@ export function Or() {
 /**
  * Key
  */
-export function K() {
+export function Key(k:string) {
+  return new KeyDesc(k);
 }
 
 /**
  * Value
  *
  */
-export function V() {
+export function Value() {
 }

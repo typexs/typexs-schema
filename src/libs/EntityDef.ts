@@ -144,6 +144,14 @@ export class EntityDef extends AbstractDef {
 
   }
 
+  getClass(){
+    return this.getClassRef().getClass();
+  }
+
+  getClassRef(){
+    return this.object;
+  }
+
   build(data: any) {
     let t = new TransformExecutor();
     return t.transform(this, data);

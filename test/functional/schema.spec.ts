@@ -31,7 +31,6 @@ class SchemaSpec {
 
   @test
   async 'simple schema with one entity'() {
-
     require('./schemas/default/Author');
 
     let options = _.clone(TEST_STORAGE_OPTIONS);
@@ -77,7 +76,7 @@ class SchemaSpec {
 
 
   @test
-  async 'schema with entity referencing property (2 entities)'() {
+  async 'entity referencing property E-P-E (2 entities over join table)'() {
 
     require('./schemas/default/Author');
     require('./schemas/default/Book');
@@ -100,6 +99,91 @@ class SchemaSpec {
     expect(data_author).to.have.length(3);
     expect(data_book).to.have.length(3);
     expect(data_relations).to.have.length(5);
+
+    await c.close();
+
+  }
+
+  @test
+  async 'entity referencing property E-P-E (2 entities over embedded id)'() {
+
+    require('./schemas/default/Course');
+    require('./schemas/default/Periode');
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'default';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+
+    let tableNames = await ref.getSchemaHandler().getCollectionNames();
+    expect(tableNames).to.have.include.members(['course', 'periode']);
+
+    let data_course = await c.connection.query('PRAGMA table_info(\'course\')');
+    expect(_.map(data_course, c => c.name)).to.have.include.members(['periode_perid', 'periode_otherid']);
+
+    await c.close();
+
+  }
+
+
+  @test
+  async 'entity referencing property E-P-O (entity to object over embedded id)'() {
+
+    require('./schemas/default/Course2');
+    require('./schemas/default/Literatur');
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'default';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+//    let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
+    //  console.log(tables);
+
+    let tableNames = await ref.getSchemaHandler().getCollectionNames();
+    expect(tableNames).to.have.include.members(['course_2', 'o_literatur']);
+
+    let data_course = await c.connection.query('PRAGMA table_info(\'course_2\')');
+    expect(_.map(data_course, c => c.name)).to.have.include.members(['literatur_titelid']);
+
+    let cols_literatur = await c.connection.query('PRAGMA table_info(\'o_literatur\')');
+    expect(_.map(cols_literatur, c => c.name)).to.have.include.members(['titel', 'titelid']);
+
+    await c.close();
+
+  }
+
+  @test
+  async 'entity referencing property E-P-O-P-O (entity to object and again to object over embedded ids)'() {
+
+    require('./schemas/default/EDR');
+    require('./schemas/default/EDR_Object_DR');
+    require('./schemas/default/EDR_Object');
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'default';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+//    let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
+//    console.log(tables);
+
+    let tableNames = await ref.getSchemaHandler().getCollectionNames();
+    expect(tableNames).to.have.include.members(['level_one', 'object_level_two', 'object_level_three']);
+
+    let cols_level_one = await c.connection.query('PRAGMA table_info(\'level_one\')');
+    expect(_.map(cols_level_one, c => c.name)).to.have.include.members(['object_id']);
+
+    let cols_obj_level_two = await c.connection.query('PRAGMA table_info(\'object_level_two\')');
+    expect(_.map(cols_obj_level_two, c => c.name)).to.have.include.members(['object_id']);
+
 
     await c.close();
 
@@ -162,7 +246,7 @@ class SchemaSpec {
   @test
   async 'complex entity with multiple object integrations E-P[]-P[]'() {
 
-    const Person  = require('./schemas/complex_entity/Person').Person;
+    const Person = require('./schemas/complex_entity/Person').Person;
 
     let options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'complex_entity';
@@ -174,7 +258,7 @@ class SchemaSpec {
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
 
     console.log(tables);
-    expect(_.map(tables, t => t.name)).to.have.include.members(['person', 'p_jobs_job','i_language']);
+    expect(_.map(tables, t => t.name)).to.have.include.members(['person', 'p_jobs_job', 'i_language']);
 
     await c.close();
 

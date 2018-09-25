@@ -1,12 +1,10 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-import {IStorageOptions, SqliteSchemaHandler, StorageRef} from "typexs-base";
+import {IStorageOptions, StorageRef} from "typexs-base";
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {getMetadataArgsStorage} from 'typeorm';
 import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import {inspect} from 'util';
-import {EntityRegistry, FrameworkFactory} from "../../src";
 import {EntityController} from "../../src/libs/EntityController";
 import {TestHelper} from "./TestHelper";
 
@@ -34,7 +32,7 @@ class Scenario_01_direct_referencingSpec {
   }
 
   @test
-  async 'entity lifecycle for entity referencing property E-P-E'() {
+  async 'entity lifecycle for entity referencing property E-P-E over property table'() {
     let options = _.clone(TEST_STORAGE_OPTIONS);
 //    (<any>options).name = 'direct_property';
 
@@ -81,6 +79,92 @@ class Scenario_01_direct_referencingSpec {
 
     await c.close();
 
+  }
+
+
+  @test
+  async 'entity lifecycle for entity referencing through embedded mode E-P-E (test embed and idKey)'() {
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+//    (<any>options).name = 'direct_property';
+
+    const Course = require('./schemas/default/Course').Course;
+    const Periode = require('./schemas/default/Periode').Periode;
+
+    let connect = await this.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+    let course_save_1 = new Course();
+// embed test
+    course_save_1.periode = new Periode();
+    course_save_1.periode.year = 2018;
+// idKey test
+    course_save_1.periode_alt = new Periode();
+    course_save_1.periode_alt.year = 2019;
+    course_save_1 = await xsem.save(course_save_1);
+
+    let courses_found = await xsem.find(Course, {id: 1});
+    let course_find_1 = courses_found.shift();
+
+    expect(course_find_1).to.deep.eq(course_save_1);
+    await c.close();
+  }
+
+  @test
+  async 'entity lifecycle for entity referencing through embedded mode E-P-O'() {
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+//    (<any>options).name = 'direct_property';
+
+    const Course2 = require('./schemas/default/Course2').Course2;
+    const Literatur = require('./schemas/default/Literatur').Literatur;
+
+    let connect = await this.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+    let course2_save_1 = new Course2();
+    course2_save_1.literatur = new Literatur();
+    course2_save_1.literatur.titel = 'Bürgeliches Gesetzbuch';
+    course2_save_1.literatur.titelid = 'BGB';
+    course2_save_1 = await xsem.save(course2_save_1);
+    console.log(course2_save_1);
+
+    let courses_found = await xsem.find(Course2, {id: 1});
+    let course2_find_1 = courses_found.shift();
+    console.log(course2_find_1);
+
+    expect(course2_find_1).to.deep.eq(course2_save_1);
+    await c.close();
+  }
+
+  @test
+  async 'entity lifecycle for entity referencing through embedded mode E-P-O-P-O'() {
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+//    (<any>options).name = 'direct_property';
+
+    const EDR=require('./schemas/default/EDR').EDR;
+    const EDR_Object_DR=require('./schemas/default/EDR_Object_DR').EDR_Object_DR;
+    const EDR_Object=require('./schemas/default/EDR_Object').EDR_Object;
+
+    let connect = await this.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+    let edr_save_1 = new EDR();
+    edr_save_1.object = new EDR_Object_DR();
+    edr_save_1.object.object = new EDR_Object();
+    edr_save_1 = await xsem.save(edr_save_1);
+    console.log(edr_save_1);
+
+    let edrs_found = await xsem.find(EDR, {id: 1});
+    let edr_find_1 = edrs_found.shift();
+    console.log(edr_find_1);
+
+    expect(edr_find_1).to.deep.eq(edr_save_1);
+    await c.close();
   }
 
 

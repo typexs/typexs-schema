@@ -8,6 +8,7 @@ export * from "./libs/ClassRef";
 export * from "./libs/Constants";
 export * from "./libs/DataContainer";
 export * from "./libs/decorators/Entity";
+export * from "./libs/decorators/CObject";
 export * from "./libs/decorators/Property";
 export * from "./libs/decorators/PropertyOf";
 export * from "./libs/decorators/Schema";

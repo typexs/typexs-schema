@@ -1,3 +1,6 @@
+import {JoinDesc} from "./descriptors/Join";
+import {CondDesc, Key, KeyDesc} from "./descriptors/Conditions";
+
 export interface IProperty {
 
   propertyName?: string;
@@ -14,7 +17,9 @@ export interface IProperty {
   /**
    * data type
    */
-  type?: string
+  type?: string | Function;
+  // @deprected
+  targetClass?: string | Function
 
   /**
    * size of data type
@@ -25,7 +30,6 @@ export interface IProperty {
 
   cardinality?: number;
 
-  targetClass?: string | Function
 
   propertyClass?: string | Function;
 
@@ -38,10 +42,19 @@ export interface IProperty {
   pk?: boolean;
 
   /**
-   * If a property is embedded then the subProperties must be integrated in the bound entity, default is false.
-   * TODO implement this
+   * If a property is embed then the reference to the extern object/entity is kept locally, default is false.
    */
-  embedded?: boolean;
+  embed?: boolean;
+
+  /**
+   * On this property no save or delete operation is generated
+   */
+  readonly?: boolean;
+
+  /**
+   * if the reference holding key differs the standard generated {property.name}_{pk1} ...
+   */
+  idKey?: KeyDesc | KeyDesc[];
 
   /**
    * Only if id or pk is set then the type determine the id should be automatic (autoinc or uuid generation) else an id must be providen, default will be true
@@ -49,14 +62,18 @@ export interface IProperty {
   auto?: boolean;
 
   /**
-   * The members to lookup on the referencing entities or entity
+   * Join table definition
    */
-  refMembers?: string | string[]
+  join?: JoinDesc;
 
   /**
-   * The local members to use for mapping the referencing entity
+   * Join table definition
    */
-  localMembers?: string | string[]
+  cond?: CondDesc;
 
+  /**
+   * Extra keys
+   */
+  typeorm?: any;
 
 }

@@ -10,5 +10,5 @@ export interface INameResolver {
   /**
    * Id is the key for an object, name is the storeage value
    */
-  for(prefix: string, property: PropertyDef | string): [string, string];
+  for(prefix: string | PropertyDef, property?: PropertyDef | string): [string, string];
 }
