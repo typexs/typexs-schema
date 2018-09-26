@@ -4,18 +4,24 @@ import {K_ROUTE_CONTROLLER, Server, ServerRegistry} from "typexs-server";
 import * as _ from "lodash";
 import * as request from 'request-promise-native';
 import {expect} from 'chai';
+import {TestHelper} from "../TestHelper";
+import {EntityRegistry} from "../../../src";
 
 const settingsTemplate: any = {
   storage: {
     default: {
       synchronize: true,
       type: 'sqlite',
-      database: ':memory:'
+      database: ':memory:',
+      logging:'all',
+      logger:'simple-console'
     },
     literature: {
       synchronize: true,
       type: 'sqlite',
-      database: ':memory:'
+      database: ':memory:',
+      logging:'all',
+      logger:'simple-console'
     }
   },
 
@@ -59,8 +65,9 @@ let server: Server = null;
 class ApiserverSpec {
 
 
-  static async before() {
 
+  static async before() {
+    TestHelper.resetTypeorm();
     let settings = _.clone(settingsTemplate);
 
 

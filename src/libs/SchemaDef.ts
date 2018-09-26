@@ -6,6 +6,7 @@ import {ISchema} from './ISchema';
 import {PropertyDef} from './PropertyDef';
 
 
+
 export class SchemaDef extends AbstractDef {
 
 

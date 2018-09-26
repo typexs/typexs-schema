@@ -51,8 +51,8 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
 
   addType(fn: Function) {
-    console.log(fn);
     if (!this.isDone(fn)) {
+      console.log(fn);
       this.storageRef.addEntityType(fn);
       this.done(fn);
     }
@@ -104,11 +104,22 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     } else {
       this.ColumnDef(propertyDef, propStoreName)(propClass, propName);
     }
-
   }
 
 
-  async visitEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext): Promise<XContext> {
+  private handleCheckConditionsIfGiven(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef | ClassRef) {
+    let condition = propertyDef.getOptions('cond', false);
+    if (condition !== false) {
+      let referred = entityDef instanceof EntityDef ? entityDef.getClassRef() : entityDef;
+      let referrer = sourceDef instanceof EntityDef ? sourceDef.getClassRef() : sourceDef;
+      return condition.validate(referred, referrer);
+    } else {
+      return false;
+    }
+  }
+
+
+  async visitEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext): Promise<XContext> {
     /**
      * different variants to use the relation between 2 entities
      * - use a global p_relations table which can connect multiple elements with each other
@@ -118,7 +129,11 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
      * - if notthing is defined the global variant is prefered
      */
 
-    if (sourceDef instanceof EntityDef) {
+    if (this.handleCheckConditionsIfGiven(sourceDef, propertyDef, entityDef)) {
+      // if condition is given then no new join table is needed
+      return sources;
+    } else if (sourceDef instanceof EntityDef) {
+
       if (propertyDef.isEmbedded()) {
         return this.handleEmbeddedPropertyReference(sourceDef, propertyDef, entityDef, sources);
       } else {
@@ -126,21 +141,16 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
          * Default variant if nothing else given generate or use p_{propertyName}_{entityName}
          */
         let pName = propertyDef.storingName;
+        const clazz = this.handleCreatePropertyClass(propertyDef, pName);
+        /*
         propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(pName));
         let clazz = propertyDef.joinRef.getClass();
         Entity(pName)(clazz);
+        */
         this.attachPrimaryKeys(sourceDef, propertyDef, clazz);
         this.attachTargetKeys(propertyDef, entityDef, clazz);
-        this.addType(clazz);
-        return {next: clazz}
-      }
 
-    } else if (sourceDef instanceof PropertyDef) {
-      if (!propertyDef.isCollection()) {
-        this.attachTargetPrefixedKeys(propertyDef.machineName, entityDef, sources.next);
-        return sources;
-      } else {
-        throw new NotYetImplementedError('not supported; entity reference collection ');
+        return {next: clazz}
       }
 
     } else if (sourceDef instanceof ClassRef) {
@@ -156,83 +166,87 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
 
-  async leaveEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext, visitResult: XContext): Promise<XContext> {
+  async leaveEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext, visitResult: XContext): Promise<XContext> {
     return sources;
   }
 
-  async visitObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: XContext): Promise<XContext> {
+
+  async visitObjectReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: XContext): Promise<XContext> {
     return this._visitReference(sourceDef, propertyDef, classRef, sources);
   }
 
-  async leaveObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
+
+  async leaveObjectReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
     return this._leaveReference(sourceDef, propertyDef, classRef, sources);
   }
 
-  async visitExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
+  async visitExternalReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
     return this._visitReference(sourceDef, propertyDef, classRef, sources);
   }
+
 
   async leaveExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
     return this._leaveReference(sourceDef, propertyDef, classRef, sources);
   }
 
-  async _visitReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
 
-    if (sourceDef instanceof EntityDef) {
+  async _visitReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
+
+
+    if (this.handleCheckConditionsIfGiven(sourceDef, propertyDef, classRef)) {
+      // if condition is given then no new join table is needed
+      return {next: this.handleCreateObjectClass(classRef)};
+    } else if (sourceDef instanceof EntityDef) {
       if (propertyDef.isEmbedded()) {
         await this.handleEmbeddedPropertyReference(sourceDef, propertyDef, classRef, sources);
+        return {next: this.handleCreateObjectClass(classRef)};
 
-        // create the object class because we dont currently have visitObject implementation
-        let tName = classRef.storingName;
-        if (!classRef.hasName()) {
-          tName = ['o', tName].join('_');
-        }
-        let entityClass = classRef.getClass();
-        Entity(tName)(entityClass);
-        // check if an ID exists in class else add one
-        this.addType(entityClass);
-        return {next: entityClass}
       } else {
-        const className = sourceDef.name + _.capitalize(propertyDef.name);
-        propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(className));
-        let storeClass = propertyDef.joinRef.getClass();
 
-        let storingName = propertyDef.storingName;
-        Entity(storingName)(storeClass);
+        const storeClass = this.handleCreatePropertyClass(propertyDef, [sourceDef.name, _.capitalize(propertyDef.name)].filter(x => !_.isEmpty(x)).join(''));
         this.attachPrimaryKeys(sourceDef, propertyDef, storeClass);
-        this.addType(storeClass);
-        return {next: storeClass};
+
+
+        /*
+        a classref can be generated if no name or id property is given
+         */
+        let targetIdProps = this.schemaDef.getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
+        if (targetIdProps.length > 0) {
+          this.attachTargetKeys(propertyDef, classRef, storeClass);
+          return {next: this.handleCreateObjectClass(classRef)};
+        } else {
+          return {next: storeClass};
+        }
+
+
       }
     } else if (sourceDef instanceof ClassRef) {
       if (!propertyDef.isCollection()) {
-        if(propertyDef.isEmbedded()){
+        if (propertyDef.isEmbedded()) {
           await this.handleEmbeddedPropertyReference(sourceDef, propertyDef, classRef, sources);
-
-          // create the object class because we dont currently have visitObject implementation
-          let tName = classRef.storingName;
-          if (!classRef.hasName()) {
-            tName = ['o', tName].join('_');
-          }
-          let entityClass = classRef.getClass();
-          Entity(tName)(entityClass);
-          // check if an ID exists in class else add one
-          this.addType(entityClass);
-          return {next: entityClass};
-        }else{
+          //
+          // // create the object class because we dont currently have visitObject implementation
+          // let tName = classRef.storingName;
+          // if (!classRef.hasName()) {
+          //   tName = ['o', tName].join('_');
+          // }
+          // let entityClass = classRef.getClass();
+          // Entity(tName)(entityClass);
+          // // check if an ID exists in class else add one
+          // this.addType(entityClass);
+          // return {next: entityClass};
+          return {next: this.handleCreateObjectClass(classRef)};
+        } else {
           return {next: sources.next, prefix: propertyDef.name};
         }
         // TODO if marked as 'indirect' then change to collection mode
         // first variant deep embedded class
 
       } else {
-        const className = _.capitalize(propertyDef.name) + classRef.className;
-        propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(className));
-        let storeClass = propertyDef.joinRef.getClass();
 
-        let storingName = propertyDef.storingName;
-        Entity(storingName)(storeClass);
+        const storeClass = this.handleCreatePropertyClass(propertyDef, _.capitalize(propertyDef.name) + classRef.className);
+
         this.attachPropertyPrimaryKeys(storeClass);
-        this.addType(storeClass);
         return {next: storeClass};
       }
 
@@ -242,6 +256,30 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
   async _leaveReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
     return sources;
+  }
+
+
+  private handleCreateObjectClass(classRef: ClassRef) {
+    let tName = classRef.storingName;
+    if (!classRef.hasName()) {
+      tName = ['o', tName].join('_');
+    }
+    let entityClass = classRef.getClass();
+    Entity(tName)(entityClass);
+    // check if an ID exists in class else add one
+    this.addType(entityClass);
+    return entityClass;
+  }
+
+  private handleCreatePropertyClass(propertyDef: PropertyDef, className: string) {
+    //const className = [classNamePrefix, _.capitalize(propertyDef.name)].filter(x => !_.isEmpty(x)).join('');
+    propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(className));
+    let storeClass = propertyDef.joinRef.getClass();
+
+    let storingName = propertyDef.storingName;
+    Entity(storingName)(storeClass);
+    this.addType(storeClass);
+    return storeClass;
   }
 
 
@@ -316,23 +354,33 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
 
-  private attachTargetKeys(propDef: PropertyDef, entityDef: EntityDef, refTargetClass: Function) {
+  private attachTargetKeys(propDef: PropertyDef, entityDef: EntityDef | ClassRef, refTargetClass: Function) {
     let uniqueIndex: string[] = [];
     let refTargetClassDescr = {constructor: refTargetClass};
     // let propPrefix = propDef.machineName();
 
-    entityDef.getPropertyDefIdentifier().forEach(property => {
+    let idProps = []
+    if (entityDef instanceof EntityDef) {
+      idProps = entityDef.getPropertyDefIdentifier();
+    } else {
+      idProps = this.schemaDef.getPropertiesFor(entityDef.getClass()).filter(p => p.identifier)
+    }
+
+    idProps.forEach(property => {
       let [targetId, targetName] = this.nameResolver.forTarget(property);
       this.ColumnDef(property, targetName)(refTargetClassDescr, targetId);
       uniqueIndex.push(targetId);
     });
 
 
-    // TODO if revision support is enabled for entity then it must be handled also be the property
-    if (entityDef.areRevisionsEnabled()) {
-      let [targetId, targetName] = this.nameResolver.forTarget('revId');
-      Column({name: targetName, type: 'int'})(refTargetClassDescr, targetId);
-      uniqueIndex.push(targetId);
+    if (entityDef instanceof EntityDef) {
+
+      // TODO if revision support is enabled for entity then it must be handled also be the property
+      if (entityDef.areRevisionsEnabled()) {
+        let [targetId, targetName] = this.nameResolver.forTarget('revId');
+        Column({name: targetName, type: 'int'})(refTargetClassDescr, targetId);
+        uniqueIndex.push(targetId);
+      }
     }
     Index(uniqueIndex)(refTargetClass)
 
@@ -345,7 +393,6 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     // this is the default variant!
     // create an generic id
     PrimaryGeneratedColumn({name: 'id', type: 'int'})(refTargetClassDescr, 'id');
-
 
     let [sourceId, sourceName] = this.nameResolver.forSource(XS_P_TYPE);
     Column({name: sourceName, type: 'varchar', length: 64})(refTargetClassDescr, sourceId);
@@ -376,6 +423,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     uniqueIndex.push(sourceId);
     Index(uniqueIndex, {unique: true})(refTargetClass)
   }
+
 
   private attachPropertyPrimaryKeys(refTargetClass: Function) {
     let refTargetClassDescr = {constructor: refTargetClass};
