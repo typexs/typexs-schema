@@ -20,11 +20,11 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
 };
 
 
-@suite('functional/scenario_01_direct_referencing')
+@suite('functional/entity_lifecycle/direct_referencing')
 class Scenario_01_direct_referencingSpec {
 
   before() {
-    PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
+    TestHelper.resetTypeorm();
   }
 
   async connect(options: any): Promise<{ ref: StorageRef, controller: EntityController }> {
@@ -32,7 +32,7 @@ class Scenario_01_direct_referencingSpec {
   }
 
   @test
-  async 'entity lifecycle for entity referencing property E-P-E over property table'() {
+  async 'entity referencing property E-P-E over property table'() {
     let options = _.clone(TEST_STORAGE_OPTIONS);
 //    (<any>options).name = 'direct_property';
 
@@ -83,7 +83,7 @@ class Scenario_01_direct_referencingSpec {
 
 
   @test
-  async 'entity lifecycle for entity referencing through embedded mode E-P-E (test embed and idKey)'() {
+  async 'entity referencing through embedded mode E-P-E (test embed and idKey)'() {
     let options = _.clone(TEST_STORAGE_OPTIONS);
 //    (<any>options).name = 'direct_property';
 
@@ -112,7 +112,7 @@ class Scenario_01_direct_referencingSpec {
   }
 
   @test
-  async 'entity lifecycle for entity referencing through embedded mode E-P-O'() {
+  async 'entity referencing through embedded mode E-P-O'() {
     let options = _.clone(TEST_STORAGE_OPTIONS);
 //    (<any>options).name = 'direct_property';
 
@@ -140,7 +140,7 @@ class Scenario_01_direct_referencingSpec {
   }
 
   @test
-  async 'entity lifecycle for entity referencing through embedded mode E-P-O-P-O'() {
+  async 'entity referencing through embedded mode E-P-O-P-O'() {
     let options = _.clone(TEST_STORAGE_OPTIONS);
 //    (<any>options).name = 'direct_property';
 
@@ -169,7 +169,7 @@ class Scenario_01_direct_referencingSpec {
 
 
   @test
-  async 'entity lifecycle for entity referencing property E-P-E[]'() {
+  async 'entity referencing property E-P-E[]'() {
     let options = _.clone(TEST_STORAGE_OPTIONS);
 
     const Author = require('./schemas/default/Author').Author;
@@ -287,7 +287,7 @@ class Scenario_01_direct_referencingSpec {
   // TODO NULLABLE!!!
 
   @test
-  async 'entity lifecycle for referencing property E-P-SP-E'() {
+  async 'referencing property E-P-SP-E'() {
 
     let options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'direct_property';
@@ -329,7 +329,7 @@ class Scenario_01_direct_referencingSpec {
   }
 
   @test
-  async 'entity lifecycle for referencing property E-P-SP[]-E'() {
+  async 'referencing property E-P-SP[]-E'() {
 
     let options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'direct_property';
@@ -464,7 +464,7 @@ class Scenario_01_direct_referencingSpec {
 
 
   @test.skip()
-  async 'entity lifecycle for multiple direct entity referencing E-P-SP[]-E'() {
+  async 'multiple direct entity referencing E-P-SP[]-E'() {
   }
 
 

@@ -52,7 +52,6 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
   addType(fn: Function) {
     if (!this.isDone(fn)) {
-      console.log(fn);
       this.storageRef.addEntityType(fn);
       this.done(fn);
     }
@@ -66,12 +65,9 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     let tName = entityDef.storingName;
     let entityClass = entityDef.object.getClass();
     Entity(tName)(entityClass);
-
-    // TODO add p_relations
-
     return {next: entityClass}
-
   }
+
 
   async leaveEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: XContext): Promise<XContext> {
     return sources;
@@ -200,12 +196,9 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       if (propertyDef.isEmbedded()) {
         await this.handleEmbeddedPropertyReference(sourceDef, propertyDef, classRef, sources);
         return {next: this.handleCreateObjectClass(classRef)};
-
       } else {
-
         const storeClass = this.handleCreatePropertyClass(propertyDef, [sourceDef.name, _.capitalize(propertyDef.name)].filter(x => !_.isEmpty(x)).join(''));
         this.attachPrimaryKeys(sourceDef, propertyDef, storeClass);
-
 
         /*
         a classref can be generated if no name or id property is given
@@ -217,35 +210,17 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
         } else {
           return {next: storeClass};
         }
-
-
       }
     } else if (sourceDef instanceof ClassRef) {
       if (!propertyDef.isCollection()) {
         if (propertyDef.isEmbedded()) {
           await this.handleEmbeddedPropertyReference(sourceDef, propertyDef, classRef, sources);
-          //
-          // // create the object class because we dont currently have visitObject implementation
-          // let tName = classRef.storingName;
-          // if (!classRef.hasName()) {
-          //   tName = ['o', tName].join('_');
-          // }
-          // let entityClass = classRef.getClass();
-          // Entity(tName)(entityClass);
-          // // check if an ID exists in class else add one
-          // this.addType(entityClass);
-          // return {next: entityClass};
           return {next: this.handleCreateObjectClass(classRef)};
         } else {
           return {next: sources.next, prefix: propertyDef.name};
         }
-        // TODO if marked as 'indirect' then change to collection mode
-        // first variant deep embedded class
-
       } else {
-
         const storeClass = this.handleCreatePropertyClass(propertyDef, _.capitalize(propertyDef.name) + classRef.className);
-
         this.attachPropertyPrimaryKeys(storeClass);
         return {next: storeClass};
       }

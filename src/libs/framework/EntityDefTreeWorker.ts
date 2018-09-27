@@ -88,13 +88,26 @@ export abstract class EntityDefTreeWorker {
     let entityDef = property.getEntity();
 
     let visitResult = await this.visitEntityReference(previous.def, property, entityDef, previous.result);
+    const status = _.get(visitResult,'status',null);
+    if(visitResult){
+      delete visitResult['status'];
+    }
+
     let result = null;
     if (!(_.has(visitResult, 'abort') && visitResult.abort)) {
       result = await this.onEntity(entityDef, property, visitResult);
     } else {
       result = visitResult;
     }
+    if(status){
+      _.set(result,'status',status);
+    }
+
     await this.leaveEntityReference(previous.def, property, entityDef, result, visitResult);
+
+    if(result){
+      delete result['status'];
+    }
   }
 
 
@@ -107,11 +120,22 @@ export abstract class EntityDefTreeWorker {
     let def: IQEntry = {def: classDef, sources: previous.result, refer: property};
     this.queue.push(def);
     def.result = await this.visitObjectReference(previous.def, property, classDef, previous.result);
+    const status = _.get(def.result,'status',null);
+    if(def.result){
+      delete def.result['status'];
+    }
     if (!(_.has(def.result, 'abort') && def.result.abort)) {
       let properties = EntityRegistry.getPropertyDefsFor(classDef);
       await this.walkProperties(properties, def);
     }
+    if(status){
+      _.set(def.result,'status',status);
+    }
     def.result = await this.leaveObjectReference(previous.def, property, classDef, def.result);
+    if(def.result){
+      delete def.result['status'];
+    }
+
     this.queue.pop();
   }
 
@@ -125,11 +149,21 @@ export abstract class EntityDefTreeWorker {
     let def: IQEntry = {def: classDef, sources: previous.result, refer: property};
     this.queue.push(def);
     def.result = await this.visitExternalReference(previous.def, property, classDef, previous.result);
+    const status = _.get(def.result,'status',null);
+    if(def.result){
+      delete def.result['status'];
+    }
     if (!(_.has(def.result, 'abort') && def.result.abort)) {
       let properties = EntityRegistry.getPropertyDefsFor(classDef);
       await this.walkProperties(properties, def);
     }
+    if(status){
+      _.set(def.result,'status',status);
+    }
     def.result = await this.leaveExternalReference(previous.def, property, classDef, def.result);
+    if(def.result){
+      delete def.result['status'];
+    }
     this.queue.pop();
   }
 

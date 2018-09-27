@@ -30,8 +30,6 @@ export class PropertyDef extends AbstractDef {
   readonly embed: boolean;
 
 
-
-
   constructor(options: IProperty) {
     super('property', options.propertyName, options.sourceClass);
     this.setOptions(options);
@@ -48,7 +46,7 @@ export class PropertyDef extends AbstractDef {
           this.dataType = 'string';
         }
       }
-    } else if(_.isString(options.type)){
+    } else if (_.isString(options.type)) {
       this.dataType = options.type;
     }
 
@@ -67,10 +65,10 @@ export class PropertyDef extends AbstractDef {
 
     if ((_.isBoolean(options.embed) && options.embed) || this.getOptions('idKey')) {
       this.embed = true;
-      if(this.isCollection()){
+      if (this.isCollection()) {
         throw new NotSupportedError('embedded property can not be a selection')
       }
-    }else{
+    } else {
       this.embed = false;
     }
 
@@ -101,7 +99,6 @@ export class PropertyDef extends AbstractDef {
     return this.propertyRef == null;
   }
 
-
   isEntityReference(): boolean {
     if (this.isReference()) {
       let entityDef = this.targetRef.getEntity();
@@ -110,23 +107,31 @@ export class PropertyDef extends AbstractDef {
     return false;
   }
 
-  isEmbedded(){
+  isEmbedded() {
     return this.embed;
   }
 
-  hasIdKeys(){
-    return this.embed && this.getOptions('idKey',false) !== false
+  hasIdKeys() {
+    return this.embed && this.getOptions('idKey', false) !== false
   }
 
-  hasJoinRef(){
+  hasConditions() {
+    return this.getOptions('cond', false) !== false;
+  }
+
+  getCondition() {
+    return this.getOptions('cond', null);
+  }
+
+  hasJoinRef() {
     return this.joinRef != null;
   }
 
-  getIdKeys():string[]{
+  getIdKeys(): string[] {
     let keys = this.getOptions('idKey');
-    if(!_.isArray(keys)){
+    if (!_.isArray(keys)) {
       return [keys.key];
-    }else{
+    } else {
       return keys.map(k => k.key);
     }
 
@@ -139,9 +144,9 @@ export class PropertyDef extends AbstractDef {
     throw new NotSupportedError('no entity')
   }
 
-  getTargetClass(){
+  getTargetClass() {
 
-    if(this.isReference()){
+    if (this.isReference()) {
       return this.targetRef.getClass();
     }
     throw new NotSupportedError('no  target class')
@@ -198,7 +203,7 @@ export class PropertyDef extends AbstractDef {
 
 
   get storingName() {
-    let name = this.getOptions('name',null);
+    let name = this.getOptions('name', null);
     if (!name) {
       const prefix = this.object.isEntity ? 'p' : 'i';// + _.snakeCase(this.object.className);
 
@@ -237,7 +242,7 @@ export class PropertyDef extends AbstractDef {
    */
   get(instance: any) {
     if (instance) {
-      return _.get(instance, this.name);
+      return _.get(instance, this.name, null);
     } else {
       return null;
     }

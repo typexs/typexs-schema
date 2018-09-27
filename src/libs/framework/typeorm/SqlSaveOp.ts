@@ -94,6 +94,8 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
     let sourceEntityDef: EntityDef;
     let targetObjects: any[] = [];
     let map: number[][] = [];
+    let joinObjs: any[] = [];
+
     if (sourceDef instanceof EntityDef) {
       sourceEntityDef = sourceDef;
       [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
@@ -105,8 +107,15 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
     targetObjects = _.uniq(targetObjects);
 
-    let joinObjs: any[] = [];
-    if (propertyDef.hasJoinRef()) {
+    if (propertyDef.hasConditions()) {
+      let condition = propertyDef.getCondition();
+      for (let source of sources.next) {
+        let targets = propertyDef.get(source);
+        for (let target of targets) {
+          condition.applyOn(target, source);
+        }
+      }
+    } else if (propertyDef.hasJoinRef()) {
       // if joinRef is present then a new class must be created
       for (let x = 0; x < sources.next.length; x++) {
         let source = sources.next[x];
@@ -229,19 +238,67 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
     let [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
     let joinObjs: any[] = [];
 
-    if (propertyDef.hasJoinRef()) {
+
+    if (propertyDef.hasConditions()) {
+      let notNullProps = this.getNotNullablePropertyNames(classRef.getClass());
+      let condition = propertyDef.getCondition();
+      for (let source of sources.next) {
+        let targets = propertyDef.get(source);
+        if (_.isEmpty(targets)) continue;
+        for (let target of targets) {
+          condition.applyOn(target, source);
+
+          notNullProps.forEach(notNullProp => {
+            if (!_.has(target, notNullProp)) {
+              target[notNullProp] = '0';
+            }
+          });
+        }
+      }
+
+      targetObjects = await this.c.manager.save(classRef.getClass(), targetObjects);
+
+      let targets: ISaveData = {
+        next: targetObjects,
+        join: joinObjs,
+        map: map,
+        abort: targetObjects.length === 0
+      };
+
+
+      return targets;
+    } else if (propertyDef.hasJoinRef()) {
+      let targetIdProps = this.em.schema().getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
+
+      if (!_.isEmpty(targetIdProps)) {
+        let notNullProps = this.getNotNullablePropertyNames(classRef.getClass());
+        for (let target of targetObjects) {
+          notNullProps.forEach(notNullProp => {
+            if (!_.has(target, notNullProp)) {
+              target[notNullProp] = '0';
+            }
+          })
+        }
+
+        targetObjects = await this.c.manager.save(classRef.getClass(), targetObjects);
+      }
+
       if (sourceDef instanceof EntityDef) {
 
         let sourceIdProps = sourceDef.getPropertyDefIdentifier();
-
         let embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
         let notNullProps = this.getNotNullablePropertiesForEmbedded(propertyDef, embedProps);
 
         for (let source of sources.next) {
           let seqNr = 0;
 
-          for (let target of targetObjects) {
-            let nullable = _.clone(notNullProps);
+          let _targetObjects = propertyDef.get(source);
+          if(!_targetObjects) continue;
+          if (!_.isArray(_targetObjects)) {
+            _targetObjects = [_targetObjects]
+          }
+
+          for (let target of _targetObjects) {
             let joinObj = propertyDef.joinRef.new();
             joinObjs.push(joinObj);
             let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
@@ -256,11 +313,71 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
             joinObj[id] = seqNr++;
 
 
+            let nullable = _.clone(notNullProps);
             embedProps.forEach(prop => {
               _.remove(nullable, x => x == prop.name);
               joinObj[prop.name] = prop.get(target);
             });
 
+            // if target because of reference to an object
+            targetIdProps.forEach(prop => {
+              let [targetId,] = this.em.nameResolver().forTarget(prop);
+              joinObj[targetId] = prop.get(target);
+            });
+
+            notNullProps.forEach(notNullProp => {
+              if (!_.has(joinObj, notNullProp)) {
+                joinObj[notNullProp] = '0';
+              }
+            });
+          }
+        }
+
+        joinObjs = await this.c.manager.save(propertyDef.joinRef.getClass(), joinObjs);
+
+        let targets: ISaveData = {
+          next: targetObjects,
+          join: joinObjs,
+          target: sources.next,
+          map: map,
+          abort: targetObjects.length === 0
+        };
+
+        return targets;
+
+      } else if (sourceDef instanceof ClassRef) {
+
+        // my own property
+        let embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
+        let notNullProps = this.getNotNullablePropertiesForEmbedded(propertyDef, embedProps);
+
+        for (let join of sources.join) {
+          let seqNr = 0;
+          let targets = propertyDef.get(join);
+
+          for (let target of targets) {
+            let joinObj = propertyDef.joinRef.new();
+            joinObj['__property__'] = join;
+            joinObjs.push(joinObj);
+
+            let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
+            joinObj[id] = sourceDef.machineName();
+
+            [id, name] = this.em.nameResolver().forSource(XS_P_PROPERTY);
+            joinObj[id] = propertyDef.machineName;
+
+            [id, name] = this.em.nameResolver().forSource(XS_P_PROPERTY_ID);
+            joinObj[id] = join.id;
+
+            [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
+            joinObj[id] = seqNr++;
+
+
+            embedProps.forEach(prop => {
+              joinObj[prop.name] = prop.get(target);
+            });
+
+            // for initial save we must fill nullables
             notNullProps.forEach(notNullProp => {
               joinObj[notNullProp] = '0';
             });
@@ -275,62 +392,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           map: map,
           abort: targetObjects.length === 0
         };
-
         return targets;
-
-      } else if (sourceDef instanceof ClassRef) {
-
-        if (propertyDef.hasJoinRef()) {
-          // my own property
-//          let [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
-          let embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
-          let notNullProps = this.getNotNullablePropertiesForEmbedded(propertyDef, embedProps);
-
-          let joinObjs: any[] = [];
-          for (let join of sources.join) {
-            let seqNr = 0;
-            let targets = propertyDef.get(join);
-
-            for (let target of targets) {
-              let joinObj = propertyDef.joinRef.new();
-              joinObj['__property__'] = join;
-              joinObjs.push(joinObj);
-
-              let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
-              joinObj[id] = sourceDef.machineName();
-
-              [id, name] = this.em.nameResolver().forSource(XS_P_PROPERTY);
-              joinObj[id] = propertyDef.machineName;
-
-              [id, name] = this.em.nameResolver().forSource(XS_P_PROPERTY_ID);
-              joinObj[id] = join.id;
-
-              [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
-              joinObj[id] = seqNr++;
-
-
-              embedProps.forEach(prop => {
-                joinObj[prop.name] = prop.get(target);
-              });
-
-              // for initial save we must fill nullables
-              notNullProps.forEach(notNullProp => {
-                joinObj[notNullProp] = '0';
-              });
-            }
-          }
-
-          joinObjs = await this.c.manager.save(propertyDef.joinRef.getClass(), joinObjs);
-
-          let targets: ISaveData = {
-            next: targetObjects,
-            join: joinObjs,
-            map: map,
-            abort: targetObjects.length === 0
-          };
-          return targets;
-        }
-
       }
     } else if (propertyDef.isEmbedded()) {
       // save targets
@@ -351,7 +413,6 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
         }
       }
 
-
       joinObjs = await this.c.manager.save(targetClass, targetObjects);
 
       let targets: ISaveData = {
@@ -363,7 +424,6 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
     } else {
 
       // not my own property
-      const direct = true;
       let embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
 
       if (sources.join) {
@@ -378,15 +438,11 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
             throw new NotYetImplementedError()
           } else {
             // single entry direct or indirect?
-            if (direct) {
-              let target = _.first(targets);
-              embedProps.forEach(prop => {
-                let [id, name] = this.em.nameResolver().for(propertyDef.machineName, prop);
-                join[id] = prop.get(target);
-              })
-            } else {
-              throw new NotYetImplementedError()
-            }
+            let target = _.first(targets);
+            embedProps.forEach(prop => {
+              let [id, name] = this.em.nameResolver().for(propertyDef.machineName, prop);
+              join[id] = prop.get(target);
+            })
 
           }
         }
@@ -399,12 +455,25 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   }
 
   async _leaveReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
-    if (propertyDef.hasJoinRef() && sources.join.length > 0) {
-      // TODO fetch existent data and find records for removally
-      // Save join again because new data could be attached!
-      let saved: any[] = await this.c.manager.save(propertyDef.joinRef.getClass(), sources.join);
-      return {next: saved};
+    if (propertyDef.hasJoinRef()) {
+
+      if (sourceDef instanceof EntityDef) {
+        if (!_.isEmpty(sources.join)) {
+          // Save join again because new data could be attached!
+          let saved: any[] = await this.c.manager.save(propertyDef.joinRef.getClass(), sources.join);
+          return {next: saved};
+        }
+
+      } else if (sourceDef instanceof ClassRef) {
+        if (!_.isEmpty(sources.join)) {
+          // Save join again because new data could be attached!
+          let saved: any[] = await this.c.manager.save(propertyDef.joinRef.getClass(), sources.join);
+          return {next: saved};
+        }
+      }
+
     } else if (propertyDef.isEmbedded()) {
+
       // set saved referrer id to base entity
       const targetClass = propertyDef.getTargetClass();
       let targetIdProps = this.em.schema().getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
@@ -483,14 +552,15 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   private getNotNullablePropertyNames(clazz: Function) {
     let metadata = this.c.manager.connection.getMetadata(clazz);
     let notNullProps = metadata.ownColumns
-      .filter(x => !x.isNullable && !x.propertyName.startsWith('source') && !x.propertyName.startsWith('property') && !x.propertyName.startsWith('target') && x.propertyName !== 'id')
+      .filter(x => !x.isNullable &&
+        !x.propertyName.startsWith('source') && x.propertyName !== 'id')
       .map(x => x.propertyName);
     return notNullProps;
   }
 
 
   private getNotNullablePropertiesForEmbedded(propertyDef: PropertyDef, embedProps: PropertyDef[]) {
-    let notNullProps = this.getNotNullablePropertyNames(propertyDef.joinRef.getClass())
+    let notNullProps = this.getNotNullablePropertyNames(propertyDef.joinRef.getClass());
     embedProps.forEach(prop => {
       _.remove(notNullProps, x => x == prop.name);
     });

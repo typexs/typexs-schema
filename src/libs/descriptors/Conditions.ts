@@ -4,6 +4,7 @@ import {IDesc} from "./IDesc";
 import _ = require("lodash");
 import {ClassRef} from "../ClassRef";
 import {EntityRegistry} from "../EntityRegistry";
+import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
 
 
 export const K_HINT_DATEFORMAT = 'dateformat';
@@ -64,6 +65,37 @@ export class CondDesc implements IDesc {
     return true;
   }
 
+
+  applyOn(target: any, source: any, force: boolean = false) {
+    if (this instanceof EqDesc) {
+      if (!_.has(target, this.key) || false) {
+        if (this.value instanceof ValueDesc) {
+          target[this.key] = this.value.value;
+        } else if (this.value instanceof KeyDesc) {
+          target[this.key] = source[this.value.key];
+        } else {
+          throw new NotYetImplementedError()
+        }
+      }
+    } else if (this instanceof AndDesc) {
+      _.map(this.values, v => v.applyOn(target, source, force))
+    } else if (this instanceof OrDesc) {
+      _.map(this.values, v => v.applyOn(target, source, force))
+    } else {
+      throw new NotYetImplementedError();
+    }
+  }
+
+
+  lookup(source: any): (target: any) => boolean {
+    throw new NotYetImplementedError()
+  }
+
+  for(target: any, keyMap: any = {}): any {
+    throw new NotYetImplementedError()
+  }
+
+
 }
 
 export class ValidationException extends NestedException {
@@ -96,6 +128,7 @@ export class GroupDesc extends CondDesc {
     super();
     this.values = values;
   }
+
 }
 
 
@@ -104,6 +137,23 @@ export class EqDesc extends OpDesc {
   constructor(key: string, value: Selector) {
     super(key, value);
   }
+
+  lookup(source: any): (target: any) => boolean {
+    const value = this.value instanceof KeyDesc ? source[this.value.key] : _.clone((<ValueDesc>this.value).value);
+    const key = this.key;
+    return function (target: any) {
+      return target[key] == value;
+    }
+  }
+
+  for(source: any, keyMap: any = {}): any {
+    const value = this.value instanceof KeyDesc ? source[this.value.key] : _.clone((<ValueDesc>this.value).value);
+    const key = keyMap[this.key];
+    let c: any = {};
+    c[key] = value;
+    return c;
+  }
+
 }
 
 export class LeDesc extends OpDesc {
@@ -111,12 +161,28 @@ export class LeDesc extends OpDesc {
   constructor(key: string, value: Selector) {
     super(key, value);
   }
+
+  lookup(source: any): (target: any) => boolean {
+    const value = this.value instanceof KeyDesc ? source[this.value.key] : _.clone((<ValueDesc>this.value).value);
+    const key = this.key;
+    return function (target: any) {
+      return target[key] <= value;
+    }
+  }
 }
 
 export class GeDesc extends OpDesc {
 
   constructor(key: string, value: Selector) {
     super(key, value);
+  }
+
+  lookup(source: any): (target: any) => boolean {
+    const value = this.value instanceof KeyDesc ? source[this.value.key] : _.clone((<ValueDesc>this.value).value);
+    const key = this.key;
+    return function (target: any) {
+      return target[key] >= value;
+    }
   }
 }
 
@@ -126,6 +192,26 @@ export class AndDesc extends GroupDesc {
   constructor(...values: CondDesc[]) {
     super(...values);
   }
+
+  lookup(source: any): (target: any) => boolean {
+    const checks = _.map(this.values, v => v.lookup(source));
+    return function (target: any): boolean {
+      for (let fn of checks) {
+        if (!fn(target)) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  for(source: any, keyMap: any = {}): any {
+    const checks = _.map(this.values, v => v.for(source, keyMap));
+    let c: any = {};
+    c['$and'] = checks;
+    return c;
+  }
+
 }
 
 export class OrDesc extends GroupDesc {
@@ -133,6 +219,26 @@ export class OrDesc extends GroupDesc {
   constructor(...values: CondDesc[]) {
     super(...values);
   }
+
+  lookup(source: any): (target: any) => boolean {
+    const checks = _.map(this.values, v => v.lookup(source));
+    return function (target: any): boolean {
+      for (let fn of checks) {
+        if (fn(target)) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
+  for(source: any, keyMap: any = {}): any {
+    const checks = _.map(this.values, v => v.for(source, keyMap));
+    let c: any = {};
+    c['$or'] = checks;
+    return c;
+  }
+
 }
 
 export class Selector implements IDesc {
