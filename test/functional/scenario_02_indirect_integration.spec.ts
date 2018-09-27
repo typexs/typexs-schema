@@ -1,10 +1,7 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {IStorageOptions, StorageRef} from 'typexs-base';
+import {IStorageOptions} from 'typexs-base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {EntityRegistry} from "../../src";
-import {EntityController} from "../../src/libs/EntityController";
-import {getMetadataArgsStorage} from 'typeorm';
 import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import * as _ from "lodash";
 import {TestHelper} from "./TestHelper";

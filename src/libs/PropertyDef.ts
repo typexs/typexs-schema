@@ -7,6 +7,7 @@ import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplemen
 import {NotSupportedError} from "typexs-base/libs/exceptions/NotSupportedError";
 import * as _ from './LoDash';
 import {EntityDef} from "./EntityDef";
+import * as moment from "moment";
 
 
 export class PropertyDef extends AbstractDef {
@@ -26,6 +27,7 @@ export class PropertyDef extends AbstractDef {
   readonly identifier: boolean;
 
   readonly generated: boolean;
+
 
   readonly embed: boolean;
 
@@ -94,6 +96,9 @@ export class PropertyDef extends AbstractDef {
     return this.targetRef != null;
   }
 
+  isSequence(): boolean {
+    return this.getOptions('sequence', false);
+  }
 
   isInternal(): boolean {
     return this.propertyRef == null;
@@ -121,6 +126,14 @@ export class PropertyDef extends AbstractDef {
 
   getCondition() {
     return this.getOptions('cond', null);
+  }
+
+  hasJoin() {
+    return this.getOptions('join', false) !== false;
+  }
+
+  getJoin() {
+    return this.getOptions('join', null);
   }
 
   hasJoinRef() {
@@ -195,7 +208,12 @@ export class PropertyDef extends AbstractDef {
       } else {
         throw new NotYetImplementedError('value ' + data);
       }
-
+    } else if (this.dataType == 'date') {
+      if (data instanceof Date) {
+        return data;
+      } else {
+        return moment(data).toDate();
+      }
     } else {
       throw new NotYetImplementedError('value ' + data);
     }

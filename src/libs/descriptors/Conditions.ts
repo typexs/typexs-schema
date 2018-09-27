@@ -44,12 +44,12 @@ export class CondDesc implements IDesc {
    * - target = referred
    * - source = referrer
    */
-  validate(targetRef: ClassRef, sourceRef: ClassRef, throwing: boolean = true) {
+  validate(targetRef: ClassRef, sourceRef?: ClassRef, throwing: boolean = true) {
     let sourceKeys = this.getSourceKeys();
     let targetKeys = this.getTargetKeys();
 
     let targetProps = EntityRegistry.getPropertyDefsFor(targetRef).map(p => p.name).filter(pn => sourceKeys.indexOf(pn) !== -1);
-    let sourceProps = EntityRegistry.getPropertyDefsFor(sourceRef).map(p => p.name).filter(pn => targetKeys.indexOf(pn) !== -1);
+    let sourceProps = sourceRef ? EntityRegistry.getPropertyDefsFor(sourceRef).map(p => p.name).filter(pn => targetKeys.indexOf(pn) !== -1) : [];
     if (sourceKeys.length != targetProps.length) {
       if (throwing) {
         throw new ValidationException('referred key(s) ' + sourceKeys.filter(k => targetProps.indexOf(k) === -1).join(',') + ' not in sourceRef')
@@ -81,6 +81,25 @@ export class CondDesc implements IDesc {
       _.map(this.values, v => v.applyOn(target, source, force))
     } else if (this instanceof OrDesc) {
       _.map(this.values, v => v.applyOn(target, source, force))
+    } else {
+      throw new NotYetImplementedError();
+    }
+  }
+
+
+  applyReverseOn(target: any, source: any, force: boolean = false) {
+    if (this instanceof EqDesc) {
+      if (!_.has(target, this.key) || false) {
+        if (this.value instanceof KeyDesc) {
+          target[this.value.key] = source[this.key];
+        } else {
+          throw new NotYetImplementedError()
+        }
+      }
+    } else if (this instanceof AndDesc) {
+      _.map(this.values, v => v.applyReverseOn(target, source, force))
+    } else if (this instanceof OrDesc) {
+      _.map(this.values, v => v.applyReverseOn(target, source, force))
     } else {
       throw new NotYetImplementedError();
     }
@@ -148,7 +167,7 @@ export class EqDesc extends OpDesc {
 
   for(source: any, keyMap: any = {}): any {
     const value = this.value instanceof KeyDesc ? source[this.value.key] : _.clone((<ValueDesc>this.value).value);
-    const key = keyMap[this.key];
+    const key = _.get(keyMap, this.key, this.key);
     let c: any = {};
     c[key] = value;
     return c;
@@ -263,6 +282,18 @@ export class ValueDesc extends Selector {
   }
 }
 
+
+export class OrderDesc implements IDesc {
+  readonly key: KeyDesc;
+  readonly asc: boolean;
+
+  constructor(key: KeyDesc, direction: boolean = true) {
+    this.key = key
+    this.asc = direction;
+  }
+}
+
+
 export function Eq(key: string, value: Selector) {
   return new EqDesc(key, value);
 }
@@ -296,4 +327,18 @@ export function Key(k: string) {
  */
 export function Value(v: string) {
   return new ValueDesc(v);
+}
+
+/**
+ * Asc
+ */
+export function Asc(k: KeyDesc) {
+  return new OrderDesc(k, true)
+}
+
+/**
+ * Asc
+ */
+export function Desc(k: KeyDesc) {
+  return new OrderDesc(k, false)
 }

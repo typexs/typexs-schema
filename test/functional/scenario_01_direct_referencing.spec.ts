@@ -3,7 +3,6 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {IStorageOptions, StorageRef} from "typexs-base";
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import {inspect} from 'util';
 import {EntityController} from "../../src/libs/EntityController";
 import {TestHelper} from "./TestHelper";

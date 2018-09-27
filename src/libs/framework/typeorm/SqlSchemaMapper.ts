@@ -11,6 +11,7 @@ import {ISchemaMapper} from "./../ISchemaMapper";
 import {IDataExchange} from "../IDataExchange";
 import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {NameResolver} from "./NameResolver";
+import {JoinDesc} from "../../descriptors/Join";
 
 
 interface DBType {
@@ -85,21 +86,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     if (hasPrefix) {
       [propName, propStoreName] = this.nameResolver.for(results.prefix, propertyDef);
     }
-
-    if (propertyDef.identifier) {
-      let orm = propertyDef.getOptions('typeorm', {});
-      orm = _.merge(orm, this.detectDataTypeFromProperty(propertyDef));
-      orm.name = propStoreName;
-
-      if (propertyDef.generated) {
-        // TODO resolve strategy for generation
-        PrimaryGeneratedColumn(orm)(propClass, propName);
-      } else {
-        PrimaryColumn(orm)(propClass, propName);
-      }
-    } else {
-      this.ColumnDef(propertyDef, propStoreName)(propClass, propName);
-    }
+    this.ColumnDef(propertyDef, propStoreName)(propClass, propName);
   }
 
 
@@ -114,6 +101,31 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     }
   }
 
+  private handleJoinDefinitionIfGiven(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef | ClassRef, sources: XContext) {
+    let join: JoinDesc = propertyDef.getJoin();
+
+    // create join entity class
+    let joinProps = this.schemaDef.getPropertiesFor(join.joinRef.getClass());
+    let joinClass = this.handleCreateObjectClass(join.joinRef, 'p');
+    let joinPropClass = {constructor: joinClass};
+    let hasId = joinProps.filter(j => j.identifier).length > 0;
+    if (!hasId) {
+      PrimaryGeneratedColumn({name: 'id', type: 'int'})(joinPropClass, 'id');
+    }
+
+    joinProps.forEach(prop => {
+      let propName = prop.name;
+      let propStoreName = prop.storingName;
+      this.ColumnDef(prop, propStoreName)(joinPropClass, propName);
+    });
+
+    join.validate(
+      sourceDef instanceof EntityDef ? sourceDef.getClassRef() : sourceDef,
+      propertyDef,
+      entityDef instanceof EntityDef ? entityDef.getClassRef() : entityDef);
+
+    return {next: joinClass};
+  }
 
   async visitEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext): Promise<XContext> {
     /**
@@ -128,6 +140,8 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     if (this.handleCheckConditionsIfGiven(sourceDef, propertyDef, entityDef)) {
       // if condition is given then no new join table is needed
       return sources;
+    } else if (propertyDef.hasJoin()) {
+      return this.handleJoinDefinitionIfGiven(sourceDef, propertyDef, entityDef, sources)
     } else if (sourceDef instanceof EntityDef) {
 
       if (propertyDef.isEmbedded()) {
@@ -138,14 +152,8 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
          */
         let pName = propertyDef.storingName;
         const clazz = this.handleCreatePropertyClass(propertyDef, pName);
-        /*
-        propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(pName));
-        let clazz = propertyDef.joinRef.getClass();
-        Entity(pName)(clazz);
-        */
         this.attachPrimaryKeys(sourceDef, propertyDef, clazz);
         this.attachTargetKeys(propertyDef, entityDef, clazz);
-
         return {next: clazz}
       }
 
@@ -234,10 +242,10 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
 
-  private handleCreateObjectClass(classRef: ClassRef) {
+  private handleCreateObjectClass(classRef: ClassRef, prefix: string = 'o') {
     let tName = classRef.storingName;
     if (!classRef.hasName()) {
-      tName = ['o', tName].join('_');
+      tName = [prefix, tName].join('_');
     }
     let entityClass = classRef.getClass();
     Entity(tName)(entityClass);
@@ -300,14 +308,24 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
 
-  private ColumnDef(property: PropertyDef, name: string) {
+  private ColumnDef(property: PropertyDef, name: string, skipIdentifier: boolean = false) {
     let def = _.clone(property.getOptions('typeorm', {}));
     let dbType = this.detectDataTypeFromProperty(property);
-
     def = _.merge(def, {name: name}, dbType);
     if (property.isNullable()) {
       def.nullable = true;
     }
+
+    if (property.identifier && !skipIdentifier) {
+      console.log(property.object.storingName,property.name,property.identifier,property.generated)
+      if (property.generated) {
+        // TODO resolve strategy for generation
+        return PrimaryGeneratedColumn(def);
+      } else {
+        return PrimaryColumn(def);
+      }
+    }
+
     return Column(def);
   }
 
@@ -317,7 +335,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
     entityDef.getPropertyDefIdentifier().forEach(property => {
       let [targetId, targetName] = this.nameResolver.for(prefix, property);
-      this.ColumnDef(property, targetName)(refTargetClassDescr, targetId);
+      this.ColumnDef(property, targetName, true)(refTargetClassDescr, targetId);
     });
 
     if (entityDef.areRevisionsEnabled()) {
@@ -343,7 +361,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
     idProps.forEach(property => {
       let [targetId, targetName] = this.nameResolver.forTarget(property);
-      this.ColumnDef(property, targetName)(refTargetClassDescr, targetId);
+      this.ColumnDef(property, targetName, true)(refTargetClassDescr, targetId);
       uniqueIndex.push(targetId);
     });
 
@@ -434,12 +452,18 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   private detectDataTypeFromProperty(prop: PropertyDef): DBType {
     // TODO type map for default table types
     let type = {type: 'text'};
+    // TODO !this.storageRef.getSchemaHandler().translateToStoreType(prop.dataType);
+
     switch (prop.dataType) {
       case 'string':
         type.type = 'text';
         break;
       case 'number':
         type.type = 'int';
+        break;
+      case 'date':
+        // depends
+        type.type = 'text';
         break;
     }
     return type;

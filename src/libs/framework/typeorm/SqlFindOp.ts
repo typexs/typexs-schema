@@ -10,6 +10,9 @@ import {ClassRef} from "../../ClassRef";
 import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from "../../Constants";
 import {IDataExchange} from "../IDataExchange";
 import {SqlHelper} from "./SqlHelper";
+import {Sql} from "./Sql";
+import {JoinDesc} from "../../descriptors/Join";
+import {EntityRegistry} from "../../EntityRegistry";
 
 
 interface IFindData extends IDataExchange<any[]> {
@@ -59,32 +62,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
   //Object.keys(condition).map(k => `${k} = '${condition[k]}'`).join(' AND ')
   private handleCondition(condition: any, k: string = null): string {
-    if (_.isEmpty(condition)) {
-      return null;
-    }
-    let control: any = Object.keys(condition).filter(k => k.startsWith('$'));
-    if (!_.isEmpty(control)) {
-      control = control.shift();
-      if (control == '$and') {
-        return '(' + _.map(condition[control], c => this.handleCondition(c)).join(') AND (') + ')';
-      } else if (control == '$or') {
-        return '(' + _.map(condition[control], c => this.handleCondition(c)).join(') OR (') + ')';
-      } else {
-        throw new NotYetImplementedError()
-      }
-
-    } else if (_.isArray(condition)) {
-
-      return '(' + _.map(condition, c => this.handleCondition(c)).join(') OR (') + ')';
-    } else {
-
-      return Object.keys(condition).map(k => {
-        if (_.isPlainObject(condition[k])) {
-          return this.handleCondition(condition[k], k);
-        }
-        return `${k} = '${condition[k]}'`
-      }).join(' AND ');
-    }
+    return Sql.conditionsToString(condition, k);
   }
 
   leaveEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: any): Promise<any> {
@@ -92,7 +70,82 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
   }
 
 
-  async visitEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef, sources: IFindData): Promise<IFindData> {
+  private async handleJoinDefintionVisit(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef | ClassRef, sources: IFindData): Promise<[any[], any[], any[]]> {
+    let conditions: any[] = [];
+    let _lookups: any[] = [];
+    let results: any[] = [];
+
+    const joinDef: JoinDesc = propertyDef.getJoin();
+    const joinProps = EntityRegistry.getPropertyDefsFor(joinDef.joinRef);
+
+    const mapping = _.merge({}, ... _.map(joinProps, p => {
+      let c = {};
+      c[p.name] = p.storingName;
+      return c;
+    }));
+
+    for (let x = 0; x < sources.next.length; x++) {
+      let source = sources.next[x];
+      conditions.push(joinDef.for(source, mapping));
+      _lookups.push(joinDef.lookup(source));
+    }
+
+
+    let where = Sql.conditionsToString(conditions);
+    if (!_.isEmpty(conditions) && where) {
+      let queryBuilder = this.c.manager.getRepository(joinDef.joinRef.getClass()).createQueryBuilder();
+      queryBuilder.where(Sql.conditionsToString(conditions));
+
+      joinDef.order.forEach(o => {
+        queryBuilder.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
+      });
+
+      results = await queryBuilder.getMany();
+    }
+
+    if (results.length == 0) {
+      return [[], [], []]
+    }
+
+    let lookups: any[] = [];
+    conditions = [];
+    for (let x = 0; x < sources.next.length; x++) {
+      let lookup = _lookups[x];
+      let source = sources.next[x];
+      let joinResults = _.filter(results,r => lookup(r));
+      source[propertyDef.name] = joinResults;
+      for(let joinResult of joinResults){
+        let condition = joinDef.getTo().cond.for(joinResult);
+        conditions.push(condition);
+        lookups.push(joinDef.getTo().cond.lookup(joinResult));
+      }
+    }
+
+    return [conditions, lookups, results];
+  }
+
+
+  private async handleJoinDefintionLeave(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef | ClassRef, sources: IFindData, visitResult: IFindData): Promise<IFindData> {
+    for(let x=0;x< visitResult.next.length;x++){
+      let source = visitResult.next[x];
+      let targets = propertyDef.get(source);
+      if(!targets) continue;
+
+      let results= [];
+      for(let target of targets){
+        let lookup = visitResult.lookup.shift();
+        let result = _.find(sources.next,s => lookup(s));
+        if(result){
+          results.push(result);
+        }
+      }
+      source[propertyDef.name] = results;
+    }
+    return sources;
+  }
+
+
+  async visitEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef, sources: IFindData): Promise<IFindData> {
     let conditions: any[] = [];
     let lookups: any[] = [];
     let results: any[] = [];
@@ -110,6 +163,8 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         lookups.push(conditionDef.lookup(source));
         conditions.push(conditionDef.for(source, mapping));
       }
+    } else if (propertyDef.hasJoin()) {
+      [conditions, lookups, results] = await this.handleJoinDefintionVisit(sourceDef, propertyDef, targetDef, sources);
     } else if (propertyDef.hasJoinRef()) {
       // own refering table, fetch table data and extract target references
       let sourcePropsIds: PropertyDef[] = null;
@@ -223,7 +278,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
   }
 
 
-  async leaveEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: IFindData, visitResult: IFindData): Promise<IFindData> {
+  async leaveEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: IFindData, visitResult: IFindData): Promise<IFindData> {
     if (propertyDef.hasConditions()) {
       for (let i = 0; i < visitResult.next.length; i++) {
         let source = visitResult.next[i];
@@ -236,6 +291,8 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         }
 
       }
+    } else if (propertyDef.hasJoin()) {
+      await this.handleJoinDefintionLeave(sourceDef, propertyDef, entityDef, sources, visitResult);
     } else if (propertyDef.hasJoinRef()) {
       // my data so handle it
       let sourcePropsIds: PropertyDef[] = null;
@@ -604,7 +661,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       return;
     } else {
 
-      if(_.get(sources,'status.inline',false)){
+      if (_.get(sources, 'status.inline', false)) {
         // inline objects already readed
         return;
       }
@@ -636,7 +693,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
           join[propertyDef.name] = target;
         }
       }
-      _.set(sources,'status.inline',true);
+      _.set(sources, 'status.inline', true);
       return sources;
     }
     return false;

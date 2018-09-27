@@ -10,6 +10,8 @@ import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from "../../Con
 import * as _ from "lodash";
 import {IDataExchange} from "../IDataExchange";
 import {SqlHelper} from "./SqlHelper";
+import {JoinDesc} from "../../descriptors/Join";
+import {EntityRegistry} from "../../EntityRegistry";
 
 
 interface ISaveData extends IDataExchange<any[]> {
@@ -89,7 +91,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   }
 
 
-  async visitEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources?: ISaveData): Promise<ISaveData> {
+  async visitEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef, sources?: ISaveData): Promise<ISaveData> {
 
     let sourceEntityDef: EntityDef;
     let targetObjects: any[] = [];
@@ -149,18 +151,61 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           joinObj[propertyDef.name] = target;
         }
       }
+    } else if (propertyDef.hasJoin()) {
+      joinObjs = this.handleJoinDefintionVisit(sourceDef, propertyDef, targetDef, sources)
     } else {
       joinObjs = sources.join;
     }
     return {next: targetObjects, join: joinObjs, target: sources.next, abort: targetObjects.length === 0};
   }
 
-  async leaveEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources?: ISaveData, visitResult?: ISaveData): Promise<ISaveData> {
+  private handleJoinDefintionVisit(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef | ClassRef, sources: ISaveData) {
+    let joinObjs: any[] = [];
 
+    const joinDef: JoinDesc = propertyDef.getJoin();
+    const joinProps = EntityRegistry.getPropertyDefsFor(joinDef.joinRef);
+    const seqNrProp = joinProps.find(p => p.isSequence())
+    for (let x = 0; x < sources.next.length; x++) {
+      let source = sources.next[x];
+      let seqNr = 0;
+      let joinTargets = propertyDef.get(source);
+      if (!joinTargets) continue;
+      if (!_.isArray(joinTargets)) {
+        joinTargets = [joinTargets];
+      }
+
+      for (let joinTarget of joinTargets) {
+        let joinObj = joinDef.joinRef.new();
+        joinObjs.push(joinObj);
+        joinObj['__target__'] = joinTarget;
+        joinDef.getForm().cond.applyOn(joinObj, source);
+        joinDef.condition.applyOn(joinObj, source);
+        if (seqNrProp) {
+          joinObj[seqNrProp.name] = seqNr++;
+        }
+      }
+    }
+    return joinObjs;
+  }
+
+
+  private async handleJoinDefintionLeave(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef | ClassRef, sources: ISaveData, visitResult: ISaveData) : Promise<ISaveData>{
+    const joinDef: JoinDesc = propertyDef.getJoin();
+    for (let joinObj of visitResult.join) {
+      let target = joinObj['__target__'];
+      joinDef.getTo().cond.applyReverseOn(joinObj, target);
+      delete joinObj['__target__'];
+    }
+    await this.c.manager.save(joinDef.joinRef.getClass(), visitResult.join);
+    return sources;
+  }
+
+
+  async leaveEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef, sources: ISaveData, visitResult: ISaveData): Promise<ISaveData> {
     if (propertyDef.hasJoinRef()) {
       if (_.isEmpty(visitResult.join)) return sources;
 
-      let targetIdProps = entityDef.getPropertyDefIdentifier();
+      let targetIdProps = targetDef.getPropertyDefIdentifier();
       for (let x = 0; x < visitResult.join.length; x++) {
         let joinObj = visitResult.join[x];
         let target = propertyDef.get(joinObj);
@@ -172,7 +217,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       await this.c.manager.save(propertyDef.joinRef.getClass(), visitResult.join);
     } else if (propertyDef.isEmbedded()) {
       // set saved referrer id to base entity
-      let targetIdProps = entityDef.getPropertyDefIdentifier();
+      let targetIdProps = targetDef.getPropertyDefIdentifier();
       let refProps = SqlHelper.getEmbeddedPropertyIds(propertyDef);
       let targetName, targetId;
       for (let target of visitResult.target) {
@@ -185,9 +230,12 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           target[targetId] = prop.get(source);
         })
       }
+    } else if (propertyDef.hasJoin()) {
+      return this.handleJoinDefintionLeave(sourceDef, propertyDef, targetDef, sources, visitResult);
     } else {
 
       if (visitResult.join) {
+        /*
         let sourcePropsIds: PropertyDef[] = null;
         if (sourceDef instanceof EntityDef) {
           sourcePropsIds = sourceDef.getPropertyDefIdentifier();
@@ -195,10 +243,10 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           sourcePropsIds = this.em.schema().getPropertiesFor(sourceDef.getClass());
         } else {
           throw new NotYetImplementedError();
-        }
+        }*/
 
         //  let [seqNrId, ] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
-        let refIdProps = entityDef.getPropertyDefIdentifier();
+        let refIdProps = targetDef.getPropertyDefIdentifier();
 
         for (let x = 0; x < visitResult.join.length; x++) {
           let joinObj = visitResult.join[x];
@@ -293,7 +341,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           let seqNr = 0;
 
           let _targetObjects = propertyDef.get(source);
-          if(!_targetObjects) continue;
+          if (!_targetObjects) continue;
           if (!_.isArray(_targetObjects)) {
             _targetObjects = [_targetObjects]
           }

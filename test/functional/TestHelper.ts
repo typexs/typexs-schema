@@ -7,7 +7,7 @@ export class TestHelper {
 
   static async connect(options: any): Promise<{ ref: StorageRef, controller: EntityController }> {
     let ref = new StorageRef(options);
-    ref.setSchemaHandler(new SqliteSchemaHandler(ref));
+    ref.setSchemaHandler(Reflect.construct(SqliteSchemaHandler,[ref]));
     await ref.prepare();
     let schemaDef = EntityRegistry.getSchema(options.name);
 

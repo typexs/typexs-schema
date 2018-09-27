@@ -1,5 +1,5 @@
 import {JoinDesc} from "./descriptors/Join";
-import {CondDesc, Key, KeyDesc} from "./descriptors/Conditions";
+import {CondDesc, Key, KeyDesc, OrderDesc} from "./descriptors/Conditions";
 
 export interface IProperty {
 
@@ -67,13 +67,25 @@ export interface IProperty {
   join?: JoinDesc;
 
   /**
-   * Join table definition
+   * Condition definition
    */
   cond?: CondDesc;
+
+
+  /**
+   * Order  definition
+   */
+  order?: OrderDesc | OrderDesc[];
+
 
   /**
    * Extra keys
    */
   typeorm?: any;
+
+  /**
+   * Extra keys
+   */
+  sequence?: boolean;
 
 }

@@ -6,7 +6,7 @@ export class Speed {
   @Property({type: 'number'})
   value: number;
 
-  @Property({type: 'speed'})
+  @Property({type: 'string'})
   unit: string;
 
 }
