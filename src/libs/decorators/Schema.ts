@@ -1,5 +1,5 @@
 import {EntityRegistry} from '../EntityRegistry';
-import {ISchema} from '../ISchema';
+import {ISchema} from '../registry/ISchema';
 
 
 export function Schema(options:ISchema) {

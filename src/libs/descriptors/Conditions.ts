@@ -1,8 +1,8 @@
 import {NestedException} from "commons-base/libs/exceptions/NestedException";
 
 import {IDesc} from "./IDesc";
-import _ = require("lodash");
-import {ClassRef} from "../ClassRef";
+import * as _ from "../LoDash";
+import {ClassRef} from "../registry/ClassRef";
 import {EntityRegistry} from "../EntityRegistry";
 import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
 

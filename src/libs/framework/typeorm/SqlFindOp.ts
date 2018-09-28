@@ -1,12 +1,11 @@
-import * as _ from 'lodash';
+import * as _ from '../../LoDash';
 import {IFindOp} from "../IFindOp";
 import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {EntityController} from "../../EntityController";
 import {ConnectionWrapper, NotYetImplementedError} from "typexs-base";
-import {SelectQueryBuilder} from "typeorm";
-import {PropertyDef} from "../../PropertyDef";
-import {EntityDef} from "../../EntityDef";
-import {ClassRef} from "../../ClassRef";
+import {PropertyDef} from "../../registry/PropertyDef";
+import {EntityDef} from "../../registry/EntityDef";
+import {ClassRef} from "../../registry/ClassRef";
 import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from "../../Constants";
 import {IDataExchange} from "../IDataExchange";
 import {SqlHelper} from "./SqlHelper";
@@ -54,7 +53,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
     entityDef.getPropertyDefIdentifier().forEach(x => {
       qb.addOrderBy(x.storingName, 'ASC');
-    })
+    });
 
     let results = await qb.limit(limit).getMany();
     return {next: results, abort: results.length === 0}
@@ -243,7 +242,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
             condition[prop.storingName] = extJoinObj[targetId];
             lookup[prop.name] = extJoinObj[targetId];
-          })
+          });
 
           lookups.push(lookup);
           conditions.push(condition);
@@ -500,7 +499,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
           condition[prop.storingName] = extJoinObj[targetId];
           lookup[prop.name] = extJoinObj[targetId];
-        })
+        });
 
         lookups.push(lookup);
         queryBuilder.orWhere(SqlFindOp.conditionToQuery(condition));
@@ -570,7 +569,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
             let newObject = classRef.new();
             classProp.forEach(p => {
               newObject[p.name] = p.get(attachObj);
-            })
+            });
 
             if (propertyDef.isCollection()) {
               if (!_.isArray(target[propertyDef.name])) {
@@ -689,7 +688,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
             let [id, name] = this.em.nameResolver().for(propertyDef.machineName, prop);
             target[prop.name] = join[id];
             delete join[id];
-          })
+          });
           join[propertyDef.name] = target;
         }
       }

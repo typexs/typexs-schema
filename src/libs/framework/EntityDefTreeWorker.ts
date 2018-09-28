@@ -1,9 +1,9 @@
 // TODO prevent circulations
-import {EntityDef} from '../EntityDef';
-import {PropertyDef} from '../PropertyDef';
-import {ClassRef} from "../ClassRef";
+import {EntityDef} from '../registry/EntityDef';
+import {PropertyDef} from '../registry/PropertyDef';
+import {ClassRef} from "../registry/ClassRef";
 import {EntityRegistry} from "../EntityRegistry";
-import * as _ from "lodash";
+import * as _ from "../LoDash";
 import {IDataExchange} from "./IDataExchange";
 
 interface IQEntry {

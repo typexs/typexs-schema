@@ -1,7 +1,7 @@
-import {XS_ID_SEPARATOR, XS_TYPE} from './Constants';
+import {XS_DEFAULT_SCHEMA, XS_ID_SEPARATOR, XS_TYPE} from './../Constants';
 
 import {ClassRef} from './ClassRef';
-import * as _ from './LoDash';
+import * as _ from './../LoDash';
 import {IProperty} from "./IProperty";
 import {IEntity} from "./IEntity";
 
@@ -63,21 +63,7 @@ export abstract class AbstractDef {
     return this._options;
   }
 
-  id(): string {
-    let idKeys: string[] = [];
-    if (this['schemaName']) {
-      if (this['entityName']) {
-        idKeys = ['schemaName', 'entityName', 'name'];
-      } else {
-        idKeys = ['schemaName', 'name'];
-      }
-
-    } else {
-      idKeys = ['name'];
-    }
-    return _.map(idKeys, (k): string => this[k]).join(XS_ID_SEPARATOR).toLocaleLowerCase();
-  }
-
+  abstract id(): string | string[];
 
   toJson() {
     let o: any = {

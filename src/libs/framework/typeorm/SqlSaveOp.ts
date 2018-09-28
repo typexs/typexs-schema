@@ -2,12 +2,12 @@ import {ConnectionWrapper, NotYetImplementedError} from 'typexs-base';
 import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {ISaveOp} from "../ISaveOp";
 import {EntityController} from "../../EntityController";
-import {PropertyDef} from "../../PropertyDef";
-import {EntityDef} from "../../EntityDef";
-import {ClassRef} from "../../ClassRef";
+import {PropertyDef} from "../../registry/PropertyDef";
+import {EntityDef} from "../../registry/EntityDef";
+import {ClassRef} from "../../registry/ClassRef";
 import {SchemaUtils} from "../../SchemaUtils";
 import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from "../../Constants";
-import * as _ from "lodash";
+import * as _ from "../../LoDash";
 import {IDataExchange} from "../IDataExchange";
 import {SqlHelper} from "./SqlHelper";
 import {JoinDesc} from "../../descriptors/Join";
@@ -189,7 +189,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   }
 
 
-  private async handleJoinDefintionLeave(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef | ClassRef, sources: ISaveData, visitResult: ISaveData) : Promise<ISaveData>{
+  private async handleJoinDefintionLeave(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef | ClassRef, sources: ISaveData, visitResult: ISaveData): Promise<ISaveData> {
     const joinDef: JoinDesc = propertyDef.getJoin();
     for (let joinObj of visitResult.join) {
       let target = joinObj['__target__'];
@@ -555,7 +555,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
 
   private async saveByEntityDef<T>(entityName: string | EntityDef, objects: T[]): Promise<T[]> {
-    let entityDef = SchemaUtils.resolve(this.em.schemaDef, entityName);
+    let entityDef = _.isString(entityName) ? this.em.schema().getEntity(entityName) : entityName;
     return await this.walk(entityDef, objects);
   }
 

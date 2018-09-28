@@ -1,4 +1,3 @@
-
 import {XS_TYPE} from './Constants';
 import * as _ from './LoDash'
 
@@ -13,7 +12,7 @@ export class LookupRegistry {
 
   }
 
-  static reset(){
+  static reset() {
     this.$self = new LookupRegistry();
     return this.$self;
   }
@@ -22,14 +21,14 @@ export class LookupRegistry {
     return this.$self;
   }
 
-  list(context: XS_TYPE){
+  list(context: XS_TYPE) {
     if (!_.has(this._entries, context)) {
       this._entries[context] = [];
     }
     return this._entries[context];
   }
 
-  add<T>(context: XS_TYPE, entry: T):T {
+  add<T>(context: XS_TYPE, entry: T): T {
     if (!_.has(this._entries, context)) {
       this._entries[context] = [];
     }
@@ -37,14 +36,21 @@ export class LookupRegistry {
     return entry;
   }
 
-  filter<T>(context: XS_TYPE, search: any):T[] {
+  remove<T>(context: XS_TYPE, search: any): T[] {
+    if (!_.has(this._entries, context)) {
+      this._entries[context] = [];
+    }
+    return _.remove<T>(this._entries[context], search);
+  }
+
+  filter<T>(context: XS_TYPE, search: any): T[] {
     if (!_.has(this._entries, context)) {
       this._entries[context] = [];
     }
     return _.filter(this._entries[context], search);
   }
 
-  find<T>(context: XS_TYPE, search: any):T {
+  find<T>(context: XS_TYPE, search: any): T {
     if (!_.has(this._entries, context)) {
       this._entries[context] = [];
     }

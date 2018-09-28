@@ -1,16 +1,24 @@
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
-import {XS_TYPE, XS_TYPE_CLASS_REF, XS_TYPE_ENTITY, XS_TYPE_PROPERTY, XS_TYPE_SCHEMA} from './Constants';
+import {
+  XS_DEFAULT_SCHEMA,
+  XS_TYPE,
+  XS_TYPE_CLASS_REF,
+  XS_TYPE_ENTITY,
+  XS_TYPE_PROPERTY,
+  XS_TYPE_SCHEMA
+} from './Constants';
 
-import {SchemaDef} from './SchemaDef';
-import {PropertyDef} from './PropertyDef';
+import {SchemaDef} from './registry/SchemaDef';
+import {PropertyDef} from './registry/PropertyDef';
 import {LookupRegistry} from './LookupRegistry';
-import {AbstractDef} from './AbstractDef';
-import {EntityDef} from './EntityDef';
-import {IProperty} from './IProperty';
-import {IEntity} from './IEntity';
-import {ISchema} from './ISchema';
+import {AbstractDef} from './registry/AbstractDef';
+import {EntityDef} from './registry/EntityDef';
+import {IProperty} from './registry/IProperty';
+import {IEntity} from './registry/IEntity';
+import {ISchema} from './registry/ISchema';
 import * as _ from './LoDash'
-import {ClassRef} from "./ClassRef";
+import {ClassRef} from "./registry/ClassRef";
+import {Binding} from "./registry/Binding";
 
 export class EntityRegistry {
 
@@ -75,9 +83,10 @@ export class EntityRegistry {
       schema = new SchemaDef(options);
       schema = this.$()._lookup.add(XS_TYPE_SCHEMA, schema);
     }
-    let binding = Binding.create(XS_TYPE_SCHEMA, schema.name, XS_TYPE_ENTITY, fn);
-    this.register(binding);
     let classRef = ClassRef.get(fn);
+    let binding = Binding.create(XS_TYPE_SCHEMA, schema.name, XS_TYPE_CLASS_REF, classRef);
+    this.$()._lookup.remove(binding.bindingType, (b: Binding) => b.source == XS_DEFAULT_SCHEMA && b.target.id() == classRef.id());
+    this.register(binding);
     classRef.setSchema(schema.name);
     return schema;
   }
@@ -105,12 +114,13 @@ export class EntityRegistry {
   }
 
   getPropertyDefsFor(entity: EntityDef | ClassRef): PropertyDef[] {
-    if(entity instanceof EntityDef){
-      return this._lookup.filter(XS_TYPE_PROPERTY, {entityName: entity.name});
-    }else{
-      return this._lookup.filter(XS_TYPE_PROPERTY, {object: entity});
+    if (entity instanceof EntityDef) {
+      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyDef) => x.object.id() === entity.getClassRef().id());
+    } else {
+      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyDef) => {
+        return x.object.id() === entity.id()
+      });
     }
-
   }
 
 
@@ -133,27 +143,6 @@ export class EntityRegistry {
     LookupRegistry.reset();
     this._self = null;
 
-  }
-}
-
-export class Binding {
-
-  bindingType: XS_TYPE;
-
-  sourceType: XS_TYPE;
-  source: any;
-
-  targetType: XS_TYPE;
-  target: any;
-
-  static create(sType: XS_TYPE, sName: any, tType: XS_TYPE, tName: any) {
-    let b = new Binding();
-    b.bindingType = <XS_TYPE>[sType, tType].join('_');
-    b.sourceType = sType;
-    b.targetType = tType;
-    b.source = sName;
-    b.target = tName;
-    return b;
   }
 }
 

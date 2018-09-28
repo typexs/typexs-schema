@@ -1,11 +1,10 @@
 import {IDesc} from "./IDesc";
 import {NotYetImplementedError} from "typexs-base";
-import _ = require("lodash");
-import {ClassRef} from "../ClassRef";
+import {ClassRef} from "../registry/ClassRef";
 import {And, CondDesc, OrderDesc, ValidationException} from "./Conditions";
-import {PropertyDef} from "../PropertyDef";
-import {EntityDef} from "../EntityDef";
+import {PropertyDef} from "../registry/PropertyDef";
 import {EntityRegistry} from "../EntityRegistry";
+import _ = require("lodash");
 
 export type KeyMapType = 'from' | 'to';
 

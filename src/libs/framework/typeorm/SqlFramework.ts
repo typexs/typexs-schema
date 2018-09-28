@@ -5,7 +5,7 @@ import {IFindOp} from "../IFindOp";
 import {ISaveOp} from "../ISaveOp";
 import {ISchemaMapper} from "../ISchemaMapper";
 import {NotYetImplementedError, StorageRef} from "typexs-base";
-import {SchemaDef} from "../../SchemaDef";
+import {SchemaDef} from "../../registry/SchemaDef";
 import {SqlSchemaMapper} from "./SqlSchemaMapper";
 import {SqlFindOp} from "./SqlFindOp";
 import {SqlSaveOp} from "./SqlSaveOp";

@@ -1,11 +1,11 @@
 import {IStorageOptions, NotYetImplementedError, StorageRef} from 'typexs-base';
 import {Column, Entity, Index, PrimaryColumn, PrimaryGeneratedColumn} from 'typeorm';
-import {SchemaDef} from '../../SchemaDef';
-import {EntityDef} from '../../EntityDef';
-import * as _ from "lodash";
-import {PropertyDef} from '../../PropertyDef';
+import {SchemaDef} from '../../registry/SchemaDef';
+import {EntityDef} from '../../registry/EntityDef';
+import * as _ from "../../LoDash";
+import {PropertyDef} from '../../registry/PropertyDef';
 import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
-import {ClassRef} from '../../ClassRef';
+import {ClassRef} from '../../registry/ClassRef';
 import {SchemaUtils} from "../../SchemaUtils";
 import {ISchemaMapper} from "./../ISchemaMapper";
 import {IDataExchange} from "../IDataExchange";
@@ -124,7 +124,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       propertyDef,
       targetRef instanceof EntityDef ? targetRef.getClassRef() : targetRef);
 
-    if(targetRef instanceof EntityDef){
+    if (targetRef instanceof EntityDef) {
       return {next: joinClass};
     }
     return {next: this.handleCreateObjectClass(targetRef)};
@@ -209,23 +209,23 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
         }
       }
     } else if (sourceDef instanceof EntityDef) {
-        const storeClass = this.handleCreatePropertyClass(propertyDef, [sourceDef.name, _.capitalize(propertyDef.name)].filter(x => !_.isEmpty(x)).join(''));
-        this.attachPrimaryKeys(sourceDef, propertyDef, storeClass);
+      const storeClass = this.handleCreatePropertyClass(propertyDef, [sourceDef.name, _.capitalize(propertyDef.name)].filter(x => !_.isEmpty(x)).join(''));
+      this.attachPrimaryKeys(sourceDef, propertyDef, storeClass);
 
-        /*
-        a classref can be generated if no name or id property is given
-         */
-        let targetIdProps = this.schemaDef.getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
-        if (targetIdProps.length > 0) {
-          this.attachTargetKeys(propertyDef, classRef, storeClass);
-          return {next: this.handleCreateObjectClass(classRef)};
-        } else {
-          return {next: storeClass};
-        }
+      /*
+      a classref can be generated if no name or id property is given
+       */
+      let targetIdProps = this.schemaDef.getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
+      if (targetIdProps.length > 0) {
+        this.attachTargetKeys(propertyDef, classRef, storeClass);
+        return {next: this.handleCreateObjectClass(classRef)};
+      } else {
+        return {next: storeClass};
+      }
     } else if (sourceDef instanceof ClassRef) {
       if (!propertyDef.isCollection()) {
         return {next: sources.next, prefix: propertyDef.name};
-      }else {
+      } else {
         const storeClass = this.handleCreatePropertyClass(propertyDef, _.capitalize(propertyDef.name) + classRef.className);
         this.attachPropertyPrimaryKeys(storeClass);
         return {next: storeClass};

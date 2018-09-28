@@ -1,10 +1,8 @@
 import {suite, test} from 'mocha-typescript';
 import {And, Eq, Key, ValidationException, Value} from "../../src/libs/descriptors/Conditions";
 import {expect} from 'chai';
-import * as _ from 'lodash';
 import {PlatformTools} from 'typeorm/platform/PlatformTools';
-import {ClassRef, EntityRegistry} from "../../src";
-import {ValidationError} from "class-validator";
+import {ClassRef} from "../../src";
 
 
 @suite('functional/conditions')

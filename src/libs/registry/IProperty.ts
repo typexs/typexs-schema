@@ -1,5 +1,5 @@
-import {JoinDesc} from "./descriptors/Join";
-import {CondDesc, Key, KeyDesc, OrderDesc} from "./descriptors/Conditions";
+import {JoinDesc} from "./../descriptors/Join";
+import {CondDesc, Key, KeyDesc, OrderDesc} from "./../descriptors/Conditions";
 
 export interface IProperty {
 

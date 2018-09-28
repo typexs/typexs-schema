@@ -1,6 +1,6 @@
 
 import {EntityRegistry} from '../EntityRegistry';
-import {IProperty} from '../IProperty';
+import {IProperty} from '../registry/IProperty';
 
 import * as _ from '../LoDash'
 

@@ -1,11 +1,11 @@
 import {PropertyDef} from './PropertyDef';
-import {LookupRegistry} from './LookupRegistry';
+import {LookupRegistry} from './../LookupRegistry';
 import {AbstractDef} from './AbstractDef';
-import {XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from './Constants';
+import {XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from './../Constants';
 import {IEntity} from './IEntity';
-import * as _ from './LoDash'
+import * as _ from './../LoDash'
 import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
-import {TransformExecutor} from "./TransformExecutor";
+import {TransformExecutor} from "./../TransformExecutor";
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true
@@ -20,7 +20,6 @@ const REGEX_ID_KG = /((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\',?)/g;
 export class EntityDef extends AbstractDef {
 
 
-
   constructor(fn: Function, options: IEntity = {}) {
     super('entity', fn.name, fn);
     this.object.isEntity = true;
@@ -28,11 +27,11 @@ export class EntityDef extends AbstractDef {
     this.setOptions(options);
   }
 
-
+/*
   get schemaName(){
     return this.object.schema;
   }
-
+*/
 
   // not implemented yet
   areRevisionsEnabled() {
@@ -44,9 +43,10 @@ export class EntityDef extends AbstractDef {
   }
 
   getPropertyDefs(): PropertyDef[] {
-    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, {entityName: this.name, schemaName: this.schemaName});
+    // return LookupRegistry.$().filter(XS_TYPE_PROPERTY, {entityName: this.name, schemaName: this.schemaName});
+    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e:PropertyDef) => e.object.getClass() === this.getClass());
   }
-
+/*
   getPropertyDefWithTarget(): PropertyDef[] {
     return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.entityName == this.name && e.isReference());
   }
@@ -54,14 +54,23 @@ export class EntityDef extends AbstractDef {
   getPropertyDefNotInternal(): PropertyDef[] {
     return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.entityName == this.name && !e.isInternal());
   }
-
+*/
   /**
    * get properties which contain identifier
    *
    * @returns {any[]}
    */
   getPropertyDefIdentifier(): PropertyDef[] {
-    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.entityName == this.name && e.identifier);
+    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e:PropertyDef) => e.object.getClass() === this.getClass() && e.identifier);
+    //return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.entityName == this.name && e.identifier);
+  }
+
+  id(){
+    let ids = this.object.schemas.map(s => [s,this.object.className].join('--').toLowerCase());
+    if(ids.length === 1){
+      return ids.shift();
+    }
+    return ids;
   }
 
   resolveId(instance: any) {
@@ -168,7 +177,6 @@ export class EntityDef extends AbstractDef {
     if (_.has(instance, 'xs:entity_name')) {
       return _.get(instance, 'xs:entity_name');
     } else {
-
       let xsdef: EntityDef = LookupRegistry.$().find(XS_TYPE_ENTITY, (x: EntityDef) => {
         //console.log(x.name,instance.__proto__.constructor.name,x.name == instance.__proto__.constructor.name)
         return x.name == instance.__proto__.constructor.name;
@@ -188,10 +196,11 @@ export class EntityDef extends AbstractDef {
 
   toJson(withProperties: boolean = true) {
     let o = super.toJson();
-    o.schemaName = this.schemaName;
+    o.schema = this.object.getSchema();
     if (withProperties) {
       o.properties = this.getPropertyDefs().map(p => p.toJson());
     }
     return o;
   }
+
 }

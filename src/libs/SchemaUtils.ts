@@ -1,7 +1,7 @@
-import {SchemaDef} from './SchemaDef';
-import {EntityDef} from './EntityDef';
+import {SchemaDef} from './registry/SchemaDef';
+import {EntityDef} from './registry/EntityDef';
 import * as _ from './LoDash'
-import {PropertyDef} from "./PropertyDef";
+import {PropertyDef} from "./registry/PropertyDef";
 
 export class SchemaUtils {
 

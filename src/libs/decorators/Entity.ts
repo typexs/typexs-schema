@@ -1,5 +1,5 @@
 import {EntityRegistry} from '../EntityRegistry';
-import {IEntity} from '../IEntity';
+import {IEntity} from '../registry/IEntity';
 
 
 export function Entity(options:IEntity = {}) {

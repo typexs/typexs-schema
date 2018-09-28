@@ -1,11 +1,11 @@
 import {AbstractDef} from './AbstractDef';
 import {IProperty} from './IProperty';
 import {ClassRef} from './ClassRef';
-import {LookupRegistry} from './LookupRegistry';
-import {XS_TYPE_PROPERTY} from './Constants';
+import {LookupRegistry} from './../LookupRegistry';
+import {XS_TYPE_PROPERTY} from './../Constants';
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
 import {NotSupportedError} from "typexs-base/libs/exceptions/NotSupportedError";
-import * as _ from './LoDash';
+import * as _ from './../LoDash';
 import {EntityDef} from "./EntityDef";
 import * as moment from "moment";
 
@@ -87,11 +87,19 @@ export class PropertyDef extends AbstractDef {
     }
   }
 
-
-  get schemaName() {
-    return this.object.schema;
+  id(){
+    let ids = this.object.schemas.map(s => [s,this.object.className, this.name].join('--').toLowerCase());
+    if(ids.length === 1){
+      return ids.shift();
+    }
+    return ids;
   }
 
+  /*
+    get schemaName() {
+      return this.object.schema;
+    }
+  */
   isReference(): boolean {
     return this.targetRef != null;
   }
@@ -284,7 +292,7 @@ export class PropertyDef extends AbstractDef {
 
   toJson(withSubProperties: boolean = true) {
     let o = super.toJson();
-    o.schemaName = this.schemaName;
+    o.schema = this.object.getSchema();
     o.entityName = this.entityName;
     o.label = this.label;
     o.dataType = this.dataType;

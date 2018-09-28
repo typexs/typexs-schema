@@ -1,6 +1,6 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {ClassRef, EntityDef, EntityRegistry} from "../../src";
+import {ClassRef, EntityDef, EntityRegistry, XS_DEFAULT_SCHEMA} from "../../src";
 import * as _ from "lodash";
 
 
@@ -50,7 +50,7 @@ class RegistrySpec {
       options: {
         storeable: true
       },
-      schemaName: 'default'
+      schema: 'default'
     });
 
     expect(eJson.properties).to.have.length(3);
@@ -142,6 +142,13 @@ class RegistrySpec {
     let def = EntityDef.resolve(instance);
     expect(def).to.eq(entity);
 
+    let registry = EntityRegistry.$();
+
+    // check if exists in schema
+    let defaultSchema = EntityRegistry.getSchema(XS_DEFAULT_SCHEMA);
+    let entities = defaultSchema.getEntities();
+    expect(entities).to.have.length.greaterThan(0);
+
   }
 
 
@@ -149,8 +156,9 @@ class RegistrySpec {
   async 'EntityRegistry get properties for class ref'() {
     const classRef = ClassRef.get(require('./schemas/direct_property/Driver').Driver); // Book imports Author
     // require('./schemas/default/Summary');
-    let props = EntityRegistry.getPropertyDefsFor(classRef);
-    expect(props.length).to.be.greaterThan(0)
+    const registry = EntityRegistry.$();
+    let props = registry.getPropertyDefsFor(classRef);
+    expect(props.length).to.be.eq(3);
   }
 
 

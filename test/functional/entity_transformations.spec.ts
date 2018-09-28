@@ -1,7 +1,6 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityDef, EntityRegistry} from "../../src";
-import _ = require("lodash");
+import {EntityRegistry} from "../../src";
 
 
 @suite('functional/entity_transformations')

@@ -1,5 +1,5 @@
-import {ClassRef} from "../ClassRef";
-import {IObject} from "../IObject";
+import {ClassRef} from "../registry/ClassRef";
+import {IObject} from "../registry/IObject";
 
 
 export function CObject(options:IObject = {}) {

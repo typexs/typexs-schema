@@ -2,7 +2,8 @@ import {Body, Delete, Get, JsonController, Param, Post} from "routing-controller
 
 import {Inject, NotYetImplementedError} from "typexs-base";
 import {ContextGroup, Credentials} from "typexs-server";
-import {EntityDef, EntityRegistry} from "..";
+import {EntityRegistry} from "../libs/EntityRegistry";
+import {EntityDef} from "../libs/registry/EntityDef";
 import {EntityControllerFactory} from "../libs/EntityControllerFactory";
 import {EntityController} from "../libs/EntityController";
 import * as _ from "lodash";
@@ -55,7 +56,6 @@ export class EntityAPIController {
   }
 
 
-
   /**
    * Return list of defined entities
    */
@@ -78,7 +78,7 @@ export class EntityAPIController {
    */
   @Credentials('allow access metadata')
   @Post('/metadata/entity')
-  async entityCreate(@Body() data:any) {
+  async entityCreate(@Body() data: any) {
     throw new NotYetImplementedError()
   }
 
@@ -89,12 +89,12 @@ export class EntityAPIController {
   @Credentials(['allow access entity :name', 'allow access entity'])
   @Get('/entity/:name/:id')
   async get(@Param('name') name: string, @Param('id') id: string) {
-    const entityDef = this.getEntityDef(name);
+    const [entityDef, controller] = this.getControllerForEntityName(name);
     const conditions = entityDef.createLookupConditions(id);
     if (_.isArray(conditions)) {
-      return this.getController(entityDef.schemaName).find(entityDef.name, conditions);
+      return controller.find(entityDef.getClass(), conditions);
     } else {
-      return this.getController(entityDef.schemaName).find(entityDef.name, conditions, 1).then(x => x.shift());
+      return controller.find(entityDef.getClass(), conditions, 1).then(x => x.shift());
     }
   }
 
@@ -105,14 +105,15 @@ export class EntityAPIController {
   @Credentials(['allow create entity :name', 'allow create entity'])
   @Post('/entity/:name')
   async create(@Param('name') name: string, @Body() data: any): Promise<any> {
-    const entityDef = this.getEntityDef(name);
+    const [entityDef, controller] = this.getControllerForEntityName(name);
+//    const conditions = entityDef.createLookupConditions(id);
+    let entities;
     if (_.isArray(data)) {
-      let entities = _.map(data, d => entityDef.build(d));
-      return this.getController(entityDef.schemaName).save(entities);
+      entities = _.map(data, d => entityDef.build(d));
     } else {
-      let entity = entityDef.build(data);
-      return this.getController(entityDef.schemaName).save(entity);
+      entities = entityDef.build(data);
     }
+    return controller.save(entities);
   }
 
 
@@ -121,16 +122,27 @@ export class EntityAPIController {
    */
   @Credentials(['allow update entity :name', 'allow update entity'])
   @Post('/entity/:name/:id')
-  update(@Param('name') name: string, @Param('id') id:string, @Body() data: any) {
-    const entityDef = this.getEntityDef(name);
+  update(@Param('name') name: string, @Param('id') id: string, @Body() data: any) {
+    const [entityDef, controller] = this.getControllerForEntityName(name);
 //    const conditions = entityDef.createLookupConditions(id);
+    let entities;
     if (_.isArray(data)) {
-      let entities = _.map(data, d => entityDef.build(d));
-      return this.getController(entityDef.schemaName).save(entities);
+      entities = _.map(data, d => entityDef.build(d));
     } else {
-      let entity = entityDef.build(data);
-      return this.getController(entityDef.schemaName).save(entity);
+      entities = entityDef.build(data);
     }
+    return controller.save(entities);
+  }
+
+  private getControllerForEntityName(name: string): [EntityDef, EntityController] {
+    const entityDef = this.getEntityDef(name);
+    const schema = entityDef.getClassRef().getSchema();
+    if (!_.isArray(schema)) {
+      return [entityDef, this.getController(schema)];
+    } else {
+      throw new Error('multiple schemas for this entity, select one')
+    }
+
   }
 
 
