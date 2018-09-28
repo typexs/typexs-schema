@@ -36,7 +36,10 @@ export class JoinDesc implements IDesc {
     this.joinRef = ClassRef.get(base);
     this.keyMaps = keyMaps;
     this.condition = conditions;
-    this.order = !_.isArray(order) ? [order] : order;
+    if(order){
+      this.order = !_.isArray(order) ? [order] : order;
+    }
+
 
   }
 

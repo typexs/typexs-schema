@@ -1,15 +1,6 @@
 == Issues
 
 
-*@ISSUE {counter:task} 20180629* +
-Füge die Eigenschaft "storeable" bei der Initialisierung von Entitäten hinzu.
-Standardmäßig sollte es auf "true" stehen. Mittels der Eigenschaft wird
-signalisiert das eine Entität auch speicherbar sein soll.
-
-
-*@ISSUE {counter:task} 20180629* +
-Für speicherbare Entitäten ohne PrimaryKey wird per default eine automatisch
-hochzählender Primary Key gesetzt mit "id" als Kennzeichnung.
 
 
 *@ISSUE {counter:task} 20180630* +
@@ -23,6 +14,20 @@ die Verarbeitung abbricht.
 
 
 
+*@ISSUE {counter:task} 20180928* +
+Wenn Änderungen am Datensatz passieren, bei denen sich die Beziehungen
+zu anderen Objekte ändern. Dann müssen die vorigen Beziehungen gelöscht
+werden (außer, die Revisionierung ist aktiviert).
+
+*@ISSUE {counter:task} 20180928* +
+Allgemeines Löschen implementieren.
+
+
+*@ISSUE {counter:task} 20180928* +
+Abbruchbedingung definieren, Standard ist die nicht Verfolgung von
+Referenzen, die von einer  referenzierten Entität weiter ausgehen.
 
 
 
+*@ISSUE {counter:task} 20180928* +
+MongoDB Implementierung: Schema(Indexing), Save, Find, Delete
