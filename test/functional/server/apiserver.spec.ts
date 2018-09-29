@@ -1,11 +1,10 @@
 import {suite, test, timeout} from "mocha-typescript";
 import {Bootstrap, Container} from "typexs-base";
-import {K_ROUTE_CONTROLLER, Server, ServerRegistry} from "typexs-server";
+import {K_ROUTE_CONTROLLER, Server} from "typexs-server";
 import * as _ from "lodash";
 import * as request from 'request-promise-native';
 import {expect} from 'chai';
 import {TestHelper} from "../TestHelper";
-import {EntityRegistry} from "../../../src";
 
 const settingsTemplate: any = {
   storage: {
