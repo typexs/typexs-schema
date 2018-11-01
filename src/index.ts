@@ -25,6 +25,7 @@ export * from "./libs/framework/IFramework";
 export * from "./libs/framework/INameResolver";
 export * from "./libs/framework/ISaveOp";
 export * from "./libs/framework/ISchemaMapper";
+
 export * from "./libs/framework/typeorm/NameResolver";
 export * from "./libs/framework/typeorm/Sql";
 export * from "./libs/framework/typeorm/SqlFindOp";
@@ -39,8 +40,10 @@ export * from "./libs/registry/Binding";
 export * from "./libs/registry/ClassRef";
 export * from "./libs/registry/EntityDef";
 export * from "./libs/registry/IEntity";
+export * from "./libs/registry/IEntityMetadata";
 export * from "./libs/registry/IObject";
 export * from "./libs/registry/IProperty";
+export * from "./libs/registry/IPropertyMetadata";
 export * from "./libs/registry/ISchema";
 export * from "./libs/registry/PropertyDef";
 export * from "./libs/registry/SchemaDef";

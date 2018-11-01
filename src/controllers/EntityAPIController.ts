@@ -17,8 +17,10 @@ export class EntityAPIController {
   @Inject('EntityRegistry')
   registry: EntityRegistry;
 
+
   @Inject('EntityControllerFactory')
   factory: EntityControllerFactory;
+
 
   /**
    * Return list of schemas with their entities
@@ -106,7 +108,6 @@ export class EntityAPIController {
   @Post('/entity/:name')
   async create(@Param('name') name: string, @Body() data: any): Promise<any> {
     const [entityDef, controller] = this.getControllerForEntityName(name);
-//    const conditions = entityDef.createLookupConditions(id);
     let entities;
     if (_.isArray(data)) {
       entities = _.map(data, d => entityDef.build(d));
@@ -134,17 +135,6 @@ export class EntityAPIController {
     return controller.save(entities);
   }
 
-  private getControllerForEntityName(name: string): [EntityDef, EntityController] {
-    const entityDef = this.getEntityDef(name);
-    const schema = entityDef.getClassRef().getSchema();
-    if (!_.isArray(schema)) {
-      return [entityDef, this.getController(schema)];
-    } else {
-      throw new Error('multiple schemas for this entity, select one')
-    }
-
-  }
-
 
   /**
    * Return a deleted Entity
@@ -156,6 +146,16 @@ export class EntityAPIController {
   }
 
 
+  private getControllerForEntityName(name: string): [EntityDef, EntityController] {
+    const entityDef = this.getEntityDef(name);
+    const schema = entityDef.getClassRef().getSchema();
+    if (!_.isArray(schema)) {
+      return [entityDef, this.getController(schema)];
+    } else {
+      throw new Error('multiple schemas for this entity, select one')
+    }
+  }
+
   private getController(schemaName: string): EntityController {
     const controller = this.factory.get(schemaName);
     if (controller) {
@@ -163,7 +163,6 @@ export class EntityAPIController {
     }
     throw new Error('no controller defined for ' + name);
   }
-
 
   private getEntityDef(entityName: string): EntityDef {
     const entityDef = this.registry.getEntityDefByName(entityName);

@@ -99,6 +99,7 @@ export class ClassRef {
   static getFunction(klass: string | Function) {
     if (_.isString(klass)) {
       // TODO create error class
+
       throw new Error('class not found! 02');
     } else if (_.isFunction(klass)) {
       return klass;
@@ -122,7 +123,7 @@ export class ClassRef {
   }
 
 
-  static get(klass: string | Function): ClassRef {
+  static find(klass: string | Function):ClassRef{
     let classRef = null;
     if (_.isString(klass)) {
       let name = ClassRef.getClassName(klass);
@@ -131,6 +132,13 @@ export class ClassRef {
       klass = ClassRef.getFunction(klass);
       classRef = LookupRegistry.$().find<ClassRef>(XS_TYPE_CLASS_REF, (c: ClassRef) => c.getClass() == klass);
     }
+    return classRef;
+
+  }
+
+
+  static get(klass: string | Function): ClassRef {
+    let classRef = this.find(klass);
     if (classRef) return classRef;
     classRef = new ClassRef(klass);
     let binding = Binding.create(XS_TYPE_SCHEMA, XS_DEFAULT_SCHEMA, XS_TYPE_CLASS_REF, classRef);

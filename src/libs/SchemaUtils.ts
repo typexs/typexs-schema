@@ -49,6 +49,7 @@ export class SchemaUtils {
     return [map, flattenObjects];
   }
 
+
   static remap(propertyDef: PropertyDef, flattenObjects: any[], map: number[][], objects: any[], prefixed: string = null) {
     let propName = prefixed ? [prefixed, propertyDef.name].join('__') : propertyDef.name;
 
@@ -68,6 +69,7 @@ export class SchemaUtils {
 
     }
   }
+
 
   static clazz(str: string): Function {
     function X() {

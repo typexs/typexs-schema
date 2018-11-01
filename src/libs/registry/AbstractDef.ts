@@ -16,10 +16,14 @@ export abstract class AbstractDef {
 
   readonly object: ClassRef;
 
-  constructor(type: XS_TYPE, name: string, object: Function | string = null) {
+  constructor(type: XS_TYPE, name: string, object: ClassRef | Function | string = null) {
     this._baseType = type;
     this.name = name;
-    this.object = object ? ClassRef.get(object) : null;
+    if(object instanceof ClassRef){
+      this.object = object;
+    }else{
+      this.object = object ? ClassRef.get(object) : null;
+    }
   }
 
   setOptions(opts: any) {

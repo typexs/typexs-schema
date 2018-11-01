@@ -31,3 +31,13 @@ Referenzen, die von einer  referenzierten Entität weiter ausgehen.
 
 *@ISSUE {counter:task} 20180928* +
 MongoDB Implementierung: Schema(Indexing), Save, Find, Delete
+
+
+*@ISSUE {counter:task} 20181030* +
+Abfrage der Objekte implementieren mit:
+
+* "Offset" und "limit"
+* conditions
+* sort
+
+

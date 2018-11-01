@@ -1,12 +1,5 @@
 import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
-import {
-  XS_DEFAULT_SCHEMA,
-  XS_TYPE,
-  XS_TYPE_CLASS_REF,
-  XS_TYPE_ENTITY,
-  XS_TYPE_PROPERTY,
-  XS_TYPE_SCHEMA
-} from './Constants';
+import {XS_DEFAULT_SCHEMA, XS_TYPE_CLASS_REF, XS_TYPE_ENTITY, XS_TYPE_PROPERTY, XS_TYPE_SCHEMA} from './Constants';
 
 import {SchemaDef} from './registry/SchemaDef';
 import {PropertyDef} from './registry/PropertyDef';
@@ -19,6 +12,8 @@ import {ISchema} from './registry/ISchema';
 import * as _ from './LoDash'
 import {ClassRef} from "./registry/ClassRef";
 import {Binding} from "./registry/Binding";
+import {SchemaUtils} from "./SchemaUtils";
+import {IEntityMetadata} from "./registry/IEntityMetadata";
 
 export class EntityRegistry {
 
@@ -47,21 +42,26 @@ export class EntityRegistry {
     return LookupRegistry.$().find(XS_TYPE_SCHEMA, {name: name});
   }
 
+
   listProperties() {
     return LookupRegistry.$().list(XS_TYPE_PROPERTY);
   }
+
 
   listEntities() {
     return LookupRegistry.$().list(XS_TYPE_ENTITY);
   }
 
+
   listClassRefs() {
     return LookupRegistry.$().list(XS_TYPE_CLASS_REF);
   }
 
+
   listSchemas() {
     return LookupRegistry.$().list(XS_TYPE_SCHEMA);
   }
+
 
   static register(xsdef: AbstractDef | Binding): AbstractDef | Binding {
     if (xsdef instanceof EntityDef) {
@@ -76,6 +76,7 @@ export class EntityRegistry {
       throw new NotYetImplementedError();
     }
   }
+
 
   static createSchema(fn: Function, options: ISchema): SchemaDef {
     let schema = <SchemaDef>this.$()._lookup.find(XS_TYPE_SCHEMA, {name: options.name});
@@ -92,7 +93,27 @@ export class EntityRegistry {
   }
 
 
-  static createEntity(fn: Function, options: IEntity = {}): EntityDef {
+  static fromJson(json: IEntityMetadata): EntityDef {
+    let classRef = ClassRef.find(json.name);
+    if (!classRef) {
+      classRef = ClassRef.get(SchemaUtils.clazz(json.name));
+    }
+    classRef.setSchema(json.schema);
+    let entity = this.createEntity(classRef, json.options);
+    this.register(entity);
+
+    json.properties.forEach(property => {
+      let options = property.options;
+      options.sourceClass = classRef;
+      let prop = this.createProperty(options);
+      this.register(prop);
+    })
+
+    return entity;
+  }
+
+
+  static createEntity(fn: Function | ClassRef, options: IEntity = {}): EntityDef {
     return new EntityDef(fn, options);
   }
 
@@ -101,17 +122,20 @@ export class EntityRegistry {
     return new PropertyDef(options);
   }
 
+
   getSchemaDefByName(name: string): SchemaDef {
     return this._lookup.find(XS_TYPE_SCHEMA, (e: EntityDef) => {
       return e.machineName == _.snakeCase(name)
     });
   }
 
+
   getEntityDefByName(name: string): EntityDef {
     return this._lookup.find(XS_TYPE_ENTITY, (e: EntityDef) => {
       return e.machineName == _.snakeCase(name)
     });
   }
+
 
   getPropertyDefsFor(entity: EntityDef | ClassRef): PropertyDef[] {
     if (entity instanceof EntityDef) {

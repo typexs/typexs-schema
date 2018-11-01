@@ -1,8 +1,8 @@
 import {suite, test} from 'mocha-typescript';
 import {And, Eq, Key, ValidationException, Value} from "../../src/libs/descriptors/Conditions";
 import {expect} from 'chai';
-import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import {ClassRef} from "../../src";
+import {TestHelper} from "./TestHelper";
 
 
 @suite('functional/conditions')
@@ -10,7 +10,7 @@ class ConditionsSpec {
 
 
   before() {
-    PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
+    TestHelper.resetTypeorm();
   }
 
   @test
@@ -45,24 +45,22 @@ class ConditionsSpec {
     expect(isValid_01).to.be.true;
 
     const cond_02 = And(Eq('tableNameWrong', Value('condition_keeper')), Eq('tableId', Key('id')));
-
     const isValid_02 = cond_02.validate(referred, referrer, false);
     expect(isValid_02).to.be.false;
-
     expect(function (){cond_02.validate(referred, referrer)}).to.throw(ValidationException);
     expect(function (){cond_02.validate(referred, referrer)}).to.throw('validation error: referred key(s) tableNameWrong not in sourceRef');
 
     const cond_03 = Eq('tableId', Key('ids'));
-
     const isValid_03 = cond_03.validate(referred, referrer, false);
     expect(isValid_03).to.be.false;
-
     expect(function (){cond_03.validate(referred, referrer)}).to.throw(ValidationException);
     expect(function (){cond_03.validate(referred, referrer)}).to.throw('validation error: referrer key(s) ids not in targetRef');
+  }
+
+  @test
+  async 'parse conditions'() {
 
 
   }
-
-
 }
 
