@@ -8,32 +8,22 @@ import {TestHelper} from "./TestHelper";
 @suite('functional/entity_from_json')
 class Entities_from_jsonSpec {
 
-  before() {
-    TestHelper.resetTypeorm();
-    EntityRegistry.reset();
-  }
-
-
-  after() {
-    TestHelper.resetTypeorm();
-    EntityRegistry.reset();
-  }
 
   @test
   async 'register entity by json'() {
     let d: any =
       {
-        "id": "default--person",
-        "name": "Person",
+        "id": "default--personal",
+        "name": "Personal",
         "type": "entity",
-        "machineName": "person",
+        "machineName": "personal",
         "options": {
           "storeable": true
         },
         "schema": "default",
         "properties": [
           {
-            "id": "default--person--id",
+            "id": "default--personal--id",
             "name": "id",
             "type": "property",
             "machineName": "id",
@@ -45,14 +35,14 @@ class Entities_from_jsonSpec {
               "propertyName": "id"
             },
             "schema": "default",
-            "entityName": "Person",
+            "entityName": "Personal",
             "label": "Id",
             "dataType": "number",
             "generated": true,
             "identifier": true
           },
           {
-            "id": "default--person--firstname",
+            "id": "default--personal--firstname",
             "name": "firstName",
             "type": "property",
             "machineName": "first_name",
@@ -63,14 +53,14 @@ class Entities_from_jsonSpec {
               "propertyName": "firstName"
             },
             "schema": "default",
-            "entityName": "Person",
+            "entityName": "Personal",
             "label": "Firstname",
             "dataType": "string",
             "generated": false,
             "identifier": false
           },
           {
-            "id": "default--person--lastname",
+            "id": "default--personal--lastname",
             "name": "lastName",
             "type": "property",
             "machineName": "last_name",
@@ -81,7 +71,7 @@ class Entities_from_jsonSpec {
               "propertyName": "lastName"
             },
             "schema": "default",
-            "entityName": "Person",
+            "entityName": "Personal",
             "label": "Lastname",
             "dataType": "string",
             "generated": false,
@@ -92,7 +82,7 @@ class Entities_from_jsonSpec {
 
 
     let entityDef = EntityRegistry.fromJson(d);
-    let regEntityDef = EntityRegistry.getEntityDefFor("Person");
+    let regEntityDef = EntityRegistry.getEntityDefFor("Personal");
     expect(entityDef).to.be.eq(regEntityDef);
 
     let output = entityDef.toJson();
