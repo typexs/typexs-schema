@@ -5,6 +5,7 @@ import {ISchemaMapper} from "./framework/ISchemaMapper";
 import {INameResolver} from "./framework/INameResolver";
 import {IFramework} from "./framework/IFramework";
 import {NotSupportedError} from "typexs-base";
+import {IFindOptions} from "./framework/IFindOptions";
 
 
 export class EntityController {
@@ -56,9 +57,9 @@ export class EntityController {
   }
 
 
-  async find<T>(fn: Function | string, conditions: any = null, limit: number = 100): Promise<T[]> {
+  async find<T>(fn: Function | string, conditions: any = null, options:IFindOptions = {limit:100}): Promise<T[]> {
     if(!this.framework) throw new NotSupportedError('no framework support');
-    return this.framework.getFindOp<T>(this).run(fn, conditions, limit);
+    return this.framework.getFindOp<T>(this).run(fn, conditions, options);
   }
 
 

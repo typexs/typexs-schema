@@ -143,9 +143,9 @@ class Scenario_01_direct_referencingSpec {
     let options = _.clone(TEST_STORAGE_OPTIONS);
 //    (<any>options).name = 'direct_property';
 
-    const EDR=require('./schemas/default/EDR').EDR;
-    const EDR_Object_DR=require('./schemas/default/EDR_Object_DR').EDR_Object_DR;
-    const EDR_Object=require('./schemas/default/EDR_Object').EDR_Object;
+    const EDR = require('./schemas/default/EDR').EDR;
+    const EDR_Object_DR = require('./schemas/default/EDR_Object_DR').EDR_Object_DR;
+    const EDR_Object = require('./schemas/default/EDR_Object').EDR_Object;
 
     let connect = await this.connect(options);
     let xsem = connect.controller;
@@ -421,7 +421,6 @@ class Scenario_01_direct_referencingSpec {
 
   @test
   async 'saving multiple entities with shared entity refrences'() {
-
     let options = _.clone(TEST_STORAGE_OPTIONS);
 
     const Author = require('./schemas/default/Author').Author;
@@ -436,6 +435,7 @@ class Scenario_01_direct_referencingSpec {
     a.firstName = 'Robert';
     a.lastName = 'Kania';
     a = await xsem.save(a);
+
 
     let book = new Book();
     book.label = 'This is a good book';
@@ -456,6 +456,79 @@ class Scenario_01_direct_referencingSpec {
     await c.close();
   }
 
+
+  @test
+  async 'find multiple entities with limit, offset, sort'() {
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+
+    const Author = require('./schemas/default/Author').Author;
+    const Book = require('./schemas/default/Book').Book;
+
+    let connect = await this.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+    let books = [];
+
+    for (let i = 0; i < 30; i++) {
+      let a = new Author();
+      a.firstName = 'Robert';
+      a.lastName = 'Kania' + i;
+      a = await xsem.save(a);
+
+      let book = new Book();
+      book.label = 'Book' + i;
+      book.author = a;
+      books.push(book)
+    }
+
+    await xsem.save(books);
+
+    let booksFound = await xsem.find(Book, {$or: [{label: 'Book5'}, {label: 'Book10'}]});
+    expect(booksFound).to.have.length(2);
+    expect(booksFound['$count']).to.eq(2);
+    // TODO delete
+
+    booksFound = await xsem.find(Book, {label: {$like: 'Book1%'}});
+    expect(booksFound).to.have.length(11);
+    expect(booksFound['$count']).to.eq(11);
+
+    booksFound = await xsem.find(Book, {label: {$like: 'Book1%'}}, {limit: 5});
+    expect(booksFound).to.have.length(5);
+    expect(booksFound['$count']).to.eq(11);
+
+    booksFound = await xsem.find(Book, {label: {$like: 'Book1%'}}, {limit: 5, offset: 7});
+    expect(booksFound).to.have.length(4);
+    expect(booksFound['$count']).to.eq(11);
+    expect(booksFound['$offset']).to.eq(7);
+    expect(booksFound['$limit']).to.eq(5);
+    expect(_.map(booksFound, (b: any) => b.label)).to.deep.eq(["Book16", "Book17", "Book18", "Book19"]);
+
+    booksFound = await xsem.find(Book, {label: {$like: 'Book1%'}}, {limit: 5, offset: 7, sort: {id: "desc"}});
+    expect(booksFound).to.have.length(4);
+    expect(booksFound['$count']).to.eq(11);
+    expect(booksFound['$offset']).to.eq(7);
+    expect(booksFound['$limit']).to.eq(5);
+    expect(_.map(booksFound, (b: any) => b.label)).to.deep.eq(["Book12", "Book11", "Book10", "Book1"]);
+
+    booksFound = await xsem.find(Book, {$or: [{label: 'Book5'}, {label: 'Book10'}]}, {
+      hooks: {
+        afterEntity: (entityDef, entities) => {
+          if(entityDef.name === 'Book'){
+            entities.forEach(entity => {
+              entity['$fullname'] = entity.author.firstName + ' ' + entity.author.lastName;
+            })
+          }
+        }
+      }
+    });
+    expect(booksFound).to.have.length(2);
+    expect(_.map(booksFound, (b: any) => b['$fullname'])).to.deep.eq(["Robert Kania5", "Robert Kania10"]);
+
+
+    await c.close();
+  }
 
   @test.skip()
   async 'must throw error variant E-P-SP[]-E[] or E-P-SP-E[] not implemented'() {

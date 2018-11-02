@@ -1,4 +1,4 @@
-import {Body, Delete, Get, JsonController, Param, Post} from "routing-controllers";
+import {Body, Delete, Get, JsonController, Param, QueryParam, Post} from "routing-controllers";
 
 import {Inject, NotYetImplementedError} from "typexs-base";
 import {ContextGroup, Credentials} from "typexs-server";
@@ -86,6 +86,72 @@ export class EntityAPIController {
 
 
   /**
+   * Run a query for entity
+   */
+  @Credentials(['allow access entity :name', 'allow access entity'])
+  @Get('/entity/:name')
+  async query(
+    @Param('name') name: string,
+    @QueryParam('query') query: string,
+    @QueryParam('sort') sort: string,
+    @QueryParam('limit') limit: number = 50,
+    @QueryParam('offset') offset: number = 0,
+  ) {
+    const [entityDef, controller] = this.getControllerForEntityName(name);
+
+    let conditions = null;
+    if (query) {
+      conditions = JSON.parse(query);
+      if (!_.isPlainObject(conditions)) {
+        throw new Error('conditions are wrong ' + query);
+      }
+    }
+    let sortBy = null;
+    if (sort) {
+      sortBy = JSON.parse(sort);
+      if (!_.isPlainObject(sortBy)) {
+        throw new Error('sort by is wrong ' + sort);
+      }
+    }
+
+    if (!_.isNumber(limit)) {
+      limit = 50;
+    }
+
+    if (!_.isNumber(offset)) {
+      offset = 0;
+    }
+
+    let result = await controller.find(entityDef.getClass(), conditions, {
+      limit: limit,
+      offset: offset,
+      sort: sortBy,
+      hooks: {afterEntity: EntityAPIController._afterEntity}
+    });
+
+    return {
+      entities: result,
+      $count: result['$count'],
+      $limit: result['$limit'],
+      $offset: result['$offset']
+    }
+
+
+  }
+
+
+  static _afterEntity(entityDef: EntityDef, entity: any[]): void {
+    entity.forEach(e => {
+      let idStr = entityDef.buildLookupConditions(e);
+      let url = `api/entity/${entityDef.machineName}/${idStr}`;
+      e['$url'] = url;
+      //Reflect.defineProperty(e, '$url', {value: url, writable: false})
+      //Reflect.defineProperty(e, '__url', {value: url})
+    });
+  }
+
+
+  /**
    * Return a single Entity
    */
   @Credentials(['allow access entity :name', 'allow access entity'])
@@ -93,11 +159,25 @@ export class EntityAPIController {
   async get(@Param('name') name: string, @Param('id') id: string) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
     const conditions = entityDef.createLookupConditions(id);
+    let result = null;
     if (_.isArray(conditions)) {
-      return controller.find(entityDef.getClass(), conditions);
+      result = await controller.find(entityDef.getClass(), conditions, {
+        hooks: {afterEntity: EntityAPIController._afterEntity}
+      });
+      let results = {
+        entities: result,
+        $count: result['$count'],
+        $limit: result['$limit'],
+        $offset: result['$offset']
+      }
+      result = results;
     } else {
-      return controller.find(entityDef.getClass(), conditions, 1).then(x => x.shift());
+      result = await controller.find(entityDef.getClass(), conditions, {
+        hooks: {afterEntity: EntityAPIController._afterEntity},
+        limit: 1
+      }).then(x => x.shift());
     }
+    return result;
   }
 
 

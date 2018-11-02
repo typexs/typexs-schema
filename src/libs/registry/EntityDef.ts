@@ -7,7 +7,6 @@ import * as _ from './../LoDash'
 import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
 import {TransformExecutor} from "./../TransformExecutor";
 import {ClassRef} from "./ClassRef";
-import {SchemaUtils} from "../SchemaUtils";
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true
@@ -89,6 +88,38 @@ export class EntityDef extends AbstractDef {
       configurable: false
     });
     return instance;
+  }
+
+  buildLookupConditions(data: any | any[]) {
+    let idProps = this.getPropertyDefIdentifier();
+    if (_.isArray(data)) {
+      let collect: string[] = [];
+      data.forEach(d => {
+        collect.push(this._buildLookupconditions(idProps, d));
+      })
+      if (idProps.length > 1) {
+        return `(${collect.join('),(')})`;
+      } else {
+        return `${collect.join(',')}`;
+      }
+
+    } else {
+      return this._buildLookupconditions(idProps, data);
+    }
+  }
+
+  private _buildLookupconditions(idProps: PropertyDef[], data: any) {
+    let idPk: string[] = [];
+    idProps.forEach(id => {
+      let v = id.get(data);
+      if (_.isString(v)) {
+        idPk.push("'" + v + "'");
+      } else {
+        idPk.push(v);
+      }
+    })
+    return idPk.join(',')
+
   }
 
   createLookupConditions(id: string): any | any[] {
@@ -193,5 +224,11 @@ export class EntityDef extends AbstractDef {
   }
 
 
-
+  getKeyMap() {
+    let map = {};
+    this.getPropertyDefs().map(p => {
+      !p.isReference() ? map[p.name] = p.storingName : null;
+    });
+    return map;
+  }
 }

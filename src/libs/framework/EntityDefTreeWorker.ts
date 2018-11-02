@@ -39,7 +39,9 @@ export abstract class EntityDefTreeWorker {
     }
   }
 
+
   abstract visitEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
+
 
   abstract leaveEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
 
