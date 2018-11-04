@@ -261,6 +261,10 @@ export class PropertyDef extends AbstractDef {
     return this.getOptions('nullable', false);
   }
 
+  isStoreable(){
+    return this.getOptions('storeable', true);
+  }
+
 
   /**
    * retrieve propetry from an instance

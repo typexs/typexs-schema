@@ -5,6 +5,7 @@ export interface IProperty {
 
   propertyName?: string;
 
+  storeable?: boolean;
 
   /**
    * rename the property for storing name

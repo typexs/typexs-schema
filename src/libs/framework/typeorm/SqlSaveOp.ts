@@ -327,7 +327,6 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
             }
           })
         }
-
         targetObjects = await this.c.manager.save(classRef.getClass(), targetObjects);
       }
 

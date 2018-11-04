@@ -76,17 +76,22 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
 
   visitDataProperty(propertyDef: PropertyDef, sourceDef: EntityDef | ClassRef, sources?: XContext, results?: XContext): void {
-    let entityClass = results.next;
-    let propClass = {constructor: entityClass};
+    if (propertyDef.isStoreable()) {
+      let entityClass = results.next;
+      let propClass = {constructor: entityClass};
 
-    // TODO prefix support?
-    const hasPrefix = _.has(results, 'prefix');
-    let propName = propertyDef.name;
-    let propStoreName = propertyDef.storingName;
-    if (hasPrefix) {
-      [propName, propStoreName] = this.nameResolver.for(results.prefix, propertyDef);
+      // TODO prefix support?
+      const hasPrefix = _.has(results, 'prefix');
+      let propName = propertyDef.name;
+      let propStoreName = propertyDef.storingName;
+      if (hasPrefix) {
+        [propName, propStoreName] = this.nameResolver.for(results.prefix, propertyDef);
+      }
+      let colDef = this.ColumnDef(propertyDef, propStoreName);
+      if (colDef) {
+        colDef(propClass, propName);
+      }
     }
-    this.ColumnDef(propertyDef, propStoreName)(propClass, propName);
   }
 
 
@@ -100,6 +105,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       return false;
     }
   }
+
 
   private handleJoinDefinitionIfGiven(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetRef: EntityDef | ClassRef, sources: XContext) {
     let join: JoinDesc = propertyDef.getJoin();
@@ -128,11 +134,10 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       return {next: joinClass};
     }
     return {next: this.handleCreateObjectClass(targetRef)};
-
   }
 
-  async visitEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext): Promise<XContext> {
 
+  async visitEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext): Promise<XContext> {
     if (this.handleCheckConditionsIfGiven(sourceDef, propertyDef, entityDef)) {
       // if condition is given then no new join table is needed
       return sources;
@@ -152,9 +157,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
         this.attachTargetKeys(propertyDef, entityDef, clazz);
         return {next: clazz}
       }
-
     } else if (sourceDef instanceof ClassRef) {
-
       if (!propertyDef.isCollection()) {
         this.attachTargetPrefixedKeys(propertyDef.machineName, entityDef, sources.next);
         return sources;
@@ -180,6 +183,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     return this._leaveReference(sourceDef, propertyDef, classRef, sources);
   }
 
+
   async visitExternalReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
     return this._visitReference(sourceDef, propertyDef, classRef, sources);
   }
@@ -191,8 +195,6 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
 
   async _visitReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
-
-
     if (this.handleCheckConditionsIfGiven(sourceDef, propertyDef, classRef)) {
       // if condition is given then no new join table is needed
       return {next: this.handleCreateObjectClass(classRef)};
@@ -233,6 +235,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     }
     throw new NotYetImplementedError('object reference for ' + sourceDef)
   }
+
 
   async _leaveReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: XContext): Promise<XContext> {
     return sources;
@@ -306,23 +309,25 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
 
   private ColumnDef(property: PropertyDef, name: string, skipIdentifier: boolean = false) {
-    let def = _.clone(property.getOptions('typeorm', {}));
-    let dbType = this.detectDataTypeFromProperty(property);
-    def = _.merge(def, {name: name}, dbType);
-    if (property.isNullable()) {
-      def.nullable = true;
-    }
-
-    if (property.identifier && !skipIdentifier) {
-      if (property.generated) {
-        // TODO resolve strategy for generation
-        return PrimaryGeneratedColumn(def);
-      } else {
-        return PrimaryColumn(def);
+    if (property.isStoreable()) {
+      let def = _.clone(property.getOptions('typeorm', {}));
+      let dbType = this.detectDataTypeFromProperty(property);
+      def = _.merge(def, {name: name}, dbType);
+      if (property.isNullable()) {
+        def.nullable = true;
       }
-    }
 
-    return Column(def);
+      if (property.identifier && !skipIdentifier) {
+        if (property.generated) {
+          // TODO resolve strategy for generation
+          return PrimaryGeneratedColumn(def);
+        } else {
+          return PrimaryColumn(def);
+        }
+      }
+      return Column(def);
+    }
+    return null;
   }
 
 
