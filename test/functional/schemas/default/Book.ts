@@ -15,7 +15,7 @@ export class Book {
   @Property({type: 'string', nullable: true})
   content: string;
 
-  @Property({targetClass: Author, nullable: true})
+  @Property({type: Author, nullable: true})
   author: Author;
 
 }

@@ -28,7 +28,6 @@ export class PropertyDef extends AbstractDef {
 
   readonly generated: boolean;
 
-
   readonly embed: boolean;
 
 
@@ -302,6 +301,15 @@ export class PropertyDef extends AbstractDef {
     o.dataType = this.dataType;
     o.generated = this.generated;
     o.identifier = this.identifier;
+    o.cardinality = this.cardinality;
+
+    if(this.targetRef){
+      o.targetRef = this.targetRef.toJson();
+    }
+
+    if(this.propertyRef){
+      o.propertyRef = this.propertyRef.toJson();
+    }
 
     if (withSubProperties && this.isReference()) {
       o.embedded = this.getSubPropertyDef().map(x => x.toJson());

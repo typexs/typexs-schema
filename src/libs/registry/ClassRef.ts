@@ -9,9 +9,9 @@ import {XS_TYPE_SCHEMA} from "../Constants";
 
 export class ClassRef {
 
-  static __inc:number = 0;
+  static __inc: number = 0;
 
-  private readonly idx:number;
+  private readonly idx: number;
 
   schemas: string[] = [XS_DEFAULT_SCHEMA];
 
@@ -48,6 +48,11 @@ export class ClassRef {
     return _.get(this.options, 'name');
   }
 
+  setSchemas(s: string[]) {
+    s.forEach((s: string) => {
+      this.setSchema(s);
+    })
+  }
 
   setSchema(s: string) {
     if (this.schemas.length == 1 && this.schemas[0] == XS_DEFAULT_SCHEMA) {
@@ -123,7 +128,7 @@ export class ClassRef {
   }
 
 
-  static find(klass: string | Function):ClassRef{
+  static find(klass: string | Function): ClassRef {
     let classRef = null;
     if (_.isString(klass)) {
       let name = ClassRef.getClassName(klass);
@@ -165,5 +170,15 @@ export class ClassRef {
 
   id() {
     return this.schemas.join() + this.className;
+  }
+
+
+  toJson() {
+    return {
+      schema: this.getSchema(),
+      className: this.className,
+      isEntity: this.isEntity,
+      options: this.options
+    }
   }
 }

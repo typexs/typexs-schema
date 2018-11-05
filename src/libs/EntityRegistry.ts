@@ -105,6 +105,19 @@ export class EntityRegistry {
     json.properties.forEach(property => {
       let options = property.options;
       options.sourceClass = classRef;
+
+      if(property.targetRef){
+        let targetRef = ClassRef.get(property.targetRef.className);
+        targetRef.setSchemas(_.isArray(property.targetRef.schema) ? property.targetRef.schema : [property.targetRef.schema]);
+        options.type = targetRef.getClass();
+      }
+
+      if(property.propertyRef){
+        let targetRef = ClassRef.get(property.propertyRef.className);
+        targetRef.setSchemas(_.isArray(property.propertyRef.schema) ? property.propertyRef.schema : [property.propertyRef.schema]);
+        options.propertyClass = targetRef.getClass();
+      }
+
       let prop = this.createProperty(options);
       this.register(prop);
     })

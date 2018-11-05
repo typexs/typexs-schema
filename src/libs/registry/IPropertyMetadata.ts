@@ -1,3 +1,4 @@
+import {IClassRefMetadata} from "./IClassRefMetadata";
 
 export interface IPropertyMetadata {
   id: string,
@@ -8,8 +9,10 @@ export interface IPropertyMetadata {
   schema: string,
   entityName: string,
   label: string,
-  dataType: string,
+  dataType?: string,
   generated: boolean,
   identifier: boolean
-
+  cardinality: number,
+  targetRef?: IClassRefMetadata,
+  propertyRef?: IClassRefMetadata
 }
