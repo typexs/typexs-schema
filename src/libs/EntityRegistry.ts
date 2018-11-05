@@ -14,6 +14,8 @@ import {ClassRef} from "./registry/ClassRef";
 import {Binding} from "./registry/Binding";
 import {SchemaUtils} from "./SchemaUtils";
 import {IEntityMetadata} from "./registry/IEntityMetadata";
+import {IPropertyMetadata} from "./registry/IPropertyMetadata";
+import {IClassRefMetadata} from "./registry/IClassRefMetadata";
 
 export class EntityRegistry {
 
@@ -103,27 +105,45 @@ export class EntityRegistry {
     this.register(entity);
 
     json.properties.forEach(property => {
-      let options = property.options;
-      options.sourceClass = classRef;
-
-      if(property.targetRef){
-        let targetRef = ClassRef.get(property.targetRef.className);
-        targetRef.setSchemas(_.isArray(property.targetRef.schema) ? property.targetRef.schema : [property.targetRef.schema]);
-        options.type = targetRef.getClass();
-      }
-
-      if(property.propertyRef){
-        let targetRef = ClassRef.get(property.propertyRef.className);
-        targetRef.setSchemas(_.isArray(property.propertyRef.schema) ? property.propertyRef.schema : [property.propertyRef.schema]);
-        options.propertyClass = targetRef.getClass();
-      }
-
-      let prop = this.createProperty(options);
-      this.register(prop);
+      this._fromJsonProperty(property,classRef);
     })
 
     return entity;
   }
+
+
+  private static _fromJsonProperty(property: IPropertyMetadata, classRef: ClassRef) {
+    let options = property.options;
+    options.sourceClass = classRef;
+
+    if (property.targetRef) {
+      let classRef = this._fromJsonClassRef(property.targetRef);
+      options.type = classRef.getClass();
+    }
+
+    if (property.propertyRef) {
+      let classRef = this._fromJsonClassRef(property.propertyRef);
+      options.propertyClass = classRef.getClass();
+    }
+
+    let prop = this.createProperty(options);
+    this.register(prop);
+  }
+
+
+  private static _fromJsonClassRef(classRefMetadata: IClassRefMetadata) {
+    let classRef = ClassRef.get(classRefMetadata.className);
+    classRef.setSchemas(_.isArray(classRefMetadata.schema) ? classRefMetadata.schema : [classRefMetadata.schema]);
+
+    if(classRefMetadata.properties){
+      classRefMetadata.properties.forEach(property => {
+        this._fromJsonProperty(property, classRef);
+      });
+    }
+
+    return classRef;
+  }
+
 
 
   static createEntity(fn: Function | ClassRef, options: IEntity = {}): EntityDef {
