@@ -5,7 +5,9 @@ import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplemen
 import * as _ from './../LoDash'
 import {IObject} from "./IObject";
 import {Binding} from "./Binding";
-import {XS_TYPE_SCHEMA} from "../Constants";
+import {XS_TYPE_PROPERTY, XS_TYPE_SCHEMA} from "../Constants";
+import {PropertyDef} from "./PropertyDef";
+import {IClassRefMetadata} from "./IClassRefMetadata";
 
 export class ClassRef {
 
@@ -164,7 +166,10 @@ export class ClassRef {
     let klass = this.getClass();
     let instance = Reflect.construct(klass, []);
     return instance;
+  }
 
+  getPropertyDefs(): PropertyDef[] {
+    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.object.getClass() === this.getClass());
   }
 
 
@@ -173,12 +178,21 @@ export class ClassRef {
   }
 
 
-  toJson() {
-    return {
+  toJson(): IClassRefMetadata {
+    let meta: IClassRefMetadata = {
       schema: this.getSchema(),
       className: this.className,
       isEntity: this.isEntity,
-      options: this.options
+      options: this.options,
+    };
+
+    if (!this.isEntity) {
+      meta.properties = [];
+      this.getPropertyDefs().forEach(prop => {
+        meta.properties.push(prop.toJson());
+      })
     }
+
+    return meta;
   }
 }

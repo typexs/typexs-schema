@@ -39,7 +39,6 @@ export class EntityDef extends AbstractDef {
   }
 
   getPropertyDefs(): PropertyDef[] {
-    // return LookupRegistry.$().filter(XS_TYPE_PROPERTY, {entityName: this.name, schemaName: this.schemaName});
     return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.object.getClass() === this.getClass());
   }
 
