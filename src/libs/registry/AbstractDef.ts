@@ -75,7 +75,7 @@ export abstract class AbstractDef {
       name: this.name,
       type: this.baseType,
       machineName: this.machineName,
-      options: this.getOptions()
+      options: _.cloneDeep(this.getOptions())
     }
     return o;
   }

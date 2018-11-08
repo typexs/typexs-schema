@@ -2,7 +2,7 @@ import {
   find, filter, has, get, set, capitalize, isString,
   isFunction, isArray, isEmpty, clone, remove, isNull, keys,
   snakeCase, merge, isNumber, isObject, isBoolean, isUndefined,
-  map, defaults, first, last, assign, isSet, orderBy, uniq, concat
+  map, defaults, first, last, assign, isSet, orderBy, uniq, concat,cloneDeep
 } from 'lodash';
 
 export {
@@ -10,6 +10,7 @@ export {
   isFunction, isArray, isEmpty, clone, remove, isNull, keys,
   snakeCase, merge, isNumber, isObject, isBoolean, isUndefined,
   map, defaults, first, last, assign, isSet, orderBy, uniq, concat
+  ,cloneDeep
 };
 
 /*

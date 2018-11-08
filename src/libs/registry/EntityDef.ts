@@ -7,6 +7,9 @@ import * as _ from './../LoDash'
 import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
 import {TransformExecutor} from "./../TransformExecutor";
 import {ClassRef} from "./ClassRef";
+import {getFromContainer} from "../../../node_modules/class-validator/container";
+import {MetadataStorage} from "../../../node_modules/class-validator/metadata/MetadataStorage";
+import {ValidationMetadataArgs} from "../../../node_modules/class-validator/metadata/ValidationMetadataArgs";
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true
@@ -205,8 +208,8 @@ export class EntityDef extends AbstractDef {
       });
 
       let str = label.join(sep);
-      if(str.length > max){
-        return str.substring(0,max);
+      if (str.length > max) {
+        return str.substring(0, max);
       }
       return str;
     }
@@ -241,16 +244,6 @@ export class EntityDef extends AbstractDef {
   }
 
 
-  toJson(withProperties: boolean = true) {
-    let o = super.toJson();
-    o.schema = this.object.getSchema();
-    if (withProperties) {
-      o.properties = this.getPropertyDefs().map(p => p.toJson());
-    }
-    return o;
-  }
-
-
   getKeyMap() {
     let map = {};
     this.getPropertyDefs().map(p => {
@@ -258,4 +251,47 @@ export class EntityDef extends AbstractDef {
     });
     return map;
   }
+
+
+  toJson(withProperties: boolean = true) {
+    let o = super.toJson();
+    o.schema = this.object.getSchema();
+    if (withProperties) {
+      o.properties = this.getPropertyDefs().map(p => p.toJson());
+    }
+
+    let storage = getFromContainer(MetadataStorage);
+    let metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null);
+
+    metadata.forEach(m => {
+      let prop = _.find(o.properties, p => p.name === m.propertyName);
+      if (prop) {
+        if (!prop.validator) {
+          prop.validator = [];
+        }
+
+        let args: ValidationMetadataArgs = {
+          type: m.type,
+          target: this.object.className,
+          propertyName: m.propertyName,
+          constraints: m.constraints,
+          constraintCls: m.constraintCls,
+          validationTypeOptions: m.validationTypeOptions,
+          validationOptions: {
+            context: m.context,
+            message: m.message,
+            groups: m.groups,
+            always: m.always,
+            each: m.each,
+          }
+        };
+
+
+        prop.validator.push(args);
+      }
+    });
+
+    return o;
+  }
+
 }

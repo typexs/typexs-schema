@@ -16,6 +16,11 @@ import {SchemaUtils} from "./SchemaUtils";
 import {IEntityMetadata} from "./registry/IEntityMetadata";
 import {IPropertyMetadata} from "./registry/IPropertyMetadata";
 import {IClassRefMetadata} from "./registry/IClassRefMetadata";
+import {ValidationMetadata} from "../../node_modules/class-validator/metadata/ValidationMetadata";
+import {getFromContainer} from "class-validator/container";
+import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
+
+
 
 export class EntityRegistry {
 
@@ -101,19 +106,22 @@ export class EntityRegistry {
       classRef = ClassRef.get(SchemaUtils.clazz(json.name));
     }
     classRef.setSchema(json.schema);
-    let entity = this.createEntity(classRef, json.options);
-    this.register(entity);
 
-    json.properties.forEach(property => {
-      this._fromJsonProperty(property,classRef);
-    })
+    let entity = EntityRegistry.$().getEntityDefByName(json.name);
+    if (!entity) {
+      entity = this.createEntity(classRef, json.options);
+      this.register(entity);
 
+      json.properties.forEach(property => {
+        this._fromJsonProperty(property, classRef);
+      });
+    }
     return entity;
   }
 
 
   private static _fromJsonProperty(property: IPropertyMetadata, classRef: ClassRef) {
-    let options = property.options;
+    let options = _.clone(property.options);
     options.sourceClass = classRef;
 
     if (property.targetRef) {
@@ -126,6 +134,15 @@ export class EntityRegistry {
       options.propertyClass = classRef.getClass();
     }
 
+    if (property.validator) {
+      property.validator.forEach(m => {
+        let _m = _.clone(m);
+        _m.target = classRef.getClass();
+        let vma = new ValidationMetadata(_m);
+        getFromContainer(MetadataStorage).addValidationMetadata(vma);
+      })
+    }
+
     let prop = this.createProperty(options);
     this.register(prop);
   }
@@ -135,7 +152,7 @@ export class EntityRegistry {
     let classRef = ClassRef.get(classRefMetadata.className);
     classRef.setSchemas(_.isArray(classRefMetadata.schema) ? classRefMetadata.schema : [classRefMetadata.schema]);
 
-    if(classRefMetadata.properties){
+    if (classRefMetadata.properties) {
       classRefMetadata.properties.forEach(property => {
         this._fromJsonProperty(property, classRef);
       });
@@ -143,7 +160,6 @@ export class EntityRegistry {
 
     return classRef;
   }
-
 
 
   static createEntity(fn: Function | ClassRef, options: IEntity = {}): EntityDef {

@@ -33,7 +33,6 @@ class Entities_from_jsonSpec {
               "type": "number",
               "form": "hidden",
               "auto": true,
-              "sourceClass": {},
               "propertyName": "id"
             },
             "schema": "default",
@@ -41,7 +40,8 @@ class Entities_from_jsonSpec {
             "label": "Id",
             "dataType": "number",
             "generated": true,
-            "identifier": true
+            "identifier": true,
+
           },
           {
             "cardinality": 1,
@@ -52,7 +52,7 @@ class Entities_from_jsonSpec {
             "options": {
               "type": "string",
               "form": "text",
-              "sourceClass": {},
+
               "propertyName": "firstName"
             },
             "schema": "default",
@@ -60,7 +60,19 @@ class Entities_from_jsonSpec {
             "label": "Firstname",
             "dataType": "string",
             "generated": false,
-            "identifier": false
+            "identifier": false,
+            validator: [
+              {
+                "type": "isDefined",
+                "target": "Personal",
+                "propertyName": "firstName",
+                "validationOptions": {
+                  "groups": [],
+                  "always": false,
+                  "each": false
+                },
+              }
+            ]
           },
           {
             "cardinality": 1,
@@ -71,7 +83,7 @@ class Entities_from_jsonSpec {
             "options": {
               "type": "string",
               "form": "text",
-              "sourceClass": {},
+
               "propertyName": "lastName"
             },
             "schema": "default",
@@ -89,17 +101,17 @@ class Entities_from_jsonSpec {
     let regEntityDef = EntityRegistry.getEntityDefFor("Personal");
     expect(entityDef).to.be.eq(regEntityDef);
 
-    let output = entityDef.toJson();
+    let output = JSON.parse(JSON.stringify(entityDef.toJson()));
     expect(output).to.deep.eq(d);
   }
 
 
   @test
-  async 'register entity with references by json'() {
+  async   'register entity with references by json'() {
     require('./schemas/default/Author')
 
 
-    let d:any = {
+    let d: any = {
       id: 'default--bookk',
       name: 'Bookk',
       type: 'entity',

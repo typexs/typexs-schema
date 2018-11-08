@@ -8,6 +8,9 @@ import {NotSupportedError} from "typexs-base/libs/exceptions/NotSupportedError";
 import * as _ from './../LoDash';
 import {EntityDef} from "./EntityDef";
 import * as moment from "moment";
+import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
+import {getFromContainer} from "class-validator/container";
+
 
 
 export class PropertyDef extends AbstractDef {
@@ -302,6 +305,7 @@ export class PropertyDef extends AbstractDef {
     o.generated = this.generated;
     o.identifier = this.identifier;
     o.cardinality = this.cardinality;
+    delete o.options['sourceClass'];
 
     if(this.targetRef){
       o.targetRef = this.targetRef.toJson();

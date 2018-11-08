@@ -22,6 +22,16 @@ class Entities_to_jsonSpec {
       isEntity: true,
       options: {}
     });
+    expect(JSON.parse(JSON.stringify(data.properties[1].validator[0]))).to.deep.eq({
+      "type": "isDefined",
+      "target": "Book",
+      "propertyName": "label",
+      "validationOptions": {
+        "groups": [],
+        "always": false,
+        "each": false
+      }
+    });
   }
 
 
@@ -45,7 +55,7 @@ class Entities_to_jsonSpec {
           machineName: 'age',
           options: {
             type: 'number',
-            sourceClass: {},
+
             propertyName: 'age'
           },
           schema: 'direct_property',
@@ -64,7 +74,7 @@ class Entities_to_jsonSpec {
             options:
               {
                 type: 'string',
-                sourceClass: {},
+
                 propertyName: 'nickName'
               },
             schema: 'direct_property',
@@ -83,7 +93,7 @@ class Entities_to_jsonSpec {
             options:
               {
                 propertyName: 'skill',
-                sourceClass: {}
+
               },
             schema: 'direct_property',
             entityName: 'Driver',

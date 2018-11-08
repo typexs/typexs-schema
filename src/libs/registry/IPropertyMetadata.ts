@@ -1,4 +1,5 @@
 import {IClassRefMetadata} from "./IClassRefMetadata";
+import {ValidationMetadataArgs} from "class-validator/metadata/ValidationMetadataArgs";
 
 export interface IPropertyMetadata {
   id: string,
@@ -14,5 +15,6 @@ export interface IPropertyMetadata {
   identifier: boolean
   cardinality: number,
   targetRef?: IClassRefMetadata,
-  propertyRef?: IClassRefMetadata
+  propertyRef?: IClassRefMetadata,
+  validator?: ValidationMetadataArgs[]
 }
