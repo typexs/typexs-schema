@@ -1,14 +1,10 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {IStorageOptions, StorageRef} from 'typexs-base';
+import {IStorageOptions} from 'typexs-base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {EntityRegistry} from "../../src";
-import {EntityController} from "../../src/libs/EntityController";
 import {inspect} from "util";
 import * as _ from "lodash";
 import {TestHelper} from "./TestHelper";
-import {PlatformTools} from 'typeorm/platform/PlatformTools';
-import Test = Mocha.Test;
 
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{

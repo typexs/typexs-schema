@@ -42,7 +42,7 @@ export class JoinDesc implements IDesc {
 
   }
 
-  getForm() {
+  getFrom() {
     return _.find(this.keyMaps, k => k.type == 'from');
   }
 
@@ -52,7 +52,7 @@ export class JoinDesc implements IDesc {
 
   validate(sourceDef: ClassRef, propertyDef: PropertyDef, targetDef: ClassRef, throwing: boolean = true) {
     this.condition.validate(this.joinRef);
-    this.getForm().cond.validate(this.joinRef, sourceDef);
+    this.getFrom().cond.validate(this.joinRef, sourceDef);
     this.getTo().cond.validate(targetDef, this.joinRef);
     const props = EntityRegistry.getPropertyDefsFor(this.joinRef).map(p => p.name);
     this.order.forEach(o => {
@@ -64,17 +64,17 @@ export class JoinDesc implements IDesc {
 
   for(source: any, keyMap: any = {}) {
     if (this.condition) {
-      return And(this.getForm().cond, this.condition).for(source, keyMap);
+      return And(this.getFrom().cond, this.condition).for(source, keyMap);
     }
-    return this.getForm().cond.for(source, keyMap);
+    return this.getFrom().cond.for(source, keyMap);
   }
 
 
   lookup(source: any) {
     if (this.condition) {
-      return And(this.getForm().cond, this.condition).lookup(source);
+      return And(this.getFrom().cond, this.condition).lookup(source);
     }
-    return this.getForm().cond.lookup(source);
+    return this.getFrom().cond.lookup(source);
   }
 }
 

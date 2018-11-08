@@ -33,7 +33,7 @@ export class SchemaUtils {
     let flattenObjects: any[] = [];
     for (let i = 0; i < innerObjects.length; i++) {
       let obj = innerObjects[i];
-      if (obj) {
+      if (!_.isUndefined(obj) && !_.isNull(obj)) {
         // ignoring null and undefined values
         if (_.isArray(obj)) {
           for (let j = 0; j < obj.length; j++) {

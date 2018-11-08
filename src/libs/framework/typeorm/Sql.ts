@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import {NotYetImplementedError} from "typexs-base";
+import {Log, NotYetImplementedError} from "typexs-base";
 
 
 export class Sql {
@@ -19,14 +19,20 @@ export class Sql {
     } else if (_.isArray(condition)) {
       return this.$or({'$or': condition}, k, map);
     } else {
-
-      return Object.keys(condition).map(k => {
+      return _.keys(condition).map(k => {
         if (_.isPlainObject(condition[k])) {
           return this.conditionsToString(condition[k], k, map);
         }
         let key = _.get(map, k, k);
-        return `${key} = '${condition[k]}'`
-      }).join(' AND ');
+        let value = condition[k];
+        if(_.isString(value) || _.isNumber(value) || _.isDate(value)){
+          return `${key} = '${value}'`
+        }else{
+          Log.warn(`SQL.conditionToString not a plain type ${key} = ${JSON.stringify(value)} (${typeof value})`);
+          return null;
+        }
+
+      }).filter(c => !_.isNull(c)).join(' AND ');
     }
   }
 
