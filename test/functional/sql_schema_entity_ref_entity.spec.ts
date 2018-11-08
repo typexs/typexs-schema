@@ -117,10 +117,8 @@ class Sql_schema_entity_ref_entitySpec {
 
     let trai_find_01 = await xsem.find(Training, {id: trai_save_01.id});
     expect(trai_find_01).to.have.length(1);
-    console.log(inspect(trai_find_01.shift(), false, 10));
-
-
   }
+
 
 }
 

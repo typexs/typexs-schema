@@ -136,16 +136,35 @@ class ApiserverSpec {
     res = await request.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2`, {json: true});
     expect(res['$count']).to.eq(3);
     expect(res['$limit']).to.eq(2);
-    expect(_.map(res.entities, r => r.id)).to.deep.eq([3,2]);
+    expect(_.map(res.entities, r => r.id)).to.deep.eq([3, 2]);
 
     res = await request.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2&offset=1`, {json: true});
     expect(res['$count']).to.eq(3);
     expect(res['$limit']).to.eq(2);
     expect(res['$offset']).to.eq(1);
     expect(res.entities).to.have.length(2);
-    expect(_.map(res.entities, r => r.id)).to.deep.eq([2,1]);
+    expect(_.map(res.entities, r => r.id)).to.deep.eq([2, 1]);
   }
 
+  @test @timeout(300000)
+  async 'create and retrieve entities with reference'() {
 
+    const url = server.url();
+    let person = {
+      firstName: 'Prinz',
+      lastName: 'Heinz'
+    }
+    let res = await request.post(url + '/api/entity/personnn', {json: person});
+    expect(res).to.deep.include({id: 1});
+
+
+    let data = {
+      title: 'Prinz',
+      author: {id: 1}
+    }
+
+    res = await request.post(url + '/api/entity/bookkk', {json: data});
+    expect(res).to.deep.include({id: 1});
+  }
 }
 

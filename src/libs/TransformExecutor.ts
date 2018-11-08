@@ -9,7 +9,7 @@ export class TransformExecutor {
     let object = entityDef.new();
     for (let p of entityDef.getPropertyDefs()) {
       if ((_.isNull(data[p.name]) || _.isUndefined(data[p.name]))) {
-        object[p.name] = null;
+        //object[p.name] = null;
         continue;
       }
       if (p.isReference()) {
