@@ -1,21 +1,8 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-import {IStorageOptions} from 'typexs-base';
-import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {TestHelper} from "./TestHelper";
-
-
-export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
-  name: 'default',
-  type: 'sqlite',
-  database: ':memory:',
-  synchronize: true,
-  logger: 'simple-console',
-  logging: 'all'
-  // tablesPrefix: ""
-
-};
+import {TEST_STORAGE_OPTIONS} from "./config";
 
 
 @suite('functional/schemas')

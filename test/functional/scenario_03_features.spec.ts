@@ -5,18 +5,8 @@ import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOpt
 import {inspect} from "util";
 import {TestHelper} from "./TestHelper";
 import * as _ from "lodash";
+import {TEST_STORAGE_OPTIONS} from "./config";
 
-
-export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
-  name: 'default',
-  type: 'sqlite',
-  database: ':memory:',
-  synchronize: true,
-  logger: 'simple-console',
-  logging: 'all'
-  // tablesPrefix: ""
-
-};
 
 
 @suite('functional/scenario_03_features')

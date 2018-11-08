@@ -5,18 +5,8 @@ import {TestHelper} from "./TestHelper";
 import * as _ from "lodash";
 import {expect} from 'chai';
 import {inspect} from "util";
+import {TEST_STORAGE_OPTIONS} from "./config";
 
-
-export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
-  name: 'default',
-  type: 'sqlite',
-  database: ':memory:',
-  synchronize: true,
-  logger: 'simple-console',
-  logging: 'all'
-  // tablesPrefix: ""
-
-};
 
 
 @suite('functional/sql_schema_predefined_join_lifecycle')

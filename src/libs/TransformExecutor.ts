@@ -8,20 +8,20 @@ export class TransformExecutor {
   transform(entityDef: EntityDef, data: any) {
     let object = entityDef.new();
     for (let p of entityDef.getPropertyDefs()) {
-      if(_.isEmpty(data[p.name])){
+      if ((_.isNull(data[p.name]) || _.isUndefined(data[p.name]))) {
         object[p.name] = null;
         continue;
       }
       if (p.isReference()) {
         if (p.isEntityReference()) {
           let refEntityDef = p.getEntity();
-            if (p.isCollection()) {
-              for (let n of data[p.name]) {
-                object[p.name] = refEntityDef.build(n);
-              }
-            } else {
-              object[p.name] = refEntityDef.build(data[p.name]);
+          if (p.isCollection()) {
+            for (let n of data[p.name]) {
+              object[p.name] = refEntityDef.build(n);
             }
+          } else {
+            object[p.name] = refEntityDef.build(data[p.name]);
+          }
         } else {
           throw new NotYetImplementedError()
         }

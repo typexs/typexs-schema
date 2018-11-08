@@ -6,18 +6,7 @@ import {TestHelper} from "./TestHelper";
 
 import {expect} from 'chai';
 import {inspect} from "util";
-
-export const TEST_STORAGE_OPTIONS: IStorageOptions = <SqliteConnectionOptions>{
-  name: 'default',
-  type: 'sqlite',
-  database: ':memory:',
-  synchronize: true,
-  logger: 'simple-console',
-  logging: 'all'
-  // tablesPrefix: ""
-
-};
-
+import {TEST_STORAGE_OPTIONS} from "./config";
 
 @suite('functional/scenario_06_conditions')
 class Scenario_06_conditions {
