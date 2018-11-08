@@ -7,9 +7,9 @@ import * as _ from './../LoDash'
 import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
 import {TransformExecutor} from "./../TransformExecutor";
 import {ClassRef} from "./ClassRef";
-import {getFromContainer} from "../../../node_modules/class-validator/container";
-import {MetadataStorage} from "../../../node_modules/class-validator/metadata/MetadataStorage";
-import {ValidationMetadataArgs} from "../../../node_modules/class-validator/metadata/ValidationMetadataArgs";
+import {getFromContainer} from "class-validator/container";
+import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
+import {ValidationMetadataArgs} from "class-validator/metadata/ValidationMetadataArgs";
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true

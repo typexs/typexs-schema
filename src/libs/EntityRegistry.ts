@@ -16,7 +16,7 @@ import {SchemaUtils} from "./SchemaUtils";
 import {IEntityMetadata} from "./registry/IEntityMetadata";
 import {IPropertyMetadata} from "./registry/IPropertyMetadata";
 import {IClassRefMetadata} from "./registry/IClassRefMetadata";
-import {ValidationMetadata} from "../../node_modules/class-validator/metadata/ValidationMetadata";
+import {ValidationMetadata} from "class-validator/metadata/ValidationMetadata";
 import {getFromContainer} from "class-validator/container";
 import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
 
