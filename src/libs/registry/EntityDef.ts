@@ -185,6 +185,34 @@ export class EntityDef extends AbstractDef {
     return t.transform(this, data);
   }
 
+
+  label(entity: any, sep: string = ' ', max: number = 1024): string {
+    if (Reflect.has(entity, 'label')) {
+      if (_.isFunction(entity['label'])) {
+        return entity.label();
+      } else {
+        return entity.label;
+      }
+    } else if (Reflect.has(entity, '$label')) {
+      return entity.$label;
+    } else {
+      // create label from data
+      let label: string[] = [];
+      this.getPropertyDefs().forEach(p => {
+        if (!p.isReference()) {
+          label.push(p.get(entity));
+        }
+      });
+
+      let str = label.join(sep);
+      if(str.length > max){
+        return str.substring(0,max);
+      }
+      return str;
+    }
+  }
+
+
   static resolveId(instance: any) {
     if (_.has(instance, 'xs:entity_id')) {
       return _.get(instance, 'xs:entity_id');

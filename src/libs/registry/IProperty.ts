@@ -27,7 +27,7 @@ export interface IProperty {
    */
   length?: number
 
-  form?: string
+  form?: string;
 
   cardinality?: number;
 

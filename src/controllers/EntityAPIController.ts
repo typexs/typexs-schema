@@ -145,6 +145,7 @@ export class EntityAPIController {
       let idStr = entityDef.buildLookupConditions(e);
       let url = `api/entity/${entityDef.machineName}/${idStr}`;
       e['$url'] = url;
+      e['$label'] = entityDef.label(e);
       //Reflect.defineProperty(e, '$url', {value: url, writable: false})
       //Reflect.defineProperty(e, '__url', {value: url})
     });
