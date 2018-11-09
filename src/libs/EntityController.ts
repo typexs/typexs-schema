@@ -49,6 +49,7 @@ export class EntityController {
     await this.mapper.initialize();
   }
 
+
   async save<T>(object: T): Promise<T>;
   async save<T>(object: T[]): Promise<T[]>;
   async save<T>(object: T | T[]): Promise<T | T[]> {
@@ -60,6 +61,14 @@ export class EntityController {
   async find<T>(fn: Function | string, conditions: any = null, options:IFindOptions = {limit:100}): Promise<T[]> {
     if(!this.framework) throw new NotSupportedError('no framework support');
     return this.framework.getFindOp<T>(this).run(fn, conditions, options);
+  }
+
+
+  async remove<T>(object: T): Promise<T>;
+  async remove<T>(object: T[]): Promise<T[]>;
+  async remove<T>(object: T | T[]): Promise<T | T[]> {
+    if(!this.framework) throw new NotSupportedError('no framework support');
+    return this.framework.getDeleteOp<T>(this).run(object);
   }
 
 

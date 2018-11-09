@@ -4,17 +4,18 @@ import {IDeleteOp} from "../IDeleteOp";
 import {IFindOp} from "../IFindOp";
 import {ISaveOp} from "../ISaveOp";
 import {ISchemaMapper} from "../ISchemaMapper";
-import {NotYetImplementedError, StorageRef} from "typexs-base";
+import {StorageRef} from "typexs-base";
 import {SchemaDef} from "../../registry/SchemaDef";
 import {SqlSchemaMapper} from "./SqlSchemaMapper";
 import {SqlFindOp} from "./SqlFindOp";
 import {SqlSaveOp} from "./SqlSaveOp";
+import {SqlDeleteOp} from "./SqlDeleteOp";
 
 
 export class SqlFramework implements IFramework {
 
   getDeleteOp<T>(entityController: EntityController): IDeleteOp<T> {
-    throw new NotYetImplementedError('delete op not implemented');
+    return new SqlDeleteOp(entityController);
   }
 
   getFindOp<T>(entityController: EntityController): IFindOp<T> {

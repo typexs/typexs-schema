@@ -7,6 +7,7 @@ import {EntityDef} from "../libs/registry/EntityDef";
 import {EntityControllerFactory} from "../libs/EntityControllerFactory";
 import {EntityController} from "../libs/EntityController";
 import * as _ from "lodash";
+import {XS_P_PREV_ID, XS_P_URL} from "..";
 
 
 @ContextGroup('api')
@@ -248,10 +249,8 @@ export class EntityAPIController {
     entity.forEach(e => {
       let idStr = entityDef.buildLookupConditions(e);
       let url = `api/entity/${entityDef.machineName}/${idStr}`;
-      e['$url'] = url;
-      e['$label'] = entityDef.label(e);
-      //Reflect.defineProperty(e, '$url', {value: url, writable: false})
-      //Reflect.defineProperty(e, '__url', {value: url})
+      e[XS_P_URL] = url;
+      e[XS_P_PREV_ID] = entityDef.label(e);
     });
   }
 

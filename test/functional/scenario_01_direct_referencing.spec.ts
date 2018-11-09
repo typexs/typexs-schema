@@ -61,11 +61,15 @@ class Scenario_01_direct_referencingSpec {
     expect(data[0].source_id).to.eq(1);
     expect(data[0].target_id).to.eq(1);
 
-    let book2 = await xsem.find<any>(Book, {id: 1});
-    expect(book2).to.have.length(1);
-    expect(book).to.deep.eq(book2.shift());
+    let books_found = await xsem.find<any>(Book, {id: 1});
+    expect(books_found).to.have.length(1);
+
+    let book_find_01 = books_found.shift();
+    expect(book).to.deep.eq(book_find_01);
 
     // TODO delete
+
+
 
     await c.close();
 

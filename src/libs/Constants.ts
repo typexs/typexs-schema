@@ -24,3 +24,8 @@ export const XS_P_PROPERTY = 'property';
 export const XS_P_PROPERTY_ID = 'propertyId';
 
 
+export const XS_P_PREV_ID = '$prevId';
+export const XS_P_URL = '$url';
+export const XS_P_LABEL = '$label';
+
+

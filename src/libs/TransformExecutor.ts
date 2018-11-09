@@ -25,10 +25,10 @@ export class TransformExecutor {
           let refEntityDef = p.getEntity();
           if (p.isCollection()) {
             for (let n of data[p.name]) {
-              object[p.name] = refEntityDef.build(n);
+              object[p.name] = refEntityDef.build(n, options);
             }
           } else {
-            object[p.name] = refEntityDef.build(data[p.name]);
+            object[p.name] = refEntityDef.build(data[p.name], options);
           }
         } else {
           throw new NotYetImplementedError()

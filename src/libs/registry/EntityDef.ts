@@ -1,7 +1,7 @@
 import {PropertyDef} from './PropertyDef';
 import {LookupRegistry} from './../LookupRegistry';
 import {AbstractDef} from './AbstractDef';
-import {XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from './../Constants';
+import {XS_P_LABEL, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from './../Constants';
 import {IEntity} from './IEntity';
 import * as _ from './../LoDash'
 import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
@@ -64,17 +64,19 @@ export class EntityDef extends AbstractDef {
   }
 
   resolveId(instance: any) {
-    let id: any;
+    let id: any = {};
     let propIds = this.getPropertyDefIdentifier();
-    if (propIds.length == 1) {
-      id = propIds.shift().get(instance);
-    } else {
-      id = {};
-      for (let prop of propIds) {
-        id[prop.name] = prop.get(instance);
-      }
+    for (let prop of propIds) {
+      id[prop.name] = prop.get(instance);
     }
     return id;
+  }
+
+  resolveIds(instance: any | any[]) {
+    if (_.isArray(instance)) {
+      return instance.map(i => this.resolveId(i));
+    }
+    return this.resolveId(instance);
   }
 
   new<T>(): T {
@@ -196,7 +198,7 @@ export class EntityDef extends AbstractDef {
       } else {
         return entity.label;
       }
-    } else if (Reflect.has(entity, '$label')) {
+    } else if (Reflect.has(entity, XS_P_LABEL)) {
       return entity.$label;
     } else {
       // create label from data
