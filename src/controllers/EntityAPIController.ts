@@ -214,8 +214,14 @@ export class EntityAPIController {
    */
   @Credentials(['allow delete entity :name', 'allow delete entity'])
   @Delete('/entity/:name/:id')
-  delete() {
-    throw new NotYetImplementedError()
+  async delete(@Param('name') name: string, @Param('id') id: string, @Body() data: any) {
+    const [entityDef, controller] = this.getControllerForEntityName(name);
+    const conditions = entityDef.createLookupConditions(id);
+    let results = await controller.find(entityDef.getClass(), conditions);
+    if(results.length > 0){
+      return controller.remove(results);
+    }
+    return null;
   }
 
 
