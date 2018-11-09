@@ -5,7 +5,7 @@ import {XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from './../Constants';
 import {IEntity} from './IEntity';
 import * as _ from './../LoDash'
 import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
-import {TransformExecutor} from "./../TransformExecutor";
+import {IBuildOptions, TransformExecutor} from "./../TransformExecutor";
 import {ClassRef} from "./ClassRef";
 import {getFromContainer} from "class-validator/container";
 import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
@@ -183,9 +183,9 @@ export class EntityDef extends AbstractDef {
     return this.object;
   }
 
-  build(data: any) {
+  build(data: any, options: IBuildOptions = {}) {
     let t = new TransformExecutor();
-    return t.transform(this, data);
+    return t.transform(this, data, options);
   }
 
 

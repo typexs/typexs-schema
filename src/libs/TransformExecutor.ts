@@ -3,10 +3,18 @@ import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplemen
 import * as _ from "./LoDash";
 
 
+export interface IBuildOptions {
+  beforeBuild?: (entityDef: EntityDef, from: any, to: any) => void
+  afterBuild?: (entityDef: EntityDef, from: any, to: any) => void
+}
+
 export class TransformExecutor {
 
-  transform(entityDef: EntityDef, data: any) {
+  transform(entityDef: EntityDef, data: any, options: IBuildOptions = {}) {
     let object = entityDef.new();
+    if (options.beforeBuild) {
+      options.beforeBuild(entityDef, data, object)
+    }
     for (let p of entityDef.getPropertyDefs()) {
       if ((_.isNull(data[p.name]) || _.isUndefined(data[p.name]))) {
         //object[p.name] = null;
@@ -48,6 +56,9 @@ export class TransformExecutor {
           }
         }
       }
+    }
+    if (options.afterBuild) {
+      options.afterBuild(entityDef, data, object)
     }
     return object;
 

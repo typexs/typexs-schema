@@ -140,16 +140,6 @@ export class EntityAPIController {
   }
 
 
-  static _afterEntity(entityDef: EntityDef, entity: any[]): void {
-    entity.forEach(e => {
-      let idStr = entityDef.buildLookupConditions(e);
-      let url = `api/entity/${entityDef.machineName}/${idStr}`;
-      e['$url'] = url;
-      e['$label'] = entityDef.label(e);
-      //Reflect.defineProperty(e, '$url', {value: url, writable: false})
-      //Reflect.defineProperty(e, '__url', {value: url})
-    });
-  }
 
 
   /**
@@ -182,6 +172,7 @@ export class EntityAPIController {
   }
 
 
+
   /**
    * Return a new created Entity
    */
@@ -191,9 +182,9 @@ export class EntityAPIController {
     const [entityDef, controller] = this.getControllerForEntityName(name);
     let entities;
     if (_.isArray(data)) {
-      entities = _.map(data, d => entityDef.build(d));
+      entities = _.map(data, d => entityDef.build(d, {beforeBuild: EntityAPIController._beforeBuild}));
     } else {
-      entities = entityDef.build(data);
+      entities = entityDef.build(data,{beforeBuild: EntityAPIController._beforeBuild});
     }
     return controller.save(entities);
   }
@@ -209,9 +200,9 @@ export class EntityAPIController {
 //    const conditions = entityDef.createLookupConditions(id);
     let entities;
     if (_.isArray(data)) {
-      entities = _.map(data, d => entityDef.build(d));
+      entities = _.map(data, d => entityDef.build(d,{beforeBuild: EntityAPIController._beforeBuild}));
     } else {
-      entities = entityDef.build(data);
+      entities = entityDef.build(data,{beforeBuild: EntityAPIController._beforeBuild});
     }
     return controller.save(entities);
   }
@@ -253,6 +244,23 @@ export class EntityAPIController {
     throw new Error('no entity definition found  for ' + entityName);
   }
 
+  static _afterEntity(entityDef: EntityDef, entity: any[]): void {
+    entity.forEach(e => {
+      let idStr = entityDef.buildLookupConditions(e);
+      let url = `api/entity/${entityDef.machineName}/${idStr}`;
+      e['$url'] = url;
+      e['$label'] = entityDef.label(e);
+      //Reflect.defineProperty(e, '$url', {value: url, writable: false})
+      //Reflect.defineProperty(e, '__url', {value: url})
+    });
+  }
+
+
+  static _beforeBuild(entityDef: EntityDef, from: any, to: any) {
+    _.keys(from).filter(k => k.startsWith('$')).map(k => {
+      to[k] = from[k];
+    })
+  }
 }
 
 
