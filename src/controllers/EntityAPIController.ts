@@ -7,7 +7,8 @@ import {EntityDef} from "../libs/registry/EntityDef";
 import {EntityControllerFactory} from "../libs/EntityControllerFactory";
 import {EntityController} from "../libs/EntityController";
 import * as _ from "lodash";
-import {XS_P_PREV_ID, XS_P_URL} from "..";
+import {XS_P_$COUNT, XS_P_LABEL, XS_P_$OFFSET, XS_P_PREV_ID, XS_P_URL} from "..";
+import {XS_P_$LIMIT} from "../libs/Constants";
 
 
 @ContextGroup('api')
@@ -132,14 +133,11 @@ export class EntityAPIController {
 
     return {
       entities: result,
-      $count: result['$count'],
-      $limit: result['$limit'],
-      $offset: result['$offset']
+      $count: result[XS_P_$COUNT],
+      $limit: result[XS_P_$LIMIT],
+      $offset: result[XS_P_$OFFSET]
     }
-
-
   }
-
 
 
 
@@ -158,9 +156,9 @@ export class EntityAPIController {
       });
       let results = {
         entities: result,
-        $count: result['$count'],
-        $limit: result['$limit'],
-        $offset: result['$offset']
+        $count: result[XS_P_$COUNT],
+        $limit: result[XS_P_$LIMIT],
+        $offset: result[XS_P_$OFFSET]
       }
       result = results;
     } else {
@@ -235,6 +233,7 @@ export class EntityAPIController {
     }
   }
 
+
   private getController(schemaName: string): EntityController {
     const controller = this.factory.get(schemaName);
     if (controller) {
@@ -242,6 +241,7 @@ export class EntityAPIController {
     }
     throw new Error('no controller defined for ' + name);
   }
+
 
   private getEntityDef(entityName: string): EntityDef {
     const entityDef = this.registry.getEntityDefByName(entityName);
@@ -251,12 +251,13 @@ export class EntityAPIController {
     throw new Error('no entity definition found  for ' + entityName);
   }
 
+
   static _afterEntity(entityDef: EntityDef, entity: any[]): void {
     entity.forEach(e => {
       let idStr = entityDef.buildLookupConditions(e);
       let url = `api/entity/${entityDef.machineName}/${idStr}`;
       e[XS_P_URL] = url;
-      e[XS_P_PREV_ID] = entityDef.label(e);
+      e[XS_P_LABEL] = entityDef.label(e);
     });
   }
 

@@ -28,4 +28,8 @@ export const XS_P_PREV_ID = '$prevId';
 export const XS_P_URL = '$url';
 export const XS_P_LABEL = '$label';
 
+export const XS_P_$COUNT = '$count';
+export const XS_P_$LIMIT = '$limit';
+export const XS_P_$OFFSET = '$offset';
+export const XS_P_$ABORTED = '$aborted';
 

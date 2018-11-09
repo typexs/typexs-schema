@@ -6,7 +6,16 @@ import {ConnectionWrapper, NotYetImplementedError} from "typexs-base";
 import {PropertyDef} from "../../registry/PropertyDef";
 import {EntityDef} from "../../registry/EntityDef";
 import {ClassRef} from "../../registry/ClassRef";
-import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from "../../Constants";
+import {
+  XS_P_$ABORTED,
+  XS_P_$COUNT,
+  XS_P_$LIMIT,
+  XS_P_$OFFSET,
+  XS_P_PROPERTY,
+  XS_P_PROPERTY_ID,
+  XS_P_SEQ_NR,
+  XS_P_TYPE
+} from "../../Constants";
 import {IDataExchange} from "../IDataExchange";
 import {SqlHelper} from "./SqlHelper";
 import {Sql} from "./Sql";
@@ -90,15 +99,15 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     }
 
     let results = await qb.getMany();
-    results['$count'] = recordCount;
-    results['$offset'] = offset;
-    results['$limit'] = limit;
+    results[XS_P_$COUNT] = recordCount;
+    results[XS_P_$OFFSET] = offset;
+    results[XS_P_$LIMIT] = limit;
 
     let abort = results.length === 0 || this.hookAbortCondition(entityDef, propertyDef, results, this);
     if (abort) {
       // marked as aborted
       results.forEach(r => {
-        r['$aborted'] = true;
+        r[XS_P_$ABORTED] = true;
       })
     }
     return {next: results, abort: abort}
