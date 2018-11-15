@@ -1,5 +1,5 @@
 {
-  "name": "typexs-schema",
+  "name": "@typexs/schema",
   "version": "0.4.12",
   "description": "Schema for typexs",
   "main": "index.js",
@@ -70,8 +70,8 @@
   "dependencies": {
     "class-validator": "^0.9.1",
     "moment": "^2.22.2",
-    "typexs-base": "latest",
-    "typexs-server": "latest"
+    "@typexs/base": "latest",
+    "@typexs/server": "latest"
   },
   "private": true,
   "nyc": {
