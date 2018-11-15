@@ -4,7 +4,7 @@ import {IDeleteOp} from "../IDeleteOp";
 import {IFindOp} from "../IFindOp";
 import {ISaveOp} from "../ISaveOp";
 import {ISchemaMapper} from "../ISchemaMapper";
-import {StorageRef} from "typexs-base";
+import {StorageRef} from "@typexs/base";
 import {SchemaDef} from "../../registry/SchemaDef";
 import {SqlSchemaMapper} from "./SqlSchemaMapper";
 import {SqlFindOp} from "./SqlFindOp";

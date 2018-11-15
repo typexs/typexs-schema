@@ -1,4 +1,4 @@
-import {NotYetImplementedError} from 'typexs-base/libs/exceptions/NotYetImplementedError';
+import {NotYetImplementedError} from '@typexs/base/libs/exceptions/NotYetImplementedError';
 import {XS_DEFAULT_SCHEMA, XS_TYPE_CLASS_REF, XS_TYPE_ENTITY, XS_TYPE_PROPERTY, XS_TYPE_SCHEMA} from './Constants';
 
 import {SchemaDef} from './registry/SchemaDef';

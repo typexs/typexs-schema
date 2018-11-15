@@ -1,10 +1,10 @@
-import {StorageRef} from 'typexs-base/libs/storage/StorageRef';
+import {StorageRef} from '@typexs/base/libs/storage/StorageRef';
 import {SchemaDef} from './registry/SchemaDef';
 import {EntityDef} from './registry/EntityDef';
 import {ISchemaMapper} from "./framework/ISchemaMapper";
 import {INameResolver} from "./framework/INameResolver";
 import {IFramework} from "./framework/IFramework";
-import {NotSupportedError} from "typexs-base";
+import {NotSupportedError} from "@typexs/base";
 import {IFindOptions} from "./framework/IFindOptions";
 
 

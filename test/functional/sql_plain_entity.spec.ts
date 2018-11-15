@@ -1,7 +1,7 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-import {IStorageOptions, StorageRef} from "typexs-base";
+import {IStorageOptions, StorageRef} from "@typexs/base";
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {inspect} from 'util';
 import {EntityController} from "../../src/libs/EntityController";

@@ -1,7 +1,7 @@
 import {Body, Delete, Get, JsonController, Param, QueryParam, Post} from "routing-controllers";
 
-import {Inject, NotYetImplementedError} from "typexs-base";
-import {ContextGroup, Credentials} from "typexs-server";
+import {Inject, NotYetImplementedError} from "@typexs/base";
+import {ContextGroup, Credentials} from "@typexs/server";
 import {EntityRegistry} from "../libs/EntityRegistry";
 import {EntityDef} from "../libs/registry/EntityDef";
 import {EntityControllerFactory} from "../libs/EntityControllerFactory";

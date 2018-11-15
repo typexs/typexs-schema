@@ -4,7 +4,7 @@ import {AbstractDef} from './AbstractDef';
 import {XS_P_LABEL, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from './../Constants';
 import {IEntity} from './IEntity';
 import * as _ from './../LoDash'
-import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
+import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
 import {IBuildOptions, TransformExecutor} from "./../TransformExecutor";
 import {ClassRef} from "./ClassRef";
 import {getFromContainer} from "class-validator/container";

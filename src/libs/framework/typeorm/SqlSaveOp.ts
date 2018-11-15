@@ -1,4 +1,4 @@
-import {ConnectionWrapper, NotYetImplementedError} from 'typexs-base';
+import {ConnectionWrapper, NotYetImplementedError} from '@typexs/base';
 import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {ISaveOp} from "../ISaveOp";
 import {EntityController} from "../../EntityController";

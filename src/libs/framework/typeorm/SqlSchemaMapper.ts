@@ -1,4 +1,4 @@
-import {IStorageOptions, NotYetImplementedError, StorageRef} from 'typexs-base';
+import {IStorageOptions, NotYetImplementedError, StorageRef} from '@typexs/base';
 import {Column, Entity, Index, PrimaryColumn, PrimaryGeneratedColumn} from 'typeorm';
 import {SchemaDef} from '../../registry/SchemaDef';
 import {EntityDef} from '../../registry/EntityDef';

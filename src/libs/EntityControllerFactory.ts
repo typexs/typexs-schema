@@ -1,4 +1,4 @@
-import {Container, Inject, Log, Storage} from 'typexs-base';
+import {Container, Inject, Log, Storage} from '@typexs/base';
 
 import {EntityController} from "./EntityController";
 import {EntityRegistry} from "./EntityRegistry";

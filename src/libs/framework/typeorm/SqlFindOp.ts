@@ -2,7 +2,7 @@ import * as _ from '../../LoDash';
 import {IFindOp} from "../IFindOp";
 import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {EntityController} from "../../EntityController";
-import {ConnectionWrapper, NotYetImplementedError} from "typexs-base";
+import {ConnectionWrapper, NotYetImplementedError} from "@typexs/base";
 import {PropertyDef} from "../../registry/PropertyDef";
 import {EntityDef} from "../../registry/EntityDef";
 import {ClassRef} from "../../registry/ClassRef";

@@ -1,4 +1,4 @@
-import {Container, IActivator} from "typexs-base";
+import {Container, IActivator} from "@typexs/base";
 import {EntityRegistry} from "./libs/EntityRegistry";
 import {EntityControllerFactory} from "./libs/EntityControllerFactory";
 

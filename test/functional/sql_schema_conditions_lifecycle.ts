@@ -1,5 +1,5 @@
 import {suite, test} from 'mocha-typescript';
-import {IStorageOptions} from 'typexs-base';
+import {IStorageOptions} from '@typexs/base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import * as _ from "lodash";
 import {TestHelper} from "./TestHelper";

@@ -1,5 +1,5 @@
 import {EntityDef} from "./registry/EntityDef";
-import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
+import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
 import * as _ from "./LoDash";
 
 

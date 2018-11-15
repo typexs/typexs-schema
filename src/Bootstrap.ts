@@ -1,4 +1,4 @@
-import {IBootstrap, Inject, Log} from "typexs-base";
+import {IBootstrap, Inject, Log} from "@typexs/base";
 import {EntityControllerFactory} from "./libs/EntityControllerFactory";
 
 

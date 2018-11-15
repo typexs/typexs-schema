@@ -1,4 +1,4 @@
-import {NotSupportedError, StorageRef} from "typexs-base";
+import {NotSupportedError, StorageRef} from "@typexs/base";
 import {IFramework} from "./IFramework";
 import {SqlFramework} from "./typeorm/SqlFramework";
 

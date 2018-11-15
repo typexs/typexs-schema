@@ -1,6 +1,6 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {IStorageOptions} from 'typexs-base';
+import {IStorageOptions} from '@typexs/base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {inspect} from "util";
 import * as _ from "lodash";

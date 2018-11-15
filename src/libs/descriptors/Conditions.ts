@@ -4,7 +4,7 @@ import {IDesc} from "./IDesc";
 import * as _ from "../LoDash";
 import {ClassRef} from "../registry/ClassRef";
 import {EntityRegistry} from "../EntityRegistry";
-import {NotYetImplementedError} from "typexs-base/libs/exceptions/NotYetImplementedError";
+import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
 
 
 export const K_HINT_DATEFORMAT = 'dateformat';

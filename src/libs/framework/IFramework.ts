@@ -1,4 +1,4 @@
-import {StorageRef} from "typexs-base/libs/storage/StorageRef";
+import {StorageRef} from "@typexs/base/libs/storage/StorageRef";
 import {ISchemaMapper} from "./ISchemaMapper";
 import {IFindOp} from "./IFindOp";
 import {ISaveOp} from "./ISaveOp";

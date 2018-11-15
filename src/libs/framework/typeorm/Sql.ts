@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import {Log, NotYetImplementedError} from "typexs-base";
+import {Log, NotYetImplementedError} from "@typexs/base";
 
 
 export class Sql {

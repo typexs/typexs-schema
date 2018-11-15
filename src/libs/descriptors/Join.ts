@@ -1,5 +1,5 @@
 import {IDesc} from "./IDesc";
-import {NotYetImplementedError} from "typexs-base";
+import {NotYetImplementedError} from "@typexs/base";
 import {ClassRef} from "../registry/ClassRef";
 import {And, CondDesc, OrderDesc, ValidationException} from "./Conditions";
 import {PropertyDef} from "../registry/PropertyDef";

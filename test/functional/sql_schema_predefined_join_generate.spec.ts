@@ -1,7 +1,7 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-import {IStorageOptions} from 'typexs-base';
+import {IStorageOptions} from '@typexs/base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";

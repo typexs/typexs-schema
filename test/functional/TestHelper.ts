@@ -1,4 +1,4 @@
-import {SqliteSchemaHandler, StorageRef} from "typexs-base";
+import {SqliteSchemaHandler, StorageRef} from "@typexs/base";
 import {EntityController} from "../../src/libs/EntityController";
 import {EntityRegistry, FrameworkFactory} from "../../src";
 import {PlatformTools} from 'typeorm/platform/PlatformTools';

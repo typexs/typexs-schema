@@ -5,7 +5,7 @@ import {PropertyDef} from "../../registry/PropertyDef";
 import {ClassRef} from "../../registry/ClassRef";
 import {IDataExchange} from "../IDataExchange";
 import {EntityController} from "../../EntityController";
-import {ConnectionWrapper} from "typexs-base";
+import {ConnectionWrapper} from "@typexs/base";
 import * as _ from "../../LoDash";
 import {XS_P_PREV_ID} from "../../Constants";
 
