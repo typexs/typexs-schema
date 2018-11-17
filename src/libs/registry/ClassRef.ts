@@ -47,7 +47,7 @@ export class ClassRef {
   }
 
   hasName() {
-    return _.get(this.options, 'name');
+    return _.has(this.options, 'name');
   }
 
   setSchemas(s: string[]) {

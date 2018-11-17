@@ -1,5 +1,15 @@
 import {IStorageOptions, NotYetImplementedError, StorageRef} from '@typexs/base';
-import {Column, Entity, Index, PrimaryColumn, PrimaryGeneratedColumn} from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+  getMetadataArgsStorage,
+  UpdateDateColumn,
+  CreateDateColumn
+
+} from 'typeorm';
 import {SchemaDef} from '../../registry/SchemaDef';
 import {EntityDef} from '../../registry/EntityDef';
 import * as _ from "../../LoDash";
@@ -12,12 +22,8 @@ import {IDataExchange} from "../IDataExchange";
 import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {NameResolver} from "./NameResolver";
 import {JoinDesc} from "../../descriptors/Join";
+import {IDBType} from "./IDBType";
 
-
-interface DBType {
-  type: string;
-  length?: number;
-}
 
 export interface XContext extends IDataExchange<Function> {
   prefix?: string;
@@ -112,7 +118,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
     // create join entity class
     let joinProps = this.schemaDef.getPropertiesFor(join.joinRef.getClass());
-    let joinClass = this.handleCreateObjectClass(join.joinRef, 'p');
+    let joinClass = this.handleCreateObjectClass(join.joinRef, 'p', targetRef);
     let joinPropClass = {constructor: joinClass};
     let hasId = joinProps.filter(j => j.identifier).length > 0;
     if (!hasId) {
@@ -242,7 +248,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
 
-  private handleCreateObjectClass(classRef: ClassRef, prefix: string = 'o') {
+  private handleCreateObjectClass(classRef: ClassRef, prefix: string = 'o', targetRef?: EntityDef | ClassRef) {
     let tName = classRef.storingName;
     if (!classRef.hasName()) {
       tName = [prefix, tName].join('_');
@@ -251,14 +257,17 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     Entity(tName)(entityClass);
     // check if an ID exists in class else add one
     this.addType(entityClass);
+    if (targetRef) {
+      const sourceClass = targetRef.getClass();
+      getMetadataArgsStorage().entitySubscribers.filter(s => s.target == sourceClass).map(s => { (<any>s['target']) = entityClass;});
+      getMetadataArgsStorage().entityListeners.filter(s => s.target == sourceClass).map(s => { (<any>s['target']) = entityClass;});
+    }
     return entityClass;
   }
 
   private handleCreatePropertyClass(propertyDef: PropertyDef, className: string) {
-    //const className = [classNamePrefix, _.capitalize(propertyDef.name)].filter(x => !_.isEmpty(x)).join('');
     propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(className));
     let storeClass = propertyDef.joinRef.getClass();
-
     let storingName = propertyDef.storingName;
     Entity(storingName)(storeClass);
     this.addType(storeClass);
@@ -324,6 +333,10 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
         } else {
           return PrimaryColumn(def);
         }
+      } else if (dbType.type === 'date' && dbType.variant == 'updated') {
+        return UpdateDateColumn(def)
+      } else if (dbType.type === 'date' && dbType.variant == 'created') {
+        return CreateDateColumn(def)
       }
       return Column(def);
     }
@@ -450,23 +463,40 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     return this.storageRef['options'];
   }
 
-  private detectDataTypeFromProperty(prop: PropertyDef): DBType {
-    // TODO type map for default table types
-    let type = {type: 'text'};
-    // TODO !this.storageRef.getSchemaHandler().translateToStoreType(prop.dataType);
+  private detectDataTypeFromProperty(prop: PropertyDef): IDBType {
+    let type: IDBType = {type: 'text'};
+    if (prop.getOptions('typeorm')) {
+      let typeorm = prop.getOptions('typeorm');
+      if (_.has(typeorm, 'type')) {
+        type.type = typeorm.type;
+      }
+      if (_.has(typeorm, 'length')) {
+        type.length = typeorm.length;
+      }
+    } else {
+      // TODO !this.storageRef.getSchemaHandler().translateToStoreType(prop.dataType);
+      let split = prop.dataType.split(':');
+      const _type = split.shift();
+      if (split.length > 0) {
+        type.variant = split.shift();
+      }
 
-    switch (prop.dataType) {
-      case 'string':
-        type.type = 'text';
-        break;
-      case 'number':
-        type.type = 'int';
-        break;
-      case 'date':
-        // depends
-        type.type = 'text';
-        break;
+      switch (_type) {
+        case 'string':
+          type.type = 'text';
+          break;
+        case 'number':
+          type.type = 'int';
+          break;
+        case 'date':
+          type.type = 'datetime';
+          break;
+        case 'json':
+          type.type = 'text';
+          break;
+      }
     }
+
     return type;
   }
 

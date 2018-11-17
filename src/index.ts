@@ -27,6 +27,7 @@ export * from "./libs/framework/ISaveOp";
 export * from "./libs/framework/ISchemaMapper";
 
 export * from "./libs/framework/typeorm/NameResolver";
+export * from "./libs/framework/typeorm/IDBType";
 export * from "./libs/framework/typeorm/Sql";
 export * from "./libs/framework/typeorm/SqlFindOp";
 export * from "./libs/framework/typeorm/SqlFramework";
