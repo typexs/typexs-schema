@@ -3,6 +3,7 @@ import * as _ from './LoDash'
 import {EntityRegistry} from './EntityRegistry';
 import {IValidationResult} from "./IValidationResult";
 import {IValidationError} from "./IValidationError";
+import {IValidationMessage} from "./IValidationMessage";
 
 
 export class DataContainer<T> {
@@ -69,7 +70,7 @@ export class DataContainer<T> {
   }
 
 
-  messages(str: string) {
+  messages(str: string): IValidationMessage[] {
     if (this.validation[str] && this.validation[str].messages) {
       return this.validation[str].messages;
     }
