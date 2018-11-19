@@ -1,22 +1,9 @@
 import {validate} from 'class-validator';
 import * as _ from './LoDash'
 import {EntityRegistry} from './EntityRegistry';
+import {IValidationResult} from "./IValidationResult";
+import {IValidationError} from "./IValidationError";
 
-
-
-
-export interface ValidationMessage {
-  type: string,
-  content: string
-
-}
-
-export interface ValidationResult {
-  key: string;
-  valid: boolean,
-  checked: boolean,
-  messages: ValidationMessage[]
-}
 
 export class DataContainer<T> {
 
@@ -26,9 +13,9 @@ export class DataContainer<T> {
 
   isSuccessValidated: boolean;
 
-  errors: any[];
+  errors: any[] = [];
 
-  validation: { [k: string]: ValidationResult } = {};
+  validation: { [k: string]: IValidationResult } = {};
 
   instance: T;
 
@@ -46,9 +33,16 @@ export class DataContainer<T> {
     });
   }
 
+  addError(e: IValidationError) {
+    this.errors.push(e);
+  }
+
+  hasErrors() {
+    return this.errors.length > 0;
+  }
 
   checked(str: string) {
-    if(this.validation[str]) {
+    if (this.validation[str]) {
       return this.validation[str].checked;
     }
     return false;
@@ -68,7 +62,7 @@ export class DataContainer<T> {
   }
 
   valid(str: string) {
-    if(this.validation[str]) {
+    if (this.validation[str]) {
       return this.validation[str].valid;
     }
     return false;
@@ -76,7 +70,7 @@ export class DataContainer<T> {
 
 
   messages(str: string) {
-    if(this.validation[str] && this.validation[str].messages){
+    if (this.validation[str] && this.validation[str].messages) {
       return this.validation[str].messages;
     }
     return [];
