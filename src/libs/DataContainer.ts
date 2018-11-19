@@ -14,7 +14,7 @@ export class DataContainer<T> {
 
   isSuccessValidated: boolean;
 
-  errors: any[] = [];
+  errors: IValidationError[] = [];
 
   validation: { [k: string]: IValidationResult } = {};
 
@@ -34,13 +34,19 @@ export class DataContainer<T> {
     });
   }
 
+
   addError(e: IValidationError) {
+    if(!_.has(e,'type')){
+      e.type = 'error';
+    }
     this.errors.push(e);
   }
+
 
   hasErrors() {
     return this.errors.length > 0;
   }
+
 
   checked(str: string) {
     if (this.validation[str]) {
@@ -48,6 +54,7 @@ export class DataContainer<T> {
     }
     return false;
   }
+
 
   value(str: string) {
     let wrap = {};
@@ -80,12 +87,14 @@ export class DataContainer<T> {
 
   async validate() {
     this.isValidated = true;
+    _.remove(this.errors, error => error.type == 'validate');
     let results = await validate(this.instance, {validationError: {target: false}});
+    results.map(r => this.errors.push({property: r.property, value: r.value, constraints: r.constraints, type:'validate'}));
     this.isSuccessValidated = true;
     Object.keys(this.validation).forEach(key => {
       if (this.validation[key]) {
         let valid = this.validation[key];
-        let found = _.find(results, {property: key});
+        let found = _.find(this.errors, {property: key});
         valid.messages = [];
         if (found) {
           valid.valid = false;
@@ -101,5 +110,10 @@ export class DataContainer<T> {
       }
     });
 
+  }
+
+
+  resetErrors(){
+    this.errors = [];
   }
 }
