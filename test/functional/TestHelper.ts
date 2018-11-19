@@ -22,4 +22,10 @@ export class TestHelper {
     PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
   }
 
+  static wait(ms:number){
+    return new Promise((resolve, reject) => {
+      setTimeout(resolve,ms);
+    })
+  }
+
 }

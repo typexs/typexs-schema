@@ -259,8 +259,12 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     this.addType(entityClass);
     if (targetRef) {
       const sourceClass = targetRef.getClass();
-      getMetadataArgsStorage().entitySubscribers.filter(s => s.target == sourceClass).map(s => { (<any>s['target']) = entityClass;});
-      getMetadataArgsStorage().entityListeners.filter(s => s.target == sourceClass).map(s => { (<any>s['target']) = entityClass;});
+      getMetadataArgsStorage().entitySubscribers.filter(s => s.target == sourceClass).map(s => {
+        (<any>s['target']) = entityClass;
+      });
+      getMetadataArgsStorage().entityListeners.filter(s => s.target == sourceClass).map(s => {
+        (<any>s['target']) = entityClass;
+      });
     }
     return entityClass;
   }
@@ -333,9 +337,9 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
         } else {
           return PrimaryColumn(def);
         }
-      } else if (dbType.type === 'date' && dbType.variant == 'updated') {
+      } else if (dbType.sourceType == 'date' && dbType.variant == 'updated') {
         return UpdateDateColumn(def)
-      } else if (dbType.type === 'date' && dbType.variant == 'created') {
+      } else if (dbType.sourceType == 'date' && dbType.variant == 'created') {
         return CreateDateColumn(def)
       }
       return Column(def);
@@ -464,7 +468,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
   private detectDataTypeFromProperty(prop: PropertyDef): IDBType {
-    let type: IDBType = {type: 'text'};
+    let type: IDBType = {type: 'text', sourceType: prop.dataType};
     if (prop.getOptions('typeorm')) {
       let typeorm = prop.getOptions('typeorm');
       if (_.has(typeorm, 'type')) {
@@ -476,12 +480,12 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     } else {
       // TODO !this.storageRef.getSchemaHandler().translateToStoreType(prop.dataType);
       let split = prop.dataType.split(':');
-      const _type = split.shift();
+      type.sourceType = split.shift();
       if (split.length > 0) {
         type.variant = split.shift();
       }
 
-      switch (_type) {
+      switch (type.sourceType) {
         case 'string':
           type.type = 'text';
           break;

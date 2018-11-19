@@ -69,6 +69,7 @@ export class DataContainer<T> {
     return wrap[str];
   }
 
+
   valid(str: string) {
     if (this.validation[str]) {
       return this.validation[str].valid;
@@ -84,6 +85,7 @@ export class DataContainer<T> {
     return [];
 
   }
+
 
   async validate() {
     this.isValidated = true;
