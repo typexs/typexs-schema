@@ -13,6 +13,8 @@ import {SqlHelper} from "./SqlHelper";
 import {JoinDesc} from "../../descriptors/Join";
 import {EntityRegistry} from "../../EntityRegistry";
 import {Sql} from "./Sql";
+import {DataContainer} from "../../DataContainer";
+import {ObjectsNotValidError} from "../../exceptions/ObjectsNotValidError";
 
 
 interface ISaveData extends IDataExchange<any[]> {
@@ -599,24 +601,39 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   }
 
 
+  private async validate() {
+    let valid:boolean = true;
+    await Promise.all(_.map(this.objects, o => new DataContainer(o)).map(async c => {
+      valid = valid && await c.validate();
+      c.applyState();
+    }));
+    return valid;
+  }
+
+
   async run(object: T | T[]): Promise<T | T[]> {
     let isArray = _.isArray(object);
 
     this.objects = this.prepare(object);
+    let objectsValid = await this.validate();
 
-    let resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
-    let entityNames = Object.keys(resolveByEntityDef);
-    this.c = await this.em.storageRef.connect();
+    if(objectsValid){
+      let resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
+      let entityNames = Object.keys(resolveByEntityDef);
+      this.c = await this.em.storageRef.connect();
 
-    // start transaction, got to leafs and save
-    let results = await this.c.manager.transaction(async em => {
-      let promises = [];
-      for (let entityName of entityNames) {
-        let p = this.saveByEntityDef(entityName, resolveByEntityDef[entityName]);
-        promises.push(p);
-      }
-      return Promise.all(promises);
-    });
+      // start transaction, got to leafs and save
+      let results = await this.c.manager.transaction(async em => {
+        let promises = [];
+        for (let entityName of entityNames) {
+          let p = this.saveByEntityDef(entityName, resolveByEntityDef[entityName]);
+          promises.push(p);
+        }
+        return Promise.all(promises);
+      });
+    }else {
+      throw new ObjectsNotValidError(this.objects,isArray);
+    }
 
 
     if (!isArray) {

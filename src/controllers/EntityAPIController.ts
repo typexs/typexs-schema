@@ -7,7 +7,7 @@ import {EntityDef} from "../libs/registry/EntityDef";
 import {EntityControllerFactory} from "../libs/EntityControllerFactory";
 import {EntityController} from "../libs/EntityController";
 import * as _ from "lodash";
-import {XS_P_$COUNT, XS_P_LABEL, XS_P_$OFFSET, XS_P_PREV_ID, XS_P_URL} from "..";
+import {XS_P_$COUNT, XS_P_LABEL, XS_P_$OFFSET, XS_P_PREV_ID, XS_P_URL, ObjectsNotValidError} from "..";
 import {XS_P_$LIMIT} from "../libs/Constants";
 
 
@@ -140,7 +140,6 @@ export class EntityAPIController {
   }
 
 
-
   /**
    * Return a single Entity
    */
@@ -171,7 +170,6 @@ export class EntityAPIController {
   }
 
 
-
   /**
    * Return a new created Entity
    */
@@ -183,9 +181,14 @@ export class EntityAPIController {
     if (_.isArray(data)) {
       entities = _.map(data, d => entityDef.build(d, {beforeBuild: EntityAPIController._beforeBuild}));
     } else {
-      entities = entityDef.build(data,{beforeBuild: EntityAPIController._beforeBuild});
+      entities = entityDef.build(data, {beforeBuild: EntityAPIController._beforeBuild});
     }
-    return controller.save(entities);
+    return controller.save(entities).catch(e => {
+      if (e instanceof ObjectsNotValidError) {
+        throw e.toHttpError();
+      }
+      throw e;
+    });
   }
 
 
@@ -199,11 +202,18 @@ export class EntityAPIController {
 //    const conditions = entityDef.createLookupConditions(id);
     let entities;
     if (_.isArray(data)) {
-      entities = _.map(data, d => entityDef.build(d,{beforeBuild: EntityAPIController._beforeBuild}));
+      entities = _.map(data, d => entityDef.build(d, {beforeBuild: EntityAPIController._beforeBuild}));
     } else {
-      entities = entityDef.build(data,{beforeBuild: EntityAPIController._beforeBuild});
+      entities = entityDef.build(data, {beforeBuild: EntityAPIController._beforeBuild});
     }
-    return controller.save(entities);
+
+    return controller.save(entities).catch(e => {
+      if (e instanceof ObjectsNotValidError) {
+        throw e.toHttpError();
+      }
+      throw e;
+    });
+
   }
 
 
@@ -216,7 +226,7 @@ export class EntityAPIController {
     const [entityDef, controller] = this.getControllerForEntityName(name);
     const conditions = entityDef.createLookupConditions(id);
     let results = await controller.find(entityDef.getClass(), conditions);
-    if(results.length > 0){
+    if (results.length > 0) {
       return controller.remove(results);
     }
     return null;

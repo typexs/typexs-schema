@@ -5,10 +5,14 @@ export * from "./controllers/EntityAPIController";
 
 export * from "./libs/Constants";
 
+export * from "./libs/exceptions/ObjectsNotValidError";
+export * from "./libs/exceptions/HttpObjectsNotValidError";
+
 export * from "./libs/DataContainer";
 export * from "./libs/IValidationError";
 export * from "./libs/IValidationResult";
 export * from "./libs/IValidationMessage";
+
 
 export * from "./libs/decorators/CObject";
 export * from "./libs/decorators/Entity";
@@ -19,10 +23,10 @@ export * from "./libs/descriptors/Conditions";
 export * from "./libs/descriptors/IDesc";
 export * from "./libs/descriptors/Join";
 
-
 export * from "./libs/EntityController";
 export * from "./libs/EntityControllerFactory";
 export * from "./libs/EntityRegistry";
+
 
 
 export * from "./libs/framework/EntityDefTreeWorker";

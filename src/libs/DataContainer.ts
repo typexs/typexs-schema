@@ -6,7 +6,11 @@ import {IValidationError} from "./IValidationError";
 import {IValidationMessage} from "./IValidationMessage";
 
 
+export const STATE_KEY = '$state';
+
 export class DataContainer<T> {
+
+  static keys:string[] = ['isValidated','isSuccess','isSuccessValidated', 'errors'];
 
   isValidated: boolean;
 
@@ -87,7 +91,7 @@ export class DataContainer<T> {
   }
 
 
-  async validate() {
+  async validate():Promise<boolean> {
     this.isValidated = true;
     _.remove(this.errors, error => error.type == 'validate');
     let results = await validate(this.instance, {validationError: {target: false}});
@@ -112,6 +116,22 @@ export class DataContainer<T> {
       }
     });
 
+    return this.isSuccessValidated;
+  }
+
+
+
+  applyState(){
+    let $state:any = {};
+    DataContainer.keys.forEach(k => {
+      const value = _.get(this,k,null);
+
+      if(_.isBoolean(value) || !_.isEmpty(value)){
+        _.set($state,k,value);
+      }
+    });
+
+    _.set(<any>this.instance,STATE_KEY,$state);
   }
 
 
