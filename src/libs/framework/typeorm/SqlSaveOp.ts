@@ -15,6 +15,7 @@ import {EntityRegistry} from "../../EntityRegistry";
 import {Sql} from "./Sql";
 import {DataContainer} from "../../DataContainer";
 import {ObjectsNotValidError} from "../../exceptions/ObjectsNotValidError";
+import {ISaveOptions} from "../ISaveOptions";
 
 
 interface ISaveData extends IDataExchange<any[]> {
@@ -602,7 +603,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
 
   private async validate() {
-    let valid:boolean = true;
+    let valid: boolean = true;
     await Promise.all(_.map(this.objects, o => new DataContainer(o)).map(async c => {
       valid = valid && await c.validate();
       c.applyState();
@@ -611,13 +612,17 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   }
 
 
-  async run(object: T | T[]): Promise<T | T[]> {
+  async run(object: T | T[], options: ISaveOptions = {validate: true}): Promise<T | T[]> {
     let isArray = _.isArray(object);
 
     this.objects = this.prepare(object);
-    let objectsValid = await this.validate();
+    let objectsValid: boolean = true;
+    if (_.get(options, 'validate', false)) {
+      objectsValid = await this.validate();
+    }
 
-    if(objectsValid){
+
+    if (objectsValid) {
       let resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
       let entityNames = Object.keys(resolveByEntityDef);
       this.c = await this.em.storageRef.connect();
@@ -631,8 +636,8 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
         }
         return Promise.all(promises);
       });
-    }else {
-      throw new ObjectsNotValidError(this.objects,isArray);
+    } else {
+      throw new ObjectsNotValidError(this.objects, isArray);
     }
 
 
