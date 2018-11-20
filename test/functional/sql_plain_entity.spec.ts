@@ -35,7 +35,7 @@ class Sql_plain_entitySpec {
     let a = new Author();
     a.firstName = 'Robert';
     a.lastName = 'Kania';
-    a = await xsem.save(a);
+    a = await xsem.save(a, {validate: false});
 
     let ids = {id: a.id};
 

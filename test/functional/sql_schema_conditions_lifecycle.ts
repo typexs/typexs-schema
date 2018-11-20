@@ -38,7 +38,7 @@ class Scenario_06_conditions {
 
     let keeper_save_01 = new ConditionKeeper();
     keeper_save_01.holders = [holder_01, holder_02];
-    keeper_save_01 = await xsem.save(keeper_save_01);
+    keeper_save_01 = await xsem.save(keeper_save_01, {validate: false});
     console.log(keeper_save_01);
 
     let keeper_found = await xsem.find(ConditionKeeper, {id: 1});
@@ -74,7 +74,7 @@ class Scenario_06_conditions {
 
     let keeper_save_01 = new ConditionObjectKeeper();
     keeper_save_01.objects = [holder_01, holder_02];
-    keeper_save_01 = await xsem.save(keeper_save_01);
+    keeper_save_01 = await xsem.save(keeper_save_01, {validate: false});
     console.log(keeper_save_01);
 
     let keeper_found = await xsem.find(ConditionObjectKeeper, {id: 1});
@@ -117,7 +117,7 @@ class Scenario_06_conditions {
     base_save_01.objects = [keeper_01, keeper_02];
 
 
-    base_save_01 = await xsem.save(base_save_01);
+    base_save_01 = await xsem.save(base_save_01, {validate: false});
     console.log(inspect(base_save_01, false, 10));
 
     let bases_found = await xsem.find(ConditionObjBase, {id: 1});

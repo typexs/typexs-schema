@@ -57,7 +57,7 @@ class Scenario_04_complex_entitySpec {
     person_save_1.name = 'Harald Junke';
     person_save_1.jobs = [job_1, job_2];
 
-    person_save_1 = await xsem.save(person_save_1);
+    person_save_1 = await xsem.save(person_save_1, {validate: false});
     console.log(inspect(person_save_1, false, 10));
 
     let person_found = await xsem.find(Person, {ident: 1});

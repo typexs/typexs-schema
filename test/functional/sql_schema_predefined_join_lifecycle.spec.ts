@@ -47,7 +47,7 @@ class Sql_schema_predefined_join_lifecycleSpec {
     let course_save_1 = new Lecture();
     course_save_1.persons = [person_save_1];
 
-    course_save_1 = await xsem.save(course_save_1);
+    course_save_1 = await xsem.save(course_save_1, {validate: false});
     console.log(course_save_1);
 
     let courses_found  = await xsem.find(Lecture, {veranstid: 1});
@@ -60,7 +60,7 @@ class Sql_schema_predefined_join_lifecycleSpec {
      */
     let course_save_2 = new Lecture();
     course_save_2.persons = [person_save_1];
-    course_save_2 = await xsem.save(course_save_2);
+    course_save_2 = await xsem.save(course_save_2, {validate: false});
     console.log(course_save_2);
 
     courses_found  = await xsem.find(Lecture, {veranstid: 2});
@@ -73,7 +73,7 @@ class Sql_schema_predefined_join_lifecycleSpec {
      */
     let course_save_3 = new Lecture();
     course_save_3.persons = [person_save_1,person_save_3,person_save_2];
-    course_save_3 = await xsem.save(course_save_3);
+    course_save_3 = await xsem.save(course_save_3, {validate: false});
     console.log(course_save_3);
 
     courses_found  = await xsem.find(Lecture, {veranstid: 3});

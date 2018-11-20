@@ -48,13 +48,13 @@ class Sql_schema_typesSpec {
     let test01 = new DateType();
     test01.date = new Date();
 
-    let test_save_01 = await xsem.save(test01);
+    let test_save_01 = await xsem.save(test01, {validate: false});
     let clone = _.clone(test_save_01);
 
     await TestHelper.wait(1000);
     test_save_01.date = new Date();
 
-    let test_save_02 = await xsem.save(test_save_01);
+    let test_save_02 = await xsem.save(test_save_01, {validate: false});
 
     expect(clone.created_at).to.be.eq(test_save_02.created_at);
     expect(clone.updated_at).to.be.lessThan(test_save_02.updated_at);

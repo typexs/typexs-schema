@@ -9,7 +9,6 @@ import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";
 
 
-
 @suite('functional/entity_lifecycle/direct_referencing')
 class Scenario_01_direct_referencingSpec {
 
@@ -43,7 +42,7 @@ class Scenario_01_direct_referencingSpec {
     book.content = 'This is a good book';
     book.author = a;
 
-    book = await xsem.save(book);
+    book = await xsem.save(book, {validate: false});
     expect(book.id).to.be.eq(1);
     expect(book.author.id).to.be.eq(1);
 
@@ -68,7 +67,6 @@ class Scenario_01_direct_referencingSpec {
     expect(book).to.deep.eq(book_find_01);
 
     // TODO delete
-
 
 
     await c.close();
@@ -96,7 +94,7 @@ class Scenario_01_direct_referencingSpec {
 // idKey test
     course_save_1.periode_alt = new Periode();
     course_save_1.periode_alt.year = 2019;
-    course_save_1 = await xsem.save(course_save_1);
+    course_save_1 = await xsem.save(course_save_1, {validate: false});
 
     let courses_found = await xsem.find(Course, {id: 1});
     let course_find_1 = courses_found.shift();
@@ -122,7 +120,7 @@ class Scenario_01_direct_referencingSpec {
     course2_save_1.literatur = new Literatur();
     course2_save_1.literatur.titel = 'Bürgeliches Gesetzbuch';
     course2_save_1.literatur.titelid = 'BGB';
-    course2_save_1 = await xsem.save(course2_save_1);
+    course2_save_1 = await xsem.save(course2_save_1, {validate: false});
     console.log(course2_save_1);
 
     let courses_found = await xsem.find(Course2, {id: 1});
@@ -150,7 +148,7 @@ class Scenario_01_direct_referencingSpec {
     let edr_save_1 = new EDR();
     edr_save_1.object = new EDR_Object_DR();
     edr_save_1.object.object = new EDR_Object();
-    edr_save_1 = await xsem.save(edr_save_1);
+    edr_save_1 = await xsem.save(edr_save_1, {validate: false});
     console.log(edr_save_1);
 
     let edrs_found = await xsem.find(EDR, {id: 1});
@@ -194,7 +192,7 @@ class Scenario_01_direct_referencingSpec {
     book_save_1.content = 'This is a good book';
     book_save_1.authors = [a, a2];
 
-    book_save_1 = await xsem.save(book_save_1);
+    book_save_1 = await xsem.save(book_save_1, {validate: false});
     console.log(book_save_1);
     expect(book_save_1.id).to.be.eq(1);
     expect(book_save_1.authors).to.have.length(2);
@@ -213,7 +211,7 @@ class Scenario_01_direct_referencingSpec {
     let book_save_2 = new Book2();
     book_save_2.content = 'Robi tobi und das Fliwatüt';
     book_save_2.authors = [a];
-    book_save_2 = await xsem.save(book_save_2);
+    book_save_2 = await xsem.save(book_save_2, {validate: false});
     console.log(book_save_2);
     expect(book_save_2.id).to.be.eq(2);
     expect(book_save_2.authors).to.have.length(1);
@@ -238,7 +236,7 @@ class Scenario_01_direct_referencingSpec {
     book_save_4.authors = [a3, a4];
 
 
-    let books_saved = await xsem.save([book_save_3, book_save_4]);
+    let books_saved = await xsem.save([book_save_3, book_save_4], {validate: false});
     console.log(inspect(books_saved, false, 10));
     expect(books_saved).to.have.length(2);
 
@@ -251,7 +249,7 @@ class Scenario_01_direct_referencingSpec {
     let book_save_5 = new Book2();
     book_save_5.content = 'Karate';
 
-    books_saved = await xsem.save([book_save_5]);
+    books_saved = await xsem.save([book_save_5], {validate: false});
     console.log(inspect(books_saved, false, 10));
     expect(books_saved).to.have.length(1);
 
@@ -265,7 +263,7 @@ class Scenario_01_direct_referencingSpec {
     book_save_6.content = 'Karate';
     book_save_6.authors = [];
 
-    books_saved = await xsem.save([book_save_6]);
+    books_saved = await xsem.save([book_save_6], {validate: false});
     console.log(inspect(books_saved, false, 10));
 
     books_found = await xsem.find(Book2, [{id: 6}]);
@@ -308,7 +306,7 @@ class Scenario_01_direct_referencingSpec {
     car_save_1.driver.skill.label = 'ASD';
     car_save_1.driver.skill.quality = 123;
 
-    car_save_1 = await xsem.save(car_save_1);
+    car_save_1 = await xsem.save(car_save_1, {validate: false});
     console.log(car_save_1);
 
     let cars_found = await xsem.find(Car, {id: 1});
@@ -357,7 +355,7 @@ class Scenario_01_direct_referencingSpec {
     driver2.skill.quality = 12;
 
     car_save_1.drivers = [driver1, driver2];
-    car_save_1 = await xsem.save(car_save_1);
+    car_save_1 = await xsem.save(car_save_1, {validate: false});
     expect(car_save_1.drivers).to.have.length(2);
     console.log(inspect(car_save_1, false, 10));
 
@@ -401,7 +399,7 @@ class Scenario_01_direct_referencingSpec {
     book2.author = a2;
 
     let booksToSave = [book, book2];
-    let books = await xsem.save(booksToSave);
+    let books = await xsem.save(booksToSave, {validate: false});
 
 
     let booksFound = await xsem.find(Book);
@@ -429,7 +427,7 @@ class Scenario_01_direct_referencingSpec {
     let a = new Author();
     a.firstName = 'Robert';
     a.lastName = 'Kania';
-    a = await xsem.save(a);
+    a = await xsem.save(a, {validate: false});
 
 
     let book = new Book();
@@ -441,7 +439,7 @@ class Scenario_01_direct_referencingSpec {
     book2.author = a;
 
     let booksToSave = [book, book2];
-    let books = await xsem.save(booksToSave);
+    let books = await xsem.save(booksToSave, {validate: false});
     let booksFound = await xsem.find(Book, []);
 
     expect(books).to.be.deep.eq(booksFound);
@@ -470,7 +468,7 @@ class Scenario_01_direct_referencingSpec {
       let a = new Author();
       a.firstName = 'Robert';
       a.lastName = 'Kania' + i;
-      a = await xsem.save(a);
+      a = await xsem.save(a, {validate: false});
 
       let book = new Book();
       book.label = 'Book' + i;
@@ -478,7 +476,7 @@ class Scenario_01_direct_referencingSpec {
       books.push(book)
     }
 
-    await xsem.save(books);
+    await xsem.save(books, {validate: false});
 
     let booksFound = await xsem.find(Book, {$or: [{label: 'Book5'}, {label: 'Book10'}]});
     expect(booksFound).to.have.length(2);
@@ -510,7 +508,7 @@ class Scenario_01_direct_referencingSpec {
     booksFound = await xsem.find(Book, {$or: [{label: 'Book5'}, {label: 'Book10'}]}, {
       hooks: {
         afterEntity: (entityDef, entities) => {
-          if(entityDef.name === 'Book'){
+          if (entityDef.name === 'Book') {
             entities.forEach(entity => {
               entity['$fullname'] = entity.author.firstName + ' ' + entity.author.lastName;
             })

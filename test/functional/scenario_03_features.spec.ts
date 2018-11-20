@@ -56,7 +56,7 @@ class Scenario_03_featuresSpec {
     a.features[0].geometry.latitude = 52.15;
     a.features[0].geometry.longitude = 13.15;
 
-    a = await xsem.save(a);
+    a = await xsem.save(a, {validate: false});
     console.log(inspect(a,false,10));
 
     let b = await xsem.find(PathFeatureCollection,{id:1});
@@ -96,7 +96,7 @@ class Scenario_03_featuresSpec {
     s.amount = 2;
     r.equipment.push(s);
 
-    r = await xsem.save(r);
+    r = await xsem.save(r, {validate: false});
 
     let data = await c.connection.query('select * from p_equipment');
     expect(data).to.have.length(2);

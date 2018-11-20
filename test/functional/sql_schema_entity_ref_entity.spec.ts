@@ -46,7 +46,7 @@ class Sql_schema_entity_ref_entitySpec {
     trai_save_01.trainer = pers_save_01;
     trai_save_01.type = 'Running';
 
-    trai_save_01 = await xsem.save(trai_save_01);
+    trai_save_01 = await xsem.save(trai_save_01, {validate: false});
     let saved_str_01 = JSON.parse(JSON.stringify(trai_save_01));
 
     // Update the existing entity
@@ -55,7 +55,7 @@ class Sql_schema_entity_ref_entitySpec {
     trai_save_02.trainer = pers_save_01;
     trai_save_02.type = 'Running';
 
-    trai_save_02 = await xsem.save(trai_save_02);
+    trai_save_02 = await xsem.save(trai_save_02, {validate: false});
     let saved_str_02 = JSON.parse(JSON.stringify(trai_save_02));
     expect(saved_str_02).to.deep.eq(saved_str_01);
 
@@ -70,7 +70,7 @@ class Sql_schema_entity_ref_entitySpec {
     trai_save_03.trainer = pers_save_02;
     trai_save_03.type = 'Running';
 
-    trai_save_03 = await xsem.save(trai_save_03);
+    trai_save_03 = await xsem.save(trai_save_03, {validate: false});
     // console.log(inspect(trai_save_03, false, 10));
 
     let trai_find_01 = await xsem.find(Training, {id: trai_save_03.id});
@@ -105,14 +105,14 @@ class Sql_schema_entity_ref_entitySpec {
     pers_save_01.lastName = 'Bertorio';
     pers_save_01.address = addr_save_01;
 
-    pers_save_01 = await xsem.save(pers_save_01);
+    pers_save_01 = await xsem.save(pers_save_01, {validate: false});
     console.log(inspect(pers_save_01, false, 10));
 
     let trai_save_01 = new Training();
     trai_save_01.trainer = {id: pers_save_01.id};
     trai_save_01.type = 'Running';
 
-    trai_save_01 = await xsem.save(trai_save_01);
+    trai_save_01 = await xsem.save(trai_save_01, {validate: false});
     console.log(inspect(trai_save_01, false, 10));
 
     let trai_find_01 = await xsem.find(Training, {id: trai_save_01.id});

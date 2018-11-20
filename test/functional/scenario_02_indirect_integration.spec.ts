@@ -48,7 +48,7 @@ class Scenario_02_indirect_integrationSpec {
     summary.content = 'This is a good summary';
     book_save_1.summary = summary;
 
-    book_save_1 = await xsem.save(book_save_1);
+    book_save_1 = await xsem.save(book_save_1, {validate: false});
 
     console.log(book_save_1)
 
@@ -117,7 +117,7 @@ class Scenario_02_indirect_integrationSpec {
     s.amount = 2;
     room_save_1.equipment.push(s);
 
-    room_save_1 = await xsem.save(room_save_1);
+    room_save_1 = await xsem.save(room_save_1, {validate: false});
     console.log(room_save_1);
     let data = await c.connection.query('select * from p_equipment');
     expect(data).to.have.length(2);
