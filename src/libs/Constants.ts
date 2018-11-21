@@ -33,3 +33,13 @@ export const XS_P_$LIMIT = '$limit';
 export const XS_P_$OFFSET = '$offset';
 export const XS_P_$ABORTED = '$aborted';
 
+
+export const PERMISSION_ALLOW_ACCESS_METADATA = 'allow access metadata';
+export const PERMISSION_ALLOW_ACCESS_ENTITY = 'allow access entity';
+export const PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN = 'allow access entity :name';
+export const PERMISSION_ALLOW_CREATE_ENTITY = 'allow create entity';
+export const PERMISSION_ALLOW_CREATE_ENTITY_PATTERN = 'allow create entity :name';
+export const PERMISSION_ALLOW_UPDATE_ENTITY = 'allow update entity';
+export const PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN = 'allow update entity :name';
+export const PERMISSION_ALLOW_DELETE_ENTITY = 'allow delete entity';
+export const PERMISSION_ALLOW_DELETE_ENTITY_PATTERN = 'allow delete entity :name';

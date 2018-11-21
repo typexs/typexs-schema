@@ -1,11 +1,24 @@
-import {Container, IActivator} from "@typexs/base";
+import {Container, IActivator, IPermissions} from "@typexs/base";
 import {EntityRegistry} from "./libs/EntityRegistry";
 import {EntityControllerFactory} from "./libs/EntityControllerFactory";
+import {
+  PERMISSION_ALLOW_ACCESS_ENTITY,
+  PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN,
+  PERMISSION_ALLOW_ACCESS_METADATA,
+  PERMISSION_ALLOW_CREATE_ENTITY,
+  PERMISSION_ALLOW_CREATE_ENTITY_PATTERN,
+  PERMISSION_ALLOW_DELETE_ENTITY,
+  PERMISSION_ALLOW_DELETE_ENTITY_PATTERN,
+  PERMISSION_ALLOW_UPDATE_ENTITY,
+  PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN
+} from "./libs/Constants";
+import {EntityDef} from "./libs/registry/EntityDef";
 
 
-export class Activator implements IActivator {
+export class Activator implements IActivator, IPermissions {
 
-  startup(): void{
+
+  startup(): void {
     const registry = EntityRegistry.$();
     Container.set(EntityRegistry, registry);
     Container.set('EntityRegistry', registry);
@@ -13,4 +26,25 @@ export class Activator implements IActivator {
     let factory = Container.get(EntityControllerFactory);
     Container.set('EntityControllerFactory', factory);
   }
+
+
+  permissions(): Promise<string[]> | string[] {
+    let permissions = [
+      PERMISSION_ALLOW_ACCESS_METADATA,
+      PERMISSION_ALLOW_ACCESS_ENTITY,
+      PERMISSION_ALLOW_CREATE_ENTITY,
+      PERMISSION_ALLOW_UPDATE_ENTITY,
+      PERMISSION_ALLOW_DELETE_ENTITY
+    ];
+
+    const registry = EntityRegistry.$();
+    registry.listEntities().map((e:EntityDef) => {
+      permissions.push(PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN.replace(':name', e.machineName));
+      permissions.push(PERMISSION_ALLOW_CREATE_ENTITY_PATTERN.replace(':name', e.machineName));
+      permissions.push(PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN.replace(':name', e.machineName));
+      permissions.push(PERMISSION_ALLOW_DELETE_ENTITY_PATTERN.replace(':name', e.machineName));
+    });
+    return permissions;
+  }
+
 }

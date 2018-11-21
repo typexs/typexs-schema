@@ -1,14 +1,29 @@
-import {Body, Delete, Get, JsonController, Param, QueryParam, Post} from "routing-controllers";
+import {Body, Delete, Get, JsonController, Param, Post, QueryParam} from "routing-controllers";
 
 import {Inject, NotYetImplementedError} from "@typexs/base";
-import {ContextGroup, Credentials} from "@typexs/server";
+import {Access, ContextGroup} from "@typexs/server";
 import {EntityRegistry} from "../libs/EntityRegistry";
 import {EntityDef} from "../libs/registry/EntityDef";
 import {EntityControllerFactory} from "../libs/EntityControllerFactory";
 import {EntityController} from "../libs/EntityController";
 import * as _ from "lodash";
-import {XS_P_$COUNT, XS_P_LABEL, XS_P_$OFFSET, XS_P_PREV_ID, XS_P_URL, ObjectsNotValidError} from "..";
-import {XS_P_$LIMIT} from "../libs/Constants";
+import {
+  PERMISSION_ALLOW_ACCESS_ENTITY,
+  PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN,
+  PERMISSION_ALLOW_ACCESS_METADATA,
+  PERMISSION_ALLOW_CREATE_ENTITY,
+  PERMISSION_ALLOW_CREATE_ENTITY_PATTERN,
+  PERMISSION_ALLOW_DELETE_ENTITY,
+  PERMISSION_ALLOW_DELETE_ENTITY_PATTERN,
+  PERMISSION_ALLOW_UPDATE_ENTITY,
+  PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN,
+  XS_P_$COUNT,
+  XS_P_$OFFSET,
+  XS_P_LABEL,
+  XS_P_URL,
+  XS_P_$LIMIT
+} from "../libs/Constants";
+import {ObjectsNotValidError} from "./../libs/exceptions/ObjectsNotValidError";
 
 
 @ContextGroup('api')
@@ -29,7 +44,7 @@ export class EntityAPIController {
    */
   // @Authorized('read metadata schema')
   // - Check if user has an explicit credential to access the method
-  @Credentials('allow access metadata')
+  @Access(PERMISSION_ALLOW_ACCESS_METADATA)
   @Get('/metadata/schemas')
   async schemas(): Promise<any> {
     return this.registry.listSchemas().map(x => x.toJson(true, false));
@@ -38,7 +53,7 @@ export class EntityAPIController {
   /**
    * Return list of entity
    */
-  @Credentials('allow access metadata')
+  @Access(PERMISSION_ALLOW_ACCESS_METADATA)
   @Get('/metadata/schema/:schemaName')
   async schema(@Param('schemaName') schemaName: string) {
     let schema = this.registry.getSchemaDefByName(schemaName);
@@ -53,7 +68,7 @@ export class EntityAPIController {
   /**
    * Return list of defined entities
    */
-  @Credentials('allow access metadata')
+  @Access(PERMISSION_ALLOW_ACCESS_METADATA)
   @Get('/metadata/entities')
   async entities() {
     return this.registry.listEntities().map(x => x.toJson());
@@ -63,7 +78,7 @@ export class EntityAPIController {
   /**
    * Return list of defined entities
    */
-  @Credentials('allow access metadata')
+  @Access(PERMISSION_ALLOW_ACCESS_METADATA)
   @Get('/metadata/entity/:entityName')
   async entity(@Param('entityName') entityName: string) {
     let entity = this.registry.getEntityDefByName(entityName);
@@ -80,7 +95,7 @@ export class EntityAPIController {
   /**
    * Return list of defined entities
    */
-  @Credentials('allow access metadata')
+  @Access(PERMISSION_ALLOW_ACCESS_METADATA)
   @Post('/metadata/entity')
   async entityCreate(@Body() data: any) {
     throw new NotYetImplementedError()
@@ -90,7 +105,7 @@ export class EntityAPIController {
   /**
    * Run a query for entity
    */
-  @Credentials(['allow access entity :name', 'allow access entity'])
+  @Access([PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN, PERMISSION_ALLOW_ACCESS_ENTITY])
   @Get('/entity/:name')
   async query(
     @Param('name') name: string,
@@ -143,7 +158,7 @@ export class EntityAPIController {
   /**
    * Return a single Entity
    */
-  @Credentials(['allow access entity :name', 'allow access entity'])
+  @Access([PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN, PERMISSION_ALLOW_ACCESS_ENTITY])
   @Get('/entity/:name/:id')
   async get(@Param('name') name: string, @Param('id') id: string) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
@@ -173,7 +188,7 @@ export class EntityAPIController {
   /**
    * Return a new created Entity
    */
-  @Credentials(['allow create entity :name', 'allow create entity'])
+  @Access([PERMISSION_ALLOW_CREATE_ENTITY_PATTERN, PERMISSION_ALLOW_CREATE_ENTITY])
   @Post('/entity/:name')
   async create(@Param('name') name: string, @Body() data: any): Promise<any> {
     const [entityDef, controller] = this.getControllerForEntityName(name);
@@ -195,7 +210,7 @@ export class EntityAPIController {
   /**
    * Return a updated Entity
    */
-  @Credentials(['allow update entity :name', 'allow update entity'])
+  @Access([PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN, PERMISSION_ALLOW_UPDATE_ENTITY])
   @Post('/entity/:name/:id')
   update(@Param('name') name: string, @Param('id') id: string, @Body() data: any) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
@@ -213,14 +228,13 @@ export class EntityAPIController {
       }
       throw e;
     });
-
   }
 
 
   /**
    * Return a deleted Entity
    */
-  @Credentials(['allow delete entity :name', 'allow delete entity'])
+  @Access([PERMISSION_ALLOW_DELETE_ENTITY_PATTERN, PERMISSION_ALLOW_DELETE_ENTITY])
   @Delete('/entity/:name/:id')
   async delete(@Param('name') name: string, @Param('id') id: string, @Body() data: any) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
