@@ -24,6 +24,7 @@ import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
 
 export class EntityRegistry {
 
+  static NAME : string = 'EntityRegistry';
 
   private static _self: EntityRegistry; // = new Registry();
 

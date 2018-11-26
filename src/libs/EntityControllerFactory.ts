@@ -7,7 +7,9 @@ import {FrameworkFactory} from "./framework/FrameworkFactory";
 
 export class EntityControllerFactory {
 
-  @Inject('storage')
+  static NAME: string = 'EntityControllerFactory';
+
+  @Inject(Storage.NAME)
   storage: Storage;
 
   @Inject('EntityRegistry')
@@ -20,12 +22,12 @@ export class EntityControllerFactory {
     const storages = this.storage.getNames();
     for (let storageName of storages) {
       let schemaDef = this.registry.getSchemaDefByName(storageName);
-      if(schemaDef){
+      if (schemaDef) {
         let storageRef = this.storage.get(storageName);
-        let framework:IFramework = null;
-        try{
+        let framework: IFramework = null;
+        try {
           framework = FrameworkFactory.$().get(storageRef);
-        }catch(e){
+        } catch (e) {
           Log.debug('ignore schema generation for ' + storageName + '. ' + e.toString());
           continue;
         }

@@ -21,10 +21,10 @@ export class Activator implements IActivator, IPermissions {
   startup(): void {
     const registry = EntityRegistry.$();
     Container.set(EntityRegistry, registry);
-    Container.set('EntityRegistry', registry);
+    Container.set(EntityRegistry.NAME, registry);
 
     let factory = Container.get(EntityControllerFactory);
-    Container.set('EntityControllerFactory', factory);
+    Container.set(EntityControllerFactory.NAME, factory);
   }
 
 
