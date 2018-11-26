@@ -12,7 +12,7 @@ export class EntityControllerFactory {
   @Inject(Storage.NAME)
   storage: Storage;
 
-  @Inject('EntityRegistry')
+  @Inject(EntityRegistry.NAME)
   registry: EntityRegistry;
 
   controller: EntityController[] = [];

@@ -1,4 +1,4 @@
-import {Container, IActivator, IPermissions} from "@typexs/base";
+import {Container, IActivator, IPermissions, Log} from "@typexs/base";
 import {EntityRegistry} from "./libs/EntityRegistry";
 import {EntityControllerFactory} from "./libs/EntityControllerFactory";
 import {
@@ -18,13 +18,16 @@ import {EntityDef} from "./libs/registry/EntityDef";
 export class Activator implements IActivator, IPermissions {
 
 
-  startup(): void {
+  async startup(): Promise<void> {
     const registry = EntityRegistry.$();
     Container.set(EntityRegistry, registry);
     Container.set(EntityRegistry.NAME, registry);
 
     let factory = Container.get(EntityControllerFactory);
     Container.set(EntityControllerFactory.NAME, factory);
+
+    Log.info('booting schema ...');
+    await factory.initialize();
   }
 
 
