@@ -12,7 +12,6 @@ import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
 import {getFromContainer} from "class-validator/container";
 
 
-
 export class PropertyDef extends AbstractDef {
 
   readonly cardinality: number = 1;
@@ -89,9 +88,9 @@ export class PropertyDef extends AbstractDef {
     }
   }
 
-  id(){
-    let ids = this.object.schemas.map(s => [s,this.object.className, this.name].join('--').toLowerCase());
-    if(ids.length === 1){
+  id() {
+    let ids = this.object.schemas.map(s => [s, this.object.className, this.name].join('--').toLowerCase());
+    if (ids.length === 1) {
       return ids.shift();
     }
     return ids;
@@ -204,6 +203,17 @@ export class PropertyDef extends AbstractDef {
       } else {
         throw new NotYetImplementedError('value ' + data);
       }
+    } else if (this.dataType == 'boolean') {
+      if (_.isBoolean(data)) {
+        return data;
+      } else if (_.isNumber(data)) {
+        return data > 0;
+      } else if (_.isString(data)) {
+        if (data.toLowerCase() === "true" || data.toLowerCase() === "1") {
+          return true;
+        }
+        return false;
+      }
     } else if (this.dataType == 'number') {
       if (_.isString(data)) {
         if (/^\d+\.|\,\d+$/.test(data)) {
@@ -263,7 +273,7 @@ export class PropertyDef extends AbstractDef {
     return this.getOptions('nullable', false);
   }
 
-  isStoreable(){
+  isStoreable() {
     return this.getOptions('storeable', true);
   }
 
@@ -307,11 +317,11 @@ export class PropertyDef extends AbstractDef {
     o.cardinality = this.cardinality;
     delete o.options['sourceClass'];
 
-    if(this.targetRef){
+    if (this.targetRef) {
       o.targetRef = this.targetRef.toJson();
     }
 
-    if(this.propertyRef){
+    if (this.propertyRef) {
       o.propertyRef = this.propertyRef.toJson();
     }
 
