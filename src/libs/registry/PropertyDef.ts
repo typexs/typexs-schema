@@ -218,7 +218,7 @@ export class PropertyDef extends AbstractDef {
       } else {
         throw new NotYetImplementedError('value ' + data);
       }
-    } else if (this.dataType == 'date') {
+    } else if (this.dataType == 'date' || /^date:/.test(this.dataType)) {
       if (data instanceof Date) {
         return data;
       } else {
