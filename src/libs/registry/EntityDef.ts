@@ -229,11 +229,18 @@ export class EntityDef extends AbstractDef {
     if (_.has(instance, 'xs:entity_name')) {
       return _.get(instance, 'xs:entity_name');
     } else {
+
+      let className = ClassRef.getClassName(instance);
       let xsdef: EntityDef = LookupRegistry.$().find(XS_TYPE_ENTITY, (x: EntityDef) => {
         //console.log(x.name,instance.__proto__.constructor.name,x.name == instance.__proto__.constructor.name)
-        return x.name == instance.__proto__.constructor.name;
+        return x.name == className;
       });
-      return xsdef ? xsdef.name : null;
+
+      if(xsdef){
+        return xsdef.name;
+      }else{
+        throw new Error('resolveName not found for instance: '+JSON.stringify(instance));
+      }
     }
   }
 

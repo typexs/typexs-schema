@@ -47,6 +47,7 @@ export abstract class EntityDefTreeWorker {
 
 
   protected async onEntity(entityDef: EntityDef, referPropertyDef?: PropertyDef, sources?: IDataExchange<any>): Promise<IDataExchange<any>> {
+
     let def: IQEntry = {def: entityDef, sources: sources, refer: referPropertyDef};
     this.queue.push(def);
     def.result = await this.visitEntity(entityDef, referPropertyDef, sources);

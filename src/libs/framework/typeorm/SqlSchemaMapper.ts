@@ -1,14 +1,13 @@
 import {IStorageOptions, NotYetImplementedError, StorageRef} from '@typexs/base';
 import {
   Column,
+  CreateDateColumn,
   Entity,
+  getMetadataArgsStorage,
   Index,
   PrimaryColumn,
   PrimaryGeneratedColumn,
-  getMetadataArgsStorage,
-  UpdateDateColumn,
-  CreateDateColumn
-
+  UpdateDateColumn
 } from 'typeorm';
 import {SchemaDef} from '../../registry/SchemaDef';
 import {EntityDef} from '../../registry/EntityDef';
@@ -38,6 +37,8 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
   nameResolver: NameResolver = new NameResolver();
 
+  private classCache: any = [];
+
 
   constructor(storageRef: StorageRef, schemaDef: SchemaDef) {
     super();
@@ -53,16 +54,29 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       this.addType(entityClass);
     }
     this.clear();
-    let data = getMetadataArgsStorage();
+    //let data = getMetadataArgsStorage();
     return this.storageRef.reload();
   }
 
+  inClassCache(cls: Function) {
+    return this.classCache.indexOf(cls) > -1;
+  }
 
   addType(fn: Function) {
     if (!this.isDone(fn)) {
       this.storageRef.addEntityType(fn);
       this.done(fn);
     }
+  }
+
+
+  protected async onEntity(entityDef: EntityDef, referPropertyDef?: PropertyDef, sources?: IDataExchange<any>): Promise<IDataExchange<any>> {
+    const cls = entityDef.object.getClass();
+    if (!this.isDone(cls) && !this.inClassCache(cls)) {
+      this.classCache.push(cls);
+      return super.onEntity(entityDef, referPropertyDef, sources);
+    }
+    return {next: cls, abort: true}
   }
 
 
@@ -143,12 +157,6 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     return {next: this.handleCreateObjectClass(targetRef)};
   }
 
-  protected async onEntity(entityDef: EntityDef, referPropertyDef?: PropertyDef, sources?: IDataExchange<any>): Promise<IDataExchange<any>> {
-    if(!this.isDone(entityDef.object.getClass())){
-      return super.onEntity(entityDef, referPropertyDef, sources);
-    }
-    return {next:entityDef.object.getClass()}
-  }
 
   async visitEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext): Promise<XContext> {
     if (this.handleCheckConditionsIfGiven(sourceDef, propertyDef, entityDef)) {
