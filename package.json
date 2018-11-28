@@ -1,6 +1,6 @@
 {
   "name": "@typexs/schema",
-  "version": "0.4.23",
+  "version": "0.4.24",
   "description": "Schema for typexs",
   "main": "index.js",
   "directories": {
@@ -68,7 +68,7 @@
     "typescript-require": "^0.2.10"
   },
   "dependencies": {
-    "class-validator": "^0.9.1",
+    "class-validator": "^0.8.1",
     "moment": "^2.22.2",
     "@typexs/base": "latest",
     "@typexs/server": "latest"
