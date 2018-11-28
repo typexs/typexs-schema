@@ -3,10 +3,12 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {IStorageOptions} from '@typexs/base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
+import {getMetadataArgsStorage} from 'typeorm'
 import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";
 import {EntityRegistry} from "../../src";
 import {inspect} from "util";
+import {Permission} from "./schemas/role_permissions/Permission";
 
 
 @suite('functional/sql_schema_predefined_join_bidirect')
@@ -20,15 +22,14 @@ class Sql_schema_predefined_join_bidirectSpec {
 
   @test
   async 'create E-P-E[] over predefined join tables'() {
-    require('./schemas/role_permissions/Role');
-    require('./schemas/role_permissions/Permission');
-// TODO reverse join!
+    const Role = require('./schemas/role_permissions/Role').Role;
+    const Permission = require('./schemas/role_permissions/Permission').Permission;
 
     let options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'role_permissions';
 
-    let schema = EntityRegistry.$().getSchemaDefByName(options.name);
-    console.log(inspect(schema.toJson(), false, 10));
+    //let schema = EntityRegistry.$().getSchemaDefByName(options.name);
+    //console.log(inspect(schema.toJson(), false, 10));
 
     let connect = await TestHelper.connect(options);
     let xsem = connect.controller;
@@ -50,6 +51,40 @@ class Sql_schema_predefined_join_bidirectSpec {
       "sort",
       "updated_at"
     ]);
+
+    let perm01 = new Permission();
+    perm01.type = 'single';
+    perm01.module = 'duo';
+    perm01.disabled = false;
+    perm01.permission = 'allow everything';
+
+    let perm02 = new Permission();
+    perm02.type = 'single';
+    perm02.module = 'duo';
+    perm02.disabled = false;
+    perm02.permission = 'allow everything else';
+
+    let role = new Role();
+    role.displayName = 'Admin';
+    role.permissions = [perm01, perm02];
+    role.rolename = 'admin';
+    role.disabled = false;
+
+    await xsem.save(role);
+
+    let roles = await xsem.find(Role);
+    expect(roles).to.have.length(1);
+
+    let permissions: Permission[] = await xsem.find<Permission>(Permission);
+    expect(permissions).to.have.length(2);
+    expect(permissions[0].roles).to.have.length(1);
+    expect(permissions[0].roles[0].rolename).to.be.eq('admin');
+    expect(permissions[1].roles).to.have.length(1);
+    expect(permissions[1].roles[0].rolename).to.be.eq('admin');
+
+
+    let results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    expect(results).to.have.length(2);
 
     await c.close();
   }

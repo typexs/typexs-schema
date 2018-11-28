@@ -30,7 +30,7 @@ export class Permission {
   updated_at: Date;
 
   // TODO has a list of roles
-  /*
+
   @Property({
     type: 'Role', cardinality: 0,
     join: Join(RBelongsTo2, [
@@ -43,7 +43,7 @@ export class Permission {
       [Asc(Key('sort')), Asc(Key('id'))])
   })
   roles:Role[];
-*/
+
   label() {
     return this.permission;
   }
