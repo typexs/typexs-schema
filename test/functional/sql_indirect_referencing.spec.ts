@@ -1,19 +1,20 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {IStorageOptions} from '@typexs/base';
-import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {PlatformTools} from 'typeorm/platform/PlatformTools';
 import * as _ from "lodash";
 import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";
 
 
-@suite('functional/scenario_02_indirect_integration')
-class Scenario_02_indirect_integrationSpec {
+@suite('functional/sql_indirect_referencing')
+class Sql_indirect_referencingSpec {
 
 
   before() {
-    PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;
+    TestHelper.resetTypeorm();
+  }
+
+  after(){
+
   }
 
 
@@ -63,7 +64,7 @@ class Scenario_02_indirect_integrationSpec {
     expect(data).to.have.length(1);
     expect(data[0].id).to.eq(1);
 
-    data = await c.connection.query('select * from p_author_author');
+    data = await c.connection.query('select * from p_book_author');
     expect(data).to.have.length(1);
     expect(data[0].source_id).to.eq(1);
     expect(data[0].target_id).to.eq(1);

@@ -4,8 +4,8 @@ import {ClassRef, EntityDef, EntityRegistry, XS_DEFAULT_SCHEMA} from "../../src"
 import * as _ from "lodash";
 
 
-@suite('functional/registry')
-class RegistrySpec {
+@suite('functional/entity_registry')
+class Entity_registrySpec {
 
 
   @test

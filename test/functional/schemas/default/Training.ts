@@ -1,5 +1,4 @@
 import {Entity, Property} from "../../../../src";
-import {Address} from "./Address";
 import {PersonData} from "./PersonData";
 
 @Entity()

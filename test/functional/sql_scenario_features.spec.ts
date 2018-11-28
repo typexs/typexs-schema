@@ -1,16 +1,13 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {IStorageOptions} from '@typexs/base';
-import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {inspect} from "util";
 import {TestHelper} from "./TestHelper";
 import * as _ from "lodash";
 import {TEST_STORAGE_OPTIONS} from "./config";
 
 
-
-@suite('functional/scenario_03_features')
-class Scenario_03_featuresSpec {
+@suite('functional/sql_scenario_features')
+class Sql_scenario_featuresSpec {
 
 
   before() {

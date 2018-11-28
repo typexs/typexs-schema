@@ -5,8 +5,8 @@ import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";
 
 
-@suite('functional/schemas')
-class SchemaSpec {
+@suite('functional/sql_schema_basic_generations')
+class Sql_schema_basic_generationsSpec {
 
 
   before() {
@@ -74,11 +74,11 @@ class SchemaSpec {
 
     let tableNames = await ref.getSchemaHandler().getCollectionNames();
     expect(tableNames).to.have.length.greaterThan(1);
-    expect(tableNames).to.contain('p_author_author');
+    expect(tableNames).to.contain('p_book_author');
 
     let data_author = await c.connection.query('PRAGMA table_info(\'author\')');
     let data_book = await c.connection.query('PRAGMA table_info(\'book\')');
-    let data_relations = await c.connection.query('PRAGMA table_info(\'p_author_author\')');
+    let data_relations = await c.connection.query('PRAGMA table_info(\'p_book_author\')');
 
     expect(data_author).to.have.length(3);
     expect(data_book).to.have.length(3);
@@ -193,7 +193,7 @@ class SchemaSpec {
 
     let data_author = await c.connection.query('PRAGMA table_info(\'author\')');
     let data_book = await c.connection.query('PRAGMA table_info(\'book\')');
-    let data_author_author = await c.connection.query('PRAGMA table_info(\'p_author_author\')');
+    let data_author_author = await c.connection.query('PRAGMA table_info(\'p_book_author\')');
     let data_summary = await c.connection.query('PRAGMA table_info(\'p_summary\')');
 
 
@@ -220,7 +220,7 @@ class SchemaSpec {
     let c = await ref.connect();
 
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
-    expect(_.map(tables, t => t.name)).to.have.include.members(['path_feature_collection', 'p_features_path_feature']);
+    expect(_.map(tables, t => t.name)).to.have.include.members(['path_feature_collection', 'p_path_feature_collection_features']);
     console.log(tables);
 
     await c.close();
@@ -241,8 +241,7 @@ class SchemaSpec {
 
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
 
-    console.log(tables);
-    expect(_.map(tables, t => t.name)).to.have.include.members(['person', 'p_jobs_job', 'i_language']);
+    expect(_.map(tables, t => t.name)).to.have.include.members(['person', 'p_person_jobs', 'i_job_languages']);
 
     await c.close();
 

@@ -9,8 +9,8 @@ import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";
 
 
-@suite('functional/entity_lifecycle/direct_referencing')
-class Scenario_01_direct_referencingSpec {
+@suite('functional/sql_direct_referencing')
+class Sql_direct_referencingSpec {
 
   before() {
     TestHelper.resetTypeorm();
@@ -55,7 +55,7 @@ class Scenario_01_direct_referencingSpec {
     expect(data).to.have.length(1);
     expect(data[0].id).to.eq(1);
 
-    data = await c.connection.query('select * from p_author_author');
+    data = await c.connection.query('select * from p_book_author');
     expect(data).to.have.length(1);
     expect(data[0].source_id).to.eq(1);
     expect(data[0].target_id).to.eq(1);
@@ -295,7 +295,7 @@ class Scenario_01_direct_referencingSpec {
 
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
     expect(tables).to.have.length(5);
-    expect(_.map(tables, table => table.name)).to.have.include.members(['car', 'skil', 'p_driver_driver', 'p_drivers_driver']);
+    expect(_.map(tables, table => table.name)).to.have.include.members(['car', 'skil', 'p_car_driver', 'p_car_driver']);
 
     let car_save_1 = new Car();
     car_save_1.producer = 'Volvo';

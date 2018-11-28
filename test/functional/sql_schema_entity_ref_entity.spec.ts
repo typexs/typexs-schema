@@ -1,12 +1,9 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {IStorageOptions} from '@typexs/base';
-import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 import {inspect} from "util";
 import * as _ from "lodash";
 import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";
-
 
 
 @suite('functional/sql_schema_entity_ref_entity')
@@ -14,6 +11,7 @@ class Sql_schema_entity_ref_entitySpec {
 
 
   before() {
+
     TestHelper.resetTypeorm();
   }
 
@@ -25,6 +23,8 @@ class Sql_schema_entity_ref_entitySpec {
     const PersonData = require('./schemas/default/PersonData').PersonData;
     const Training = require('./schemas/default/Training').Training;
     const Address = require('./schemas/default/Address').Address;
+
+    // let classRefs = EntityRegistry.$().listClassRefs();
 
     let options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
@@ -79,6 +79,7 @@ class Sql_schema_entity_ref_entitySpec {
     let find_str_01 = JSON.parse(JSON.stringify(trai_find_01.shift()));
     delete find_str_01.trainer.address['$aborted'];
     expect(find_str_01).to.deep.eq(saved_str_01);
+
 
   }
 

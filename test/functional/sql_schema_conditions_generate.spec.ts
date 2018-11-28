@@ -5,7 +5,7 @@ import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";
 
 
-@suite('functional/schemas')
+@suite('functional/sql_schema_conditions_generate')
 class SchemaSpec {
 
 
@@ -85,9 +85,9 @@ class SchemaSpec {
     let c = await ref.connect();
 
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';');
-    console.log(tables)
+
     expect(_.map(tables, t => t.name)).to.have.include.members([
-      'condition_obj_base', 'p_objects_condition_obj_keeper', 'condition_obj_keeper', 'condition_object_holder'
+      'condition_obj_base', 'p_condition_obj_base_objects', 'condition_obj_keeper', 'condition_object_holder'
     ]);
 
     let cols = await c.connection.query('PRAGMA table_info(\'condition_obj_base\')');
@@ -96,7 +96,7 @@ class SchemaSpec {
     cols = await c.connection.query('PRAGMA table_info(\'condition_obj_keeper\')');
     expect(_.map(cols, t => t.name)).to.have.members(['id']);
 
-    cols = await c.connection.query('PRAGMA table_info(\'p_objects_condition_obj_keeper\')');
+    cols = await c.connection.query('PRAGMA table_info(\'p_condition_obj_base_objects\')');
     expect(_.map(cols, t => t.name)).to.have.members(['id', 'source_type', 'source_id', 'source_seq_nr', 'target_id']);
 
     cols = await c.connection.query('PRAGMA table_info(\'condition_object_holder\')');

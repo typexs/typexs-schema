@@ -1,12 +1,9 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {EntityRegistry} from "../../src";
-import * as _ from "lodash";
-import {TestHelper} from "./TestHelper";
-import {inspect} from "util";
 
 
-@suite('functional/entity_to_json')
+@suite('functional/entities_to_json')
 class Entities_to_jsonSpec {
 
 

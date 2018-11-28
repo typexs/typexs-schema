@@ -9,8 +9,8 @@ import {TEST_STORAGE_OPTIONS} from "./config";
 
 
 
-@suite('functional/scenario_04_complex_entity')
-class Scenario_04_complex_entitySpec {
+@suite('functional/sql_scenario_complex_entity')
+class Sql_scenario_complex_entitySpec {
 
 
   before() {
