@@ -8,9 +8,8 @@ import {NotSupportedError} from "@typexs/base/libs/exceptions/NotSupportedError"
 import * as _ from './../LoDash';
 import {EntityDef} from "./EntityDef";
 import * as moment from "moment";
-import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
-import {getFromContainer} from "class-validator/container";
 
+export const KNOW_PRIMATIVE_TYPES = ['string', 'number', 'boolean', 'date'];
 
 export class PropertyDef extends AbstractDef {
 
@@ -50,7 +49,13 @@ export class PropertyDef extends AbstractDef {
         }
       }
     } else if (_.isString(options.type)) {
-      this.dataType = options.type;
+      let found_primative = _.find(KNOW_PRIMATIVE_TYPES, t => (new RegExp("^" + t + ":?")).test((<string>options.type).toLowerCase()));
+      if (found_primative) {
+        this.dataType = options.type;
+      } else {
+        this.targetRef = ClassRef.get(options.type);
+      }
+
     }
 
     if (_.isNumber(options.cardinality)) {
@@ -60,6 +65,10 @@ export class PropertyDef extends AbstractDef {
     if (_.isFunction(options.type) || _.isFunction(options.targetClass)) {
       const targetClass = options.type || options.targetClass;
       this.targetRef = ClassRef.get(targetClass);
+    }
+
+    if (!this.targetRef && !this.dataType) {
+      throw new NotSupportedError('No primative or complex data type given: ' + JSON.stringify(options))
     }
 
     if (_.isFunction(options.propertyClass)) {
@@ -246,19 +255,21 @@ export class PropertyDef extends AbstractDef {
       const prefix = this.object.isEntity ? 'p' : 'i';// + _.snakeCase(this.object.className);
 
       if (this.isReference() && !this.isEmbedded()) {
+        name = [prefix, this.object.machineName(), this.machineName].join('_');
+        /*
         if (this.isEntityReference()) {
           if (this.object.isEntity) {
-            name = [prefix, _.snakeCase(this.name), this.targetRef.getEntity().storingName].join('_');
+            name = [prefix, this.object.machineName(), this.machineName].join('_');
           } else {
-            name = [prefix, this.targetRef.getEntity().storingName].join('_');
+            name = [prefix, this.object.machineName(), this.targetRef.machineName()].join('_');
           }
         } else {
           if (this.object.isEntity) {
-            name = [prefix, _.snakeCase(this.name), this.targetRef.machineName()].join('_');
+            name = [prefix, this.object.machineName(), _.snakeCase(this.name), this.targetRef.machineName()].join('_');
           } else {
-            name = [prefix, this.targetRef.machineName()].join('_');
+            name = [prefix, this.object.machineName(), this.targetRef.machineName()].join('_');
           }
-        }
+        }*/
       } else if (this.propertyRef) {
         name = [prefix, _.snakeCase(this.name)].join('_');
       } else {

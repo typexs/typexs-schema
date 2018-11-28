@@ -53,6 +53,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       this.addType(entityClass);
     }
     this.clear();
+    let data = getMetadataArgsStorage();
     return this.storageRef.reload();
   }
 
@@ -142,6 +143,12 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     return {next: this.handleCreateObjectClass(targetRef)};
   }
 
+  protected async onEntity(entityDef: EntityDef, referPropertyDef?: PropertyDef, sources?: IDataExchange<any>): Promise<IDataExchange<any>> {
+    if(!this.isDone(entityDef.object.getClass())){
+      return super.onEntity(entityDef, referPropertyDef, sources);
+    }
+    return {next:entityDef.object.getClass()}
+  }
 
   async visitEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: XContext): Promise<XContext> {
     if (this.handleCheckConditionsIfGiven(sourceDef, propertyDef, entityDef)) {

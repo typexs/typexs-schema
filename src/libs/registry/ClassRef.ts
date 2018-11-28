@@ -17,7 +17,7 @@ export class ClassRef {
 
   schemas: string[] = [XS_DEFAULT_SCHEMA];
 
-  readonly originalValue: string | Function;
+  originalValue: string | Function;
 
   readonly className: string;
 
@@ -25,10 +25,13 @@ export class ClassRef {
 
   isEntity: boolean = false;
 
+  isPlaceholder:boolean=false;
+
   constructor(klass: string | Function) {
     this.className = ClassRef.getClassName(klass);
     if (_.isString(klass)) {
       this.originalValue = klass;
+      this.isPlaceholder = true;
     } else {
       this.originalValue = ClassRef.getFunction(klass);
     }
@@ -36,6 +39,10 @@ export class ClassRef {
 
   }
 
+  updateClass(cls:Function){
+    this.originalValue = ClassRef.getFunction(cls);
+    this.isPlaceholder = false;
+  }
 
   setOptions(options: IObject) {
     this.options = options;
@@ -132,6 +139,9 @@ export class ClassRef {
 
   static find(klass: string | Function): ClassRef {
     let classRef = null;
+    let name = ClassRef.getClassName(klass);
+    classRef = LookupRegistry.$().find<ClassRef>(XS_TYPE_CLASS_REF, (c: ClassRef) => c.className == name);
+    /*
     if (_.isString(klass)) {
       let name = ClassRef.getClassName(klass);
       classRef = LookupRegistry.$().find<ClassRef>(XS_TYPE_CLASS_REF, {className: name});
@@ -139,6 +149,7 @@ export class ClassRef {
       klass = ClassRef.getFunction(klass);
       classRef = LookupRegistry.$().find<ClassRef>(XS_TYPE_CLASS_REF, (c: ClassRef) => c.getClass() == klass);
     }
+    */
     return classRef;
 
   }
@@ -146,7 +157,12 @@ export class ClassRef {
 
   static get(klass: string | Function): ClassRef {
     let classRef = this.find(klass);
-    if (classRef) return classRef;
+    if (classRef){
+      if(classRef.isPlaceholder && _.isFunction(klass)){
+        classRef.updateClass(klass);
+      }
+      return classRef;
+    }
     classRef = new ClassRef(klass);
     let binding = Binding.create(XS_TYPE_SCHEMA, XS_DEFAULT_SCHEMA, XS_TYPE_CLASS_REF, classRef);
     LookupRegistry.$().add(binding.bindingType, binding);
