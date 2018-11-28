@@ -232,7 +232,6 @@ export class EntityDef extends AbstractDef {
 
       let className = ClassRef.getClassName(instance);
       let xsdef: EntityDef = LookupRegistry.$().find(XS_TYPE_ENTITY, (x: EntityDef) => {
-        //console.log(x.name,instance.__proto__.constructor.name,x.name == instance.__proto__.constructor.name)
         return x.name == className;
       });
 
@@ -287,7 +286,7 @@ export class EntityDef extends AbstractDef {
           constraintCls: m.constraintCls,
           validationTypeOptions: m.validationTypeOptions,
           validationOptions: {
-            context: m.context,
+            // TODO since 0.9.1 context: m.context,
             message: m.message,
             groups: m.groups,
             always: m.always,
