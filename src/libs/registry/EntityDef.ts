@@ -10,6 +10,7 @@ import {ClassRef} from "./ClassRef";
 import {getFromContainer} from "class-validator/container";
 import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
 import {ValidationMetadataArgs} from "class-validator/metadata/ValidationMetadataArgs";
+import {OptionsHelper} from "./OptionsHelper";
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true
@@ -26,6 +27,7 @@ export class EntityDef extends AbstractDef {
 
   constructor(fn: ClassRef | Function, options: IEntity = {}) {
     super('entity', fn instanceof ClassRef ? fn.className : fn.name, fn);
+    OptionsHelper.merge(this.object, options);
     this.object.isEntity = true;
     options = _.defaults(options, DEFAULT_OPTIONS);
     this.setOptions(options);
@@ -235,10 +237,10 @@ export class EntityDef extends AbstractDef {
         return x.name == className;
       });
 
-      if(xsdef){
+      if (xsdef) {
         return xsdef.name;
-      }else{
-        throw new Error('resolveName not found for instance: '+JSON.stringify(instance));
+      } else {
+        throw new Error('resolveName not found for instance: ' + JSON.stringify(instance));
       }
     }
   }

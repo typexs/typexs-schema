@@ -89,4 +89,9 @@ export interface IProperty {
    */
   sequence?: boolean;
 
+  /**
+   * Enum for retrieving values for form selection
+   */
+  enum?:any;
+
 }

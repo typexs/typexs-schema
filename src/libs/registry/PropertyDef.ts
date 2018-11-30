@@ -2,12 +2,14 @@ import {AbstractDef} from './AbstractDef';
 import {IProperty} from './IProperty';
 import {ClassRef} from './ClassRef';
 import {LookupRegistry} from './../LookupRegistry';
-import {XS_TYPE_PROPERTY} from './../Constants';
+import {XS_ANNOTATION_OPTIONS_CACHE, XS_TYPE_PROPERTY} from './../Constants';
 import {NotYetImplementedError} from '@typexs/base/libs/exceptions/NotYetImplementedError';
 import {NotSupportedError} from "@typexs/base/libs/exceptions/NotSupportedError";
 import * as _ from './../LoDash';
 import {EntityDef} from "./EntityDef";
 import * as moment from "moment";
+import {MetaArgs} from "@typexs/base/base/MetaArgs";
+import {OptionsHelper} from "./OptionsHelper";
 
 export const KNOW_PRIMATIVE_TYPES = ['string', 'number', 'boolean', 'date'];
 
@@ -34,6 +36,8 @@ export class PropertyDef extends AbstractDef {
 
   constructor(options: IProperty) {
     super('property', options.propertyName, options.sourceClass);
+    // workaround to apply other previous called
+    OptionsHelper.merge(this.object, options, this.name);
     this.setOptions(options);
     this.entityName = this.object.className;
 

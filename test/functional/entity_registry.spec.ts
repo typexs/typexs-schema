@@ -1,7 +1,17 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {ClassRef, EntityDef, EntityRegistry, XS_DEFAULT_SCHEMA} from "../../src";
+import {
+  ClassRef,
+  Entity,
+  EntityDef,
+  EntityRegistry,
+  Property,
+  XS_ANNOTATION_OPTIONS_CACHE,
+  XS_DEFAULT_SCHEMA
+} from "../../src";
 import * as _ from "lodash";
+import {OptionsHelper} from "../../src/libs/registry/OptionsHelper";
+import {MetaArgs} from "@typexs/base";
 
 
 @suite('functional/entity_registry')
@@ -161,6 +171,73 @@ class Entity_registrySpec {
     expect(props.length).to.be.eq(3);
   }
 
+
+  @test
+  async 'extend property options by other annotation before and after the concrete declaration'() {
+
+    function PropAddOn(opts: any = {}) {
+      return function (object: any, property: string, _options: any = {}) {
+        OptionsHelper.forPropertyOn(ClassRef.get(object), property, opts);
+      }
+    }
+
+
+    @Entity({storeable: false})
+    class TestAnno {
+
+      @PropAddOn({hallo: 'welt'})
+      @Property({type: 'string'})
+      test1: string;
+
+
+      @Property({type: 'string'})
+      @PropAddOn({hallo: 'welt2'})
+      test2: string;
+    }
+
+    const registry = EntityRegistry.$();
+    let entityDef = registry.getEntityDefByName('TestAnno');
+    let props = entityDef.getPropertyDefs();
+    expect(props).to.have.length(2);
+    let test1 = props.find(p => p.name == 'test1');
+    expect(test1.getOptions()).to.deep.include({hallo:'welt'})
+    let test2 = props.find(p => p.name == 'test2');
+    expect(test2.getOptions()).to.deep.include({hallo:'welt2'})
+
+    expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);
+  }
+
+  @test
+  async 'extend entity options by other annotation before and after the concrete declaration'() {
+
+    function EntityPropAddOn(opts: any = {}) {
+      return function (object: any) {
+        OptionsHelper.forEntityOn(ClassRef.get(object), opts);
+      }
+    }
+
+
+    @EntityPropAddOn({hallo:'welt'})
+    @Entity({storeable: false})
+    class TestAnno2 {
+
+    }
+
+    @Entity({storeable: false})
+    @EntityPropAddOn({hallo:'welt2'})
+    class TestAnno3 {
+
+    }
+
+    const registry = EntityRegistry.$();
+    let entityDef1 = registry.getEntityDefByName('TestAnno2');
+    expect(entityDef1.getOptions()).to.deep.include({hallo:'welt'})
+    let entityDef2 = registry.getEntityDefByName('TestAnno3');
+    expect(entityDef2.getOptions()).to.deep.include({hallo:'welt2'})
+
+    expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);
+
+  }
 
   @test.skip
   async 'create instance with a referencing property'() {

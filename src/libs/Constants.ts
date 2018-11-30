@@ -5,8 +5,17 @@ export const XS_TYPE_PROPERTY = 'property';
 export const XS_TYPE_BINDING_SCHEMA_ENTITY = 'schema_entity';
 export const XS_TYPE_BINDING_SCHEMA_CLASS_REF = 'schema_class_ref';
 
-export type XS_TYPE = 'schema' | 'entity' | 'property' | 'class_ref' | 'schema_entity' | 'entity_property' | 'property_entity' | 'schema_class_ref';
-export type XS_DATA_TYPES = 'string' | 'number' | 'entity' | 'array' | 'any' ;
+export type XS_TYPE =
+  'schema'
+  | 'entity'
+  | 'property'
+  | 'class_ref'
+  | 'schema_entity'
+  | 'entity_property'
+  | 'property_entity'
+  | 'schema_class_ref';
+
+export type XS_DATA_TYPES = 'string' | 'number' | 'boolean' | 'entity' | 'array' | 'any' ;
 export const XS_ID_SEPARATOR = '--';
 
 export const XS_DEFAULT_SCHEMA = 'default';
@@ -43,3 +52,5 @@ export const PERMISSION_ALLOW_UPDATE_ENTITY = 'allow update entity';
 export const PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN = 'allow update entity :name';
 export const PERMISSION_ALLOW_DELETE_ENTITY = 'allow delete entity';
 export const PERMISSION_ALLOW_DELETE_ENTITY_PATTERN = 'allow delete entity :name';
+
+export const XS_ANNOTATION_OPTIONS_CACHE = 'annotation_options_cache';

@@ -1,4 +1,4 @@
-import {XS_DEFAULT_SCHEMA, XS_ID_SEPARATOR, XS_TYPE} from './../Constants';
+import {XS_TYPE} from './../Constants';
 
 import {ClassRef} from './ClassRef';
 import * as _ from './../LoDash';

@@ -51,6 +51,7 @@ export * from "./libs/framework/typeorm/SqlSchemaMapper";
 
 export * from "./libs/LookupRegistry";
 export * from "./libs/registry/AbstractDef";
+export * from "./libs/registry/OptionsHelper";
 export * from "./libs/registry/Binding";
 export * from "./libs/registry/ClassRef";
 export * from "./libs/registry/EntityDef";
@@ -62,5 +63,6 @@ export * from "./libs/registry/IPropertyMetadata";
 export * from "./libs/registry/ISchema";
 export * from "./libs/registry/PropertyDef";
 export * from "./libs/registry/SchemaDef";
+
 export * from "./libs/SchemaUtils";
 export * from "./libs/TransformExecutor";
