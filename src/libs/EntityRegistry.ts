@@ -127,18 +127,18 @@ export class EntityRegistry {
 
     if (property.targetRef) {
       let classRef = this._fromJsonClassRef(property.targetRef);
-      options.type = classRef.getClass();
+      options.type = classRef.getClass(true);
     }
 
     if (property.propertyRef) {
       let classRef = this._fromJsonClassRef(property.propertyRef);
-      options.propertyClass = classRef.getClass();
+      options.propertyClass = classRef.getClass(true);
     }
 
     if (property.validator) {
       property.validator.forEach(m => {
         let _m = _.clone(m);
-        _m.target = classRef.getClass();
+        _m.target = classRef.getClass(true);
         let vma = new ValidationMetadata(_m);
         getFromContainer(MetadataStorage).addValidationMetadata(vma);
       })
