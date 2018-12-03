@@ -8,6 +8,7 @@ import {Binding} from "./Binding";
 import {XS_TYPE_PROPERTY, XS_TYPE_SCHEMA} from "../Constants";
 import {PropertyDef} from "./PropertyDef";
 import {IClassRefMetadata} from "./IClassRefMetadata";
+import {SchemaUtils} from "../SchemaUtils";
 
 export class ClassRef {
 
@@ -25,7 +26,7 @@ export class ClassRef {
 
   isEntity: boolean = false;
 
-  isPlaceholder:boolean=false;
+  isPlaceholder: boolean = false;
 
   constructor(klass: string | Function) {
     this.className = ClassRef.getClassName(klass);
@@ -39,7 +40,7 @@ export class ClassRef {
 
   }
 
-  updateClass(cls:Function){
+  updateClass(cls: Function) {
     this.originalValue = ClassRef.getFunction(cls);
     this.isPlaceholder = false;
   }
@@ -126,13 +127,16 @@ export class ClassRef {
   }
 
 
-  getClass(): Function {
+  getClass(create: boolean = false): Function {
     if (_.isFunction(this.originalValue)) {
       return this.originalValue;
-    } else {
-      // generate function make ctor
-      throw new NotYetImplementedError();
+    } else if (_.isString(this.originalValue) && this.isPlaceholder) {
+      if(create){
+        this.originalValue = SchemaUtils.clazz(this.originalValue);
+        return this.originalValue;
+      }
     }
+    throw new NotYetImplementedError('getClass for '+this.originalValue);
 
   }
 
@@ -157,8 +161,8 @@ export class ClassRef {
 
   static get(klass: string | Function): ClassRef {
     let classRef = this.find(klass);
-    if (classRef){
-      if(classRef.isPlaceholder && _.isFunction(klass)){
+    if (classRef) {
+      if (classRef.isPlaceholder && _.isFunction(klass)) {
         classRef.updateClass(klass);
       }
       return classRef;
