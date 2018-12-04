@@ -190,7 +190,7 @@ export class EntityAPIController {
    */
   @Access([PERMISSION_ALLOW_CREATE_ENTITY_PATTERN, PERMISSION_ALLOW_CREATE_ENTITY])
   @Post('/entity/:name')
-  async create(@Param('name') name: string, @Body() data: any): Promise<any> {
+  async save(@Param('name') name: string, @Body() data: any): Promise<any> {
     const [entityDef, controller] = this.getControllerForEntityName(name);
     let entities;
     if (_.isArray(data)) {

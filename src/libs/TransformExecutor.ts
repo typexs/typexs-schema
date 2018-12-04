@@ -24,8 +24,9 @@ export class TransformExecutor {
         if (p.isEntityReference()) {
           let refEntityDef = p.getEntity();
           if (p.isCollection()) {
-            for (let n of data[p.name]) {
-              object[p.name] = refEntityDef.build(n, options);
+            object[p.name] = [];
+            for (let i = 0; i < data[p.name].length; i++) {
+              object[p.name][i] = refEntityDef.build(data[p.name][i], options);
             }
           } else {
             object[p.name] = refEntityDef.build(data[p.name], options);
