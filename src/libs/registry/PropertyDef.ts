@@ -213,8 +213,10 @@ export class PropertyDef extends AbstractDef {
     if (this.dataType == 'string') {
       if (_.isString(data)) {
         return data;
-      } else {
+      } else if(data) {
         throw new NotYetImplementedError('value ' + data);
+      }else{
+        return null;
       }
     } else if (this.dataType == 'boolean') {
       if (_.isBoolean(data)) {
@@ -238,8 +240,10 @@ export class PropertyDef extends AbstractDef {
         }
       } else if (_.isNumber(data)) {
         return data;
-      } else {
+      } else if(data){
         throw new NotYetImplementedError('value ' + data);
+      }else{
+        return null;
       }
     } else if (this.dataType == 'date' || /^date:/.test(this.dataType)) {
       if (data instanceof Date) {

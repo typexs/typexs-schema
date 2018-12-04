@@ -34,6 +34,32 @@ class Entity_transformationsSpec {
     expect(permission.roles).to.have.length(2);
   }
 
+  @test
+  async 'boolean transformations'() {
+    let Permission = require('./schemas/role_permissions/Permission').Permission;
+    let Role = require('./schemas/role_permissions/Role').Role;
+    let p = new Permission();
+    p.id = 1;
+    p.disabled = false;
+    p.permission = 'permission;)';
+    p.roles = [{id: 1, rolename: 'role1'}, {id: 2, rolename: 'role2'}];
+    let registry = EntityRegistry.$();
+    let entityDef = registry.getEntityDefByName('Permission');
+    let permission: any = entityDef.build(p);
+    expect(_.isBoolean(permission.disabled)).to.be.true;
+    expect(permission.disabled).to.be.false;
+
+    p = new Permission();
+    p.id = 1;
+    p.disabled = true;
+    p.permission = 'permission;)';
+    p.roles = [{id: 1, rolename: 'role1'}, {id: 2, rolename: 'role2'}];
+
+    permission = entityDef.build(p);
+    expect(_.isBoolean(permission.disabled)).to.be.true;
+    expect(permission.disabled).to.be.true;
+
+  }
 
 }
 

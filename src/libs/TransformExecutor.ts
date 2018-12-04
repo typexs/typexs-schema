@@ -48,13 +48,7 @@ export class TransformExecutor {
         } else if (p.isCollection() && !(_.isArray(data[p.name]) || _.isSet(data[p.name]))) {
           throw new NotYetImplementedError();
         } else {
-          if (data[p.name]) {
-            // set correct value
-            object[p.name] = p.convert(data[p.name]);
-          } else {
-            // set default
-            object[p.name] = null;
-          }
+          object[p.name] = p.convert(data[p.name]);
         }
       }
     }
