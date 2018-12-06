@@ -42,10 +42,12 @@ export class Activator implements IActivator, IPermissions {
 
     const registry = EntityRegistry.$();
     registry.listEntities().map((e:EntityDef) => {
-      permissions.push(PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN.replace(':name', e.machineName));
-      permissions.push(PERMISSION_ALLOW_CREATE_ENTITY_PATTERN.replace(':name', e.machineName));
-      permissions.push(PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN.replace(':name', e.machineName));
-      permissions.push(PERMISSION_ALLOW_DELETE_ENTITY_PATTERN.replace(':name', e.machineName));
+      if(e.isStoreable()){
+        permissions.push(PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN.replace(':name', e.machineName));
+        permissions.push(PERMISSION_ALLOW_CREATE_ENTITY_PATTERN.replace(':name', e.machineName));
+        permissions.push(PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN.replace(':name', e.machineName));
+        permissions.push(PERMISSION_ALLOW_DELETE_ENTITY_PATTERN.replace(':name', e.machineName));
+      }
     });
     return permissions;
   }

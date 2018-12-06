@@ -89,30 +89,37 @@ export abstract class EntityDefTreeWorker {
 
   async onEntityReference(property: PropertyDef, previous: IQEntry): Promise<void> {
     let entityDef = property.getEntity();
+    // Ignore circular entity relations
+    if(!this.isCircular(entityDef)){
 
-    let visitResult = await this.visitEntityReference(previous.def, property, entityDef, previous.result);
-    const status = _.get(visitResult,'status',null);
-    if(visitResult){
-      delete visitResult['status'];
-    }
+      let visitResult = await this.visitEntityReference(previous.def, property, entityDef, previous.result);
+      const status = _.get(visitResult,'status',null);
+      if(visitResult){
+        delete visitResult['status'];
+      }
 
-    let result = null;
-    if (!(_.has(visitResult, 'abort') && visitResult.abort)) {
-      result = await this.onEntity(entityDef, property, visitResult);
-    } else {
-      result = visitResult;
-    }
-    if(status){
-      _.set(result,'status',status);
-    }
+      let result = null;
+      if (!(_.has(visitResult, 'abort') && visitResult.abort)) {
+        result = await this.onEntity(entityDef, property, visitResult);
+      } else {
+        result = visitResult;
+      }
+      if(status){
+        _.set(result,'status',status);
+      }
 
-    await this.leaveEntityReference(previous.def, property, entityDef, result, visitResult);
+      await this.leaveEntityReference(previous.def, property, entityDef, result, visitResult);
 
-    if(result){
-      delete result['status'];
+      if(result){
+        delete result['status'];
+      }
     }
   }
 
+  isCircular(sourceDef: PropertyDef | EntityDef | ClassRef){
+    let exists = _.find(this.queue,(q:IQEntry) => q.def == sourceDef);
+    return exists != null;
+  }
 
   abstract visitObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
 

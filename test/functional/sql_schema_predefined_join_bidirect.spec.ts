@@ -17,6 +17,8 @@ class Sql_schema_predefined_join_bidirectSpec {
 
   before() {
     TestHelper.resetTypeorm();
+
+
   }
 
 
@@ -81,6 +83,8 @@ class Sql_schema_predefined_join_bidirectSpec {
     expect(permissions[0].roles[0].rolename).to.be.eq('admin');
     expect(permissions[1].roles).to.have.length(1);
     expect(permissions[1].roles[0].rolename).to.be.eq('admin');
+    expect(permissions[0].roles[0].permissions).not.to.exist;
+    expect(permissions[1].roles[0].permissions).not.to.exist;
 
 
     let results = await c.connection.query('SELECT * FROM r_belongsto_2;');
@@ -88,7 +92,6 @@ class Sql_schema_predefined_join_bidirectSpec {
 
     await c.close();
   }
-
 
 }
 
