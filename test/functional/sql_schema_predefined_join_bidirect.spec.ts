@@ -1,14 +1,10 @@
+//process.env['SQL_LOG'] = 'X';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-import {IStorageOptions} from '@typexs/base';
-import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
-import {getMetadataArgsStorage} from 'typeorm'
 import {TestHelper} from "./TestHelper";
 
 import {TEST_STORAGE_OPTIONS} from "./config";
-import {EntityRegistry} from "../../src";
-import {inspect} from "util";
 import {Permission} from "./schemas/role_permissions/Permission";
 
 
@@ -138,6 +134,18 @@ class Sql_schema_predefined_join_bidirectSpec {
 
     let results = await c.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(2);
+
+    // should happen nothing
+    role.permissions = null;
+    await xsem.save(role);
+    results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    expect(results).to.have.length(2);
+
+    // should remove relation
+    role.permissions = [];
+    await xsem.save(role);
+    results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    expect(results).to.have.length(0);
 
     await c.close();
 

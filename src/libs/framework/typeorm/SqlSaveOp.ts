@@ -17,8 +17,8 @@ import {DataContainer} from "../../DataContainer";
 import {ObjectsNotValidError} from "../../exceptions/ObjectsNotValidError";
 import {ISaveOptions} from "../ISaveOptions";
 
-const PROP_KEY_LOOKUP ='__lookup__';
-const PROP_KEY_TARGET ='__target__';
+const PROP_KEY_LOOKUP = '__lookup__';
+const PROP_KEY_TARGET = '__target__';
 
 interface ISaveData extends IDataExchange<any[]> {
   join?: any[];
@@ -187,7 +187,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       }
 
       // save lookup for removing previous
-      let lookup:any = {};
+      let lookup: any = {};
       joinDef.getFrom().cond.applyOn(lookup, source);
       joinDef.condition.applyOn(lookup, source);
       source[PROP_KEY_LOOKUP] = lookup;
@@ -196,8 +196,8 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
         let joinObj = joinDef.joinRef.new();
         joinObjs.push(joinObj);
         joinObj[PROP_KEY_TARGET] = joinTarget;
-      //  joinObj[PROP_KEY_LOOKUP] = lookup;
-        _.assign(joinObj,lookup);
+        //  joinObj[PROP_KEY_LOOKUP] = lookup;
+        _.assign(joinObj, lookup);
         if (seqNrProp) {
           joinObj[seqNrProp.name] = seqNr++;
         }
@@ -212,25 +212,28 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
     const clazz = joinDef.joinRef.getClass();
     let removeConditions = [];
     for (let source of visitResult.target) {
-      let lookup = source[PROP_KEY_LOOKUP];
-      removeConditions.push(lookup);
-      delete source[PROP_KEY_LOOKUP];
+      if (_.has(source, PROP_KEY_LOOKUP)) {
+        let lookup = source[PROP_KEY_LOOKUP];
+        removeConditions.push(lookup);
+        delete source[PROP_KEY_LOOKUP];
+      }
     }
 
     // delete previous relations
-    if(removeConditions){
+    if (!_.isEmpty(removeConditions)) {
       let removeSql = Sql.conditionsToString(removeConditions);
       await this.c.manager.getRepository(clazz).createQueryBuilder().delete().where(removeSql).execute();
     }
 
-    for (let joinObj of visitResult.join) {
-      let target = joinObj[PROP_KEY_TARGET];
-      joinDef.getTo().cond.applyReverseOn(joinObj, target);
-      delete joinObj[PROP_KEY_TARGET];
+    if (!_.isEmpty(visitResult.join)) {
+      for (let joinObj of visitResult.join) {
+        let target = joinObj[PROP_KEY_TARGET];
+        joinDef.getTo().cond.applyReverseOn(joinObj, target);
+        delete joinObj[PROP_KEY_TARGET];
 
+      }
+      await this.c.manager.save(clazz, visitResult.join);
     }
-
-    await this.c.manager.save(clazz, visitResult.join);
     return sources;
   }
 
