@@ -1,5 +1,6 @@
 import {JoinDesc} from "./../descriptors/Join";
-import {CondDesc, Key, KeyDesc, OrderDesc} from "./../descriptors/Conditions";
+import {CondDesc, KeyDesc, OrderDesc} from "./../descriptors/Conditions";
+import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
 
 export interface IProperty {
 
@@ -18,7 +19,9 @@ export interface IProperty {
   /**
    * data type
    */
-  type?: string | Function;
+  type?: string | JS_DATA_TYPES | 'date:created' | 'date:updated' | Function;
+
+
   // @deprected
   targetClass?: string | Function
 
@@ -26,8 +29,6 @@ export interface IProperty {
    * size of data type
    */
   length?: number
-
-  form?: string;
 
   cardinality?: number;
 

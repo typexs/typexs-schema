@@ -1,18 +1,17 @@
-
 import {IsDefined} from 'class-validator';
 import {Entity, Property} from "../../../../../../src";
 
 @Entity()
 export class Personnn {
 
-  @Property({type: 'number', form: 'readonly', auto: true})
+  @Property({type: 'number',  auto: true})
   id: number;
 
   @IsDefined()
-  @Property({type: 'string', form: 'text'})
+  @Property({type: 'string'})
   firstName: string;
 
-  @Property({type: 'string', form: 'text'})
+  @Property({type: 'string'})
   lastName: string;
 
   label(){

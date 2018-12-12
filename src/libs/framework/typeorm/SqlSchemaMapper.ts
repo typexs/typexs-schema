@@ -1,4 +1,4 @@
-import {IStorageOptions, NotYetImplementedError, StorageRef} from '@typexs/base';
+import {IStorageOptions,  NotYetImplementedError, StorageRef} from '@typexs/base';
 import {
   Column,
   CreateDateColumn,
@@ -21,7 +21,8 @@ import {IDataExchange} from "../IDataExchange";
 import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {NameResolver} from "./NameResolver";
 import {JoinDesc} from "../../descriptors/Join";
-import {IDBType} from "./IDBType";
+import {IDBType} from "@typexs/base/libs/storage/IDBType";
+import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
 
 
 export interface XContext extends IDataExchange<Function> {
@@ -477,13 +478,17 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     Index(uniqueIndex, {unique: true})(refTargetClass)
   }
 
+
   // fixme workaround
   private getStorageOptions(): IStorageOptions {
     return this.storageRef['options'];
   }
 
+
   private detectDataTypeFromProperty(prop: PropertyDef): IDBType {
-    let type: IDBType = {type: 'text', sourceType: prop.dataType};
+    let schemaHandler = this.storageRef.getSchemaHandler();
+
+    let type: IDBType = {type: 'text', sourceType: <JS_DATA_TYPES>prop.dataType};
     if (prop.getOptions('typeorm')) {
       let typeorm = prop.getOptions('typeorm');
       if (_.has(typeorm, 'type')) {
@@ -493,33 +498,13 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
         type.length = typeorm.length;
       }
     } else {
-      // TODO !this.storageRef.getSchemaHandler().translateToStoreType(prop.dataType);
-      let split = prop.dataType.split(':');
-      type.sourceType = split.shift();
-      if (split.length > 0) {
-        type.variant = split.shift();
-      }
-
-      switch (type.sourceType) {
-        case 'string':
-          type.type = 'text';
-          break;
-        case 'number':
-          type.type = 'int';
-          break;
-        case 'date':
-          type.type = 'datetime';
-          break;
-        case 'json':
-          type.type = 'text';
-          break;
-      }
+      type = schemaHandler.translateToStorageType(prop.dataType);
     }
 
     return type;
   }
 
-
+/*
   isClassDefinedInStorage(fn: Function) {
     for (let definedEntity of this.getStorageOptions().entities) {
       if (_.isString(definedEntity) && fn.name == definedEntity) return true;
@@ -528,4 +513,5 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     }
     return false;
   }
+  */
 }

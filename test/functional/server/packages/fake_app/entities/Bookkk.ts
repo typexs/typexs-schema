@@ -4,10 +4,10 @@ import {Entity, IProperty, Property} from "../../../../../../src";
 @Entity()
 export class Bookkk {
 
-  @Property({type: 'number', form: 'readonly', auto: true})
+  @Property({type: 'number', auto: true})
   id: number;
 
-  @Property({type: 'string', form: 'text'})
+  @Property({type: 'string'})
   title: string;
 
   @Property(<IProperty & any>{type: Personnn, form: 'select', enum: 'EntityOptionsService'})
