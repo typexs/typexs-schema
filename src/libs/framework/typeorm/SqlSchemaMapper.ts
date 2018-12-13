@@ -1,4 +1,4 @@
-import {IStorageOptions,  NotYetImplementedError, StorageRef} from '@typexs/base';
+import {IStorageOptions, NotYetImplementedError, StorageRef} from '@typexs/base';
 import {
   Column,
   CreateDateColumn,
@@ -22,7 +22,6 @@ import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {NameResolver} from "./NameResolver";
 import {JoinDesc} from "../../descriptors/Join";
 import {IDBType} from "@typexs/base/libs/storage/IDBType";
-import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
 
 
 export interface XContext extends IDataExchange<Function> {
@@ -486,9 +485,9 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
 
   private detectDataTypeFromProperty(prop: PropertyDef): IDBType {
-    let schemaHandler = this.storageRef.getSchemaHandler();
+    const schemaHandler = this.storageRef.getSchemaHandler();
 
-    let type: IDBType = {type: 'text', sourceType: <JS_DATA_TYPES>prop.dataType};
+    let type: IDBType = schemaHandler.translateToStorageType(prop.dataType); //{type: 'text', sourceType: <JS_DATA_TYPES>prop.dataType};
     if (prop.getOptions('typeorm')) {
       let typeorm = prop.getOptions('typeorm');
       if (_.has(typeorm, 'type')) {
@@ -497,12 +496,10 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       if (_.has(typeorm, 'length')) {
         type.length = typeorm.length;
       }
-    } else {
-      type = schemaHandler.translateToStorageType(prop.dataType);
     }
-
     return type;
   }
+
 
 /*
   isClassDefinedInStorage(fn: Function) {
