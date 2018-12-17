@@ -45,7 +45,7 @@ const settingsTemplate: any = {
       type: 'web',
       framework: 'express',
       host: 'localhost',
-      port: 4500,
+      port: 4512,
 
       routes: [{
         type: K_ROUTE_CONTROLLER,

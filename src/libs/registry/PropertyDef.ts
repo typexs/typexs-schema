@@ -2,16 +2,19 @@ import {AbstractDef} from './AbstractDef';
 import {IProperty} from './IProperty';
 import {ClassRef} from './ClassRef';
 import {LookupRegistry} from './../LookupRegistry';
-import {XS_ANNOTATION_OPTIONS_CACHE, XS_TYPE_PROPERTY} from './../Constants';
+import {XS_TYPE_PROPERTY} from './../Constants';
 import {NotYetImplementedError} from '@typexs/base/libs/exceptions/NotYetImplementedError';
 import {NotSupportedError} from "@typexs/base/libs/exceptions/NotSupportedError";
-import * as _ from './../LoDash';
+import * as _ from 'lodash';
 import {EntityDef} from "./EntityDef";
 import * as moment from "moment";
-import {MetaArgs} from "@typexs/base/base/MetaArgs";
 import {OptionsHelper} from "./OptionsHelper";
+import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
 
-export const KNOW_PRIMATIVE_TYPES = ['string', 'number', 'boolean', 'date'];
+export const KNOW_PRIMATIVE_TYPES:JS_DATA_TYPES[] = [
+  'string' , 'text' , 'number' , 'boolean' , 'double' ,
+  'json' , 'date' , 'time' , 'datetime' , 'timestamp' , 'byte'
+];
 
 export class PropertyDef extends AbstractDef {
 
@@ -169,7 +172,6 @@ export class PropertyDef extends AbstractDef {
     } else {
       return keys.map(k => k.key);
     }
-
   }
 
   getEntity(): EntityDef {
@@ -210,49 +212,61 @@ export class PropertyDef extends AbstractDef {
 
 
   convert(data: any): any {
-    if (this.dataType == 'string') {
-      if (_.isString(data)) {
-        return data;
-      } else if(data) {
-        throw new NotYetImplementedError('value ' + data);
-      }else{
-        return null;
-      }
-    } else if (this.dataType == 'boolean') {
-      if (_.isBoolean(data)) {
-        return data;
-      } else if (_.isNumber(data)) {
-        return data > 0;
-      } else if (_.isString(data)) {
-        if (data.toLowerCase() === "true" || data.toLowerCase() === "1") {
-          return true;
-        }
-        return false;
-      }
-    } else if (this.dataType == 'number') {
-      if (_.isString(data)) {
-        if (/^\d+\.|\,\d+$/.test(data)) {
-          return parseFloat(data.replace(',', '.'))
-        } else if (/^\d+$/.test(data)) {
-          return parseInt(data);
-        } else {
+    let [baseType, variant] = this.dataType.split(':');
+
+    switch (baseType) {
+      case 'text':
+      case 'time':
+      case 'string':
+        if (_.isString(data)) {
+          return data;
+        } else if (data) {
           throw new NotYetImplementedError('value ' + data);
+        } else {
+          return null;
         }
-      } else if (_.isNumber(data)) {
-        return data;
-      } else if(data){
+        break;
+      case 'boolean':
+        if (_.isBoolean(data)) {
+          return data;
+        } else if (_.isNumber(data)) {
+          return data > 0;
+        } else if (_.isString(data)) {
+          if (data.toLowerCase() === "true" || data.toLowerCase() === "1") {
+            return true;
+          }
+          return false;
+        }
+        break;
+      case 'number':
+      case 'double':
+        if (_.isString(data)) {
+          if (/^\d+\.|\,\d+$/.test(data)) {
+            return parseFloat(data.replace(',', '.'))
+          } else if (/^\d+$/.test(data)) {
+            return parseInt(data);
+          } else {
+            throw new NotYetImplementedError('value ' + data);
+          }
+        } else if (_.isNumber(data)) {
+          return data;
+        } else if (data) {
+          throw new NotYetImplementedError('value ' + data);
+        } else {
+          return null;
+        }
+        break;
+      case 'date':
+      case 'datetime':
+      case 'timestamp':
+        if (data instanceof Date) {
+          return data;
+        } else {
+          return moment(data).toDate();
+        }
+        break;
+      default:
         throw new NotYetImplementedError('value ' + data);
-      }else{
-        return null;
-      }
-    } else if (this.dataType == 'date' || /^date:/.test(this.dataType)) {
-      if (data instanceof Date) {
-        return data;
-      } else {
-        return moment(data).toDate();
-      }
-    } else {
-      throw new NotYetImplementedError('value ' + data);
     }
   }
 
