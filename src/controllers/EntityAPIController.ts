@@ -196,13 +196,14 @@ export class EntityAPIController {
   @Post('/entity/:name')
   async save(@Param('name') name: string, @Body() data: any, @CurrentUser() user:any): Promise<any> {
     const [entityDef, controller] = this.getControllerForEntityName(name);
-    await this.invoker.use(EntityControllerApi).prepareEntityData(entityDef,data,user,controller);
+    await this.invoker.use(EntityControllerApi).beforeEntityBuild(entityDef,data,user,controller);
     let entities;
     if (_.isArray(data)) {
       entities = _.map(data, d => entityDef.build(d, {beforeBuild: EntityAPIController._beforeBuild}));
     } else {
       entities = entityDef.build(data, {beforeBuild: EntityAPIController._beforeBuild});
     }
+    await this.invoker.use(EntityControllerApi).afterEntityBuild(entityDef,entities,user,controller);
     return controller.save(entities).catch(e => {
       if (e instanceof ObjectsNotValidError) {
         throw e.toHttpError();
@@ -217,8 +218,9 @@ export class EntityAPIController {
    */
   @Access([PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN, PERMISSION_ALLOW_UPDATE_ENTITY])
   @Post('/entity/:name/:id')
-  update(@Param('name') name: string, @Param('id') id: string, @Body() data: any, @CurrentUser() user:any) {
+  async update(@Param('name') name: string, @Param('id') id: string, @Body() data: any, @CurrentUser() user:any) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
+    await this.invoker.use(EntityControllerApi).beforeEntityBuild(entityDef,data,user,controller);
 //    const conditions = entityDef.createLookupConditions(id);
     let entities;
     if (_.isArray(data)) {
@@ -226,7 +228,7 @@ export class EntityAPIController {
     } else {
       entities = entityDef.build(data, {beforeBuild: EntityAPIController._beforeBuild});
     }
-
+    await this.invoker.use(EntityControllerApi).afterEntityBuild(entityDef,entities,user,controller);
     return controller.save(entities).catch(e => {
       if (e instanceof ObjectsNotValidError) {
         throw e.toHttpError();
