@@ -1,4 +1,4 @@
-import {SqliteSchemaHandler, StorageRef} from "@typexs/base";
+import {SqliteSchemaHandler, StorageRef, Storage,Container} from "@typexs/base";
 import {EntityController} from "../../src/libs/EntityController";
 import {EntityRegistry, FrameworkFactory} from "../../src";
 import {PlatformTools} from 'typeorm/platform/PlatformTools';
@@ -17,6 +17,7 @@ export class TestHelper {
 
     return {ref:ref, controller:xsem}
   }
+
 
   static resetTypeorm(){
     PlatformTools.getGlobalVariable().typeormMetadataArgsStorage = null;

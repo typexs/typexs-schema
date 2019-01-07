@@ -1,11 +1,16 @@
-//process.env['SQL_LOG'] = 'X';
+import {EntityAPIController} from "../../src/controllers/EntityAPIController";
+
+process.env['SQL_LOG'] = 'X';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
+import {Container} from '@typexs/base';
+
 import {TestHelper} from "./TestHelper";
 
 import {TEST_STORAGE_OPTIONS} from "./config";
 import {Permission} from "./schemas/role_permissions/Permission";
+import {EntityControllerFactory, EntityRegistry} from "../../src";
 
 
 @suite('functional/sql_schema_predefined_join_bidirect')
@@ -14,8 +19,6 @@ class Sql_schema_predefined_join_bidirectSpec {
 
   before() {
     TestHelper.resetTypeorm();
-
-
   }
 
 
@@ -98,8 +101,6 @@ class Sql_schema_predefined_join_bidirectSpec {
     let options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'role_permissions';
 
-    //let schema = EntityRegistry.$().getSchemaDefByName(options.name);
-    //console.log(inspect(schema.toJson(), false, 10));
 
     let connect = await TestHelper.connect(options);
     let xsem = connect.controller;
@@ -118,6 +119,12 @@ class Sql_schema_predefined_join_bidirectSpec {
     perm02.disabled = false;
     perm02.permission = 'allow everything else';
 
+    let perm03 = new Permission();
+    perm03.type = 'single';
+    perm03.module = 'duo';
+    perm03.disabled = false;
+    perm03.permission = 'allow everything but this';
+
     let role = new Role();
     role.displayName = 'Admin';
     role.permissions = [perm01, perm02];
@@ -127,13 +134,18 @@ class Sql_schema_predefined_join_bidirectSpec {
     await xsem.save(role);
     let roles = await xsem.find(Role);
     expect(roles).to.have.length(1);
+    let results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    expect(results).to.have.length(2);
 
+
+    // save the fetched again
+    role = roles.shift();
     await xsem.save(role);
     roles = await xsem.find(Role);
     expect(roles).to.have.length(1);
-
-    let results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    results = await c.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(2);
+
 
     // should happen nothing
     role.permissions = null;
@@ -141,11 +153,80 @@ class Sql_schema_predefined_join_bidirectSpec {
     results = await c.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(2);
 
+
+    // add new permission
+    role = roles.shift();
+    role.permissions.push(perm03);
+    await xsem.save(role);
+    roles = await xsem.find(Role);
+    expect(roles).to.have.length(1);
+    results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    expect(results).to.have.length(3);
+
+
+    // remove permission
+    role = roles.shift();
+    role.permissions.shift();
+    await xsem.save(role);
+    roles = await xsem.find(Role);
+    expect(roles).to.have.length(1);
+    results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    expect(results).to.have.length(2);
+
+
     // should remove relation
     role.permissions = [];
     await xsem.save(role);
     results = await c.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(0);
+
+
+    await c.close();
+
+  }
+
+  @test
+  async 'update E-P-E[] over predefined join tables with api'() {
+    const Role = require('./schemas/role_permissions/Role').Role;
+    const Permission = require('./schemas/role_permissions/Permission').Permission;
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'role_permissions';
+
+
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+    let perm01 = new Permission();
+    perm01.type = 'single';
+    perm01.module = 'duo';
+    perm01.disabled = false;
+    perm01.permission = 'allow everything';
+
+    let perm02 = new Permission();
+    perm02.type = 'single';
+    perm02.module = 'duo';
+    perm02.disabled = false;
+    perm02.permission = 'allow everything else';
+
+    let perm03 = new Permission();
+    perm03.type = 'single';
+    perm03.module = 'duo';
+    perm03.disabled = false;
+    perm03.permission = 'allow everything but this';
+
+    Container.set(EntityRegistry.NAME,EntityRegistry.$());
+    Container.set(EntityControllerFactory.NAME,EntityRegistry.$());
+    let api = Container.get(EntityAPIController);
+    let role = new Role();
+    role.displayName = 'User';
+    role.permissions = [perm01, perm02];
+    role.rolename = 'user';
+    role.disabled = false;
+    let results = api.save('role',JSON.parse(JSON.stringify(role)),null);
+
 
     await c.close();
 
