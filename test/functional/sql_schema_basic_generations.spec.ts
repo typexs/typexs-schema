@@ -173,6 +173,48 @@ class Sql_schema_basic_generationsSpec {
 
   }
 
+  @test
+  async 'entity referencing property E-P-O-P-O (entity to object and again to object over embedded objects)'() {
+
+    require('./schemas/embedded/EntityWithEmbedded');
+    require('./schemas/embedded/EmbeddedObject');
+    require('./schemas/embedded/EmbeddedSubObject');
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'embedded';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+//    let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
+//    console.log(tables);
+
+    let tableNames = await ref.getSchemaHandler().getCollectionNames();
+    expect(tableNames).to.have.include.members(  [
+        "entity_with_embedded",
+        "p_entity_with_embedded_obj"
+      ]
+    );
+
+    let cols_level_one = await c.connection.query('PRAGMA table_info(\'entity_with_embedded\')');
+    expect(_.map(cols_level_one, c => c.name)).to.have.include.members(['id']);
+
+    let cols_obj_level_two = await c.connection.query('PRAGMA table_info(\'p_entity_with_embedded_obj\')');
+    expect(_.map(cols_obj_level_two, c => c.name)).to.have.include.members([
+      "id",
+      "source_type",
+      "source_id",
+      "source_seq_nr",
+      "inner_name",
+      "inner_sub_name",
+      "inner_sub_other_var"
+    ]);
+
+
+    await c.close();
+
+  }
 
   @test
   async 'schema with integrated property'() {
