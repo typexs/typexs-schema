@@ -10,6 +10,7 @@ import {EntityDef} from "./EntityDef";
 import * as moment from "moment";
 import {OptionsHelper} from "./OptionsHelper";
 import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
+import {OrderDesc} from "../../libs/descriptors/Conditions";
 
 export const KNOW_PRIMATIVE_TYPES:JS_DATA_TYPES[] = [
   'string' , 'text' , 'number' , 'boolean' , 'double' ,
@@ -165,8 +166,12 @@ export class PropertyDef extends AbstractDef {
     return this.getOptions('order', false) !== false;
   }
 
-  getOrder() {
-    return this.getOptions('order', null);
+  getOrder():OrderDesc[] {
+    let arr = this.getOptions('order', null);
+    if(!_.isArray(arr)){
+      arr = [arr]
+    }
+    return arr;
   }
 
   hasJoinRef() {

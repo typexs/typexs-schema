@@ -2,7 +2,7 @@
 import {Property, Schema} from "../../../../src";
 
 @Schema({name:'conditions'})
-export class DPContent01 {
+export class CondObjectContent {
 
   @Property({type: 'number',id:true})
   somenr: number;

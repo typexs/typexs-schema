@@ -7,6 +7,7 @@ import {TestHelper} from "./TestHelper";
 import {expect} from 'chai';
 import {inspect} from "util";
 import {TEST_STORAGE_OPTIONS} from "./config";
+import {CondEntityHolder} from "./schemas/conditions/CondEntityHolder";
 
 @suite('functional/scenario_06_conditions')
 class Scenario_06_conditions {
@@ -83,6 +84,53 @@ class Scenario_06_conditions {
     expect(keeper_save_01).to.deep.eq(keeper_find_01);
 
     // condition holder with condition setted fields
+
+
+  }
+
+  @test
+  async 'entity lifecycle for conditional properties of type E-P-O[] with order '() {
+    const CondEntityHolder = require('./schemas/conditions/CondEntityHolder').CondEntityHolder;
+    const CondObjectContent = require('./schemas/conditions/CondObjectContent').CondObjectContent;
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'conditions';
+
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+    // condition holder without condition setted fields
+    let holder_01 = new CondEntityHolder();
+    holder_01.mynr = 2;
+    holder_01.contents = []
+
+    let content_01 = new CondObjectContent();
+    ;
+    content_01.nickname = 'Robert';
+    content_01.somenr = holder_01.mynr;
+    content_01.subnr = 1;
+
+    let content_02 = new CondObjectContent();
+    ;
+    content_02.nickname = 'Franz';
+    content_02.somenr = holder_01.mynr;
+    content_02.subnr = 2;
+
+    holder_01.contents = [content_01, content_02];
+    holder_01 = await xsem.save(holder_01);
+    expect(holder_01).to.exist;
+    expect(holder_01.id).to.be.gt(0);
+    expect(holder_01.contents).to.have.length(2);
+    expect(holder_01.contents[0]).to.deep.eq(content_01);
+    expect(holder_01.contents[1]).to.deep.eq(content_02);
+
+    let holders = await xsem.find(CondEntityHolder,{id:holder_01.id});
+    let holder_res:any = holders.shift();
+    // should be ordered by nickname asc
+    expect(holder_res.contents[0]).to.deep.eq(content_02);
+    expect(holder_res.contents[1]).to.deep.eq(content_01);
 
 
   }
