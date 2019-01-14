@@ -1,5 +1,4 @@
 import {Entity, Property} from "../../../../src";
-import {ConditionHolder} from "./ConditionHolder";
 import {And, Eq, Key, Value} from "../../../../src/libs/descriptors/Conditions";
 import {ConditionObjectHolder} from "./ConditionObjectHolder";
 

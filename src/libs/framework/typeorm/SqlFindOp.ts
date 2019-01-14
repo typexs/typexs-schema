@@ -22,6 +22,7 @@ import {Sql} from "./Sql";
 import {JoinDesc} from "../../descriptors/Join";
 import {EntityRegistry} from "../../EntityRegistry";
 import {IFindOptions} from "../IFindOptions";
+import {OrderDesc} from "../../..";
 
 
 interface IFindData extends IDataExchange<any[]> {
@@ -45,8 +46,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       return op.entityDepth > 1
     };
 
-  private hookAfterEntity: (entityDef: EntityDef, entities: any[]) => void = () => {
-  };
+  private hookAfterEntity: (entityDef: EntityDef, entities: any[]) => void = () => {};
 
   objectDepth: number = 0;
 
@@ -134,11 +134,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     const joinDef: JoinDesc = propertyDef.getJoin();
     const joinProps = EntityRegistry.getPropertyDefsFor(joinDef.joinRef);
 
-    const mapping = _.merge({}, ... _.map(joinProps, p => {
-      let c = {};
-      c[p.name] = p.storingName;
-      return c;
-    }));
+    const mapping = SqlFindOp.getTargetKeyMap(joinDef.joinRef);
 
     for (let x = 0; x < sources.next.length; x++) {
       let source = sources.next[x];
@@ -200,6 +196,14 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     return sources;
   }
 
+  static getTargetKeyMap(targetDef:EntityDef|ClassRef){
+    let props:PropertyDef[] = targetDef instanceof EntityDef ? targetDef.getPropertyDefs() : EntityRegistry.getPropertyDefsFor(targetDef);
+    return _.merge({}, ... _.map(props, p => {
+      let c = {};
+      c[p.name] = p.storingName;
+      return c;
+    }));
+  }
 
   async visitEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, targetDef: EntityDef, sources: IFindData): Promise<IFindData> {
     this.entityDepth++;
@@ -208,12 +212,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     let results: any[] = [];
 
     if (propertyDef.hasConditions()) {
-
-      const mapping = _.merge({}, ... _.map(targetDef.getPropertyDefs(), p => {
-        let c = {};
-        c[p.name] = p.storingName;
-        return c;
-      }));
+      const mapping = SqlFindOp.getTargetKeyMap(targetDef);
 
       let conditionDef = propertyDef.getCondition();
       for (let source of sources.next) {
@@ -257,7 +256,16 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       }
 
       let targetIdProps = targetDef.getPropertyDefIdentifier();
-      results = await qb.orderBy(sourceSeqNrName, "ASC").getMany();
+      if(propertyDef.hasOrder()){
+        const mapping = SqlFindOp.getTargetKeyMap(targetDef);
+        propertyDef.getOrder().forEach((o:OrderDesc) => {
+          qb.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
+        });
+      }else{
+        qb.orderBy(sourceSeqNrName, "ASC")
+      }
+
+      results = await qb.getMany();
 
 
       for (let result of results) {
@@ -573,15 +581,9 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       }
     } else if (propertyDef.hasConditions()) {
 
-      const targetProps = this.em.schema().getPropertiesFor(classRef.getClass());
-
-      const mapping = _.merge({}, ... _.map(targetProps, p => {
-        let c = {};
-        c[p.name] = p.storingName;
-        return c;
-      }));
-
+      const mapping = SqlFindOp.getTargetKeyMap(classRef);
       let conditions = [];
+      // let orderByDef = propertyDef.Condition();
       let conditionDef = propertyDef.getCondition();
       for (let source of sources.next) {
         lookups.push(conditionDef.lookup(source));
@@ -594,6 +596,12 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
       if (whereConditions) {
         queryBuilder.where(whereConditions);
+        if(propertyDef.hasOrder()){
+          propertyDef.getOrder().forEach((o:OrderDesc) => {
+            queryBuilder.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
+          });
+        }
+
         results = await queryBuilder.getMany();
       }
 

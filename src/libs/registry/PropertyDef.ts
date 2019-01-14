@@ -161,6 +161,14 @@ export class PropertyDef extends AbstractDef {
     return this.getOptions('join', null);
   }
 
+  hasOrder() {
+    return this.getOptions('order', false) !== false;
+  }
+
+  getOrder() {
+    return this.getOptions('order', null);
+  }
+
   hasJoinRef() {
     return this.joinRef != null;
   }

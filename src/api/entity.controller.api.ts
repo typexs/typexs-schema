@@ -3,11 +3,11 @@ import {IEntityControllerApi} from "./IEntityControllerApi";
 
 export class EntityControllerApi implements IEntityControllerApi {
 
-  beforeEntityBuild(entityDef: EntityDef, data: any | any[], user?: any, controller?: EntityController): void {
+  beforeEntityBuild?(entityDef: EntityDef, data: any | any[], user?: any, controller?: EntityController): void {
     return null;
   }
 
-  afterEntityBuild(entityDef: EntityDef, data: any | any[], user?: any, controller?: EntityController): void {
+  afterEntityBuild?(entityDef: EntityDef, data: any | any[], user?: any, controller?: EntityController): void {
     return null;
   }
 }
