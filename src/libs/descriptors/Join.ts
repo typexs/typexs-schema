@@ -1,10 +1,14 @@
 import {IDesc} from "./IDesc";
 import {NotYetImplementedError} from "@typexs/base";
 import {ClassRef} from "../registry/ClassRef";
-import {And, CondDesc, OrderDesc, ValidationException} from "./Conditions";
+
 import {PropertyDef} from "../registry/PropertyDef";
 import {EntityRegistry} from "../EntityRegistry";
-import _ = require("lodash");
+import * as _ from 'lodash';
+import {CondDesc} from "./CondDesc";
+import {OrderDesc} from "./OrderDesc";
+import {ConditionValidationError} from "../exceptions/ConditionValidationError";
+import {And} from "./AndDesc";
 
 export type KeyMapType = 'from' | 'to';
 
@@ -19,7 +23,7 @@ export class KeyMapDesc implements IDesc {
 }
 
 export class JoinDesc implements IDesc {
-
+  readonly type:string = 'join';
   readonly joinRef: ClassRef;
 
   readonly keyMaps: KeyMapDesc[] = [];
@@ -35,7 +39,7 @@ export class JoinDesc implements IDesc {
     this.joinRef = ClassRef.get(base);
     this.keyMaps = keyMaps;
     this.condition = conditions;
-    if(order){
+    if (order) {
       this.order = !_.isArray(order) ? [order] : order;
     }
 
@@ -57,7 +61,7 @@ export class JoinDesc implements IDesc {
     const props = EntityRegistry.getPropertyDefsFor(this.joinRef).map(p => p.name);
     this.order.forEach(o => {
       if (props.indexOf(o.key.key) == -1) {
-        throw new ValidationException('no property with order key ' + o.key.key + ' found.');
+        throw new ConditionValidationError('no property with order key ' + o.key.key + ' found.');
       }
     })
   }
