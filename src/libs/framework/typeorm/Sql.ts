@@ -8,7 +8,7 @@ export class Sql {
     if (_.isEmpty(condition)) {
       return null;
     }
-    let control: any = Object.keys(condition).filter(k => k.startsWith('$'));
+    let control: any = _.keys(condition).filter(k => k.startsWith('$'));
     if (!_.isEmpty(control)) {
       control = control.shift();
       if (this[control]) {

@@ -23,6 +23,7 @@ import {JoinDesc} from "../../descriptors/Join";
 import {EntityRegistry} from "../../EntityRegistry";
 import {IFindOptions} from "../IFindOptions";
 import {OrderDesc} from "../../..";
+import {SqlConditionsBuilder} from "./SqlConditionsBuilder";
 
 
 interface IFindData extends IDataExchange<any[]> {
@@ -46,7 +47,8 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       return op.entityDepth > 1
     };
 
-  private hookAfterEntity: (entityDef: EntityDef, entities: any[]) => void = () => {};
+  private hookAfterEntity: (entityDef: EntityDef, entities: any[]) => void = () => {
+  };
 
   objectDepth: number = 0;
 
@@ -65,20 +67,24 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
    * Returns the entities for source.conditions
    */
   async visitEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: IFindData): Promise<IFindData> {
+    // TODO default limit configurable
     const limit = _.get(sources, 'options.limit', 50);
     const offset = _.get(sources, 'options.offset', null);
     const sortBy = _.get(sources, 'options.sort', null);
 
     let qb = this.c.manager.getRepository(entityDef.object.getClass()).createQueryBuilder();
 
-
     if (sources.condition) {
-      const whereCond = this.handleCondition(sources.condition, entityDef);
-      qb.where(whereCond);
+      let builder = new SqlConditionsBuilder(entityDef, qb.alias);
+      const where = builder.build(sources.condition);
+      builder.getJoins().forEach(join => {
+        qb.leftJoin(join.table, join.alias, join.condition);
+      });
+      //const whereCond = this.handleCondition(sources.condition, entityDef);
+      qb.where(where);
     }
 
     let recordCount = await qb.getCount();
-
 
     if (!_.isNull(limit) && _.isNumber(limit)) {
       qb.limit(limit);
@@ -90,11 +96,11 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
     if (_.isNull(sortBy)) {
       entityDef.getPropertyDefIdentifier().forEach(x => {
-        qb.addOrderBy(x.storingName, 'ASC');
+        qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
       });
     } else {
       _.keys(sortBy).forEach(sortKey => {
-        qb.addOrderBy(sortKey, sortBy[sortKey].toUpperCase());
+        qb.addOrderBy(qb.alias + '.' + sortKey, sortBy[sortKey].toUpperCase());
       })
     }
 
@@ -196,9 +202,9 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     return sources;
   }
 
-  static getTargetKeyMap(targetDef:EntityDef|ClassRef){
-    let props:PropertyDef[] = targetDef instanceof EntityDef ? targetDef.getPropertyDefs() : EntityRegistry.getPropertyDefsFor(targetDef);
-    return _.merge({}, ... _.map(props, p => {
+  static getTargetKeyMap(targetDef: EntityDef | ClassRef) {
+    let props: PropertyDef[] = targetDef instanceof EntityDef ? targetDef.getPropertyDefs() : EntityRegistry.getPropertyDefsFor(targetDef);
+    return _.merge({}, ..._.map(props, p => {
       let c = {};
       c[p.name] = p.storingName;
       return c;
@@ -256,12 +262,12 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       }
 
       let targetIdProps = targetDef.getPropertyDefIdentifier();
-      if(propertyDef.hasOrder()){
+      if (propertyDef.hasOrder()) {
         const mapping = SqlFindOp.getTargetKeyMap(targetDef);
-        propertyDef.getOrder().forEach((o:OrderDesc) => {
+        propertyDef.getOrder().forEach((o: OrderDesc) => {
           qb.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
         });
-      }else{
+      } else {
         qb.orderBy(sourceSeqNrName, "ASC")
       }
 
@@ -596,8 +602,8 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
       if (whereConditions) {
         queryBuilder.where(whereConditions);
-        if(propertyDef.hasOrder()){
-          propertyDef.getOrder().forEach((o:OrderDesc) => {
+        if (propertyDef.hasOrder()) {
+          propertyDef.getOrder().forEach((o: OrderDesc) => {
             queryBuilder.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
           });
         }

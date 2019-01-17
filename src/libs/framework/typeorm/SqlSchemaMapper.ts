@@ -58,9 +58,11 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     return this.storageRef.reload();
   }
 
+
   inClassCache(cls: Function) {
     return this.classCache.indexOf(cls) > -1;
   }
+
 
   addType(fn: Function) {
     if (!this.isDone(fn)) {
@@ -268,6 +270,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     if (!classRef.hasName()) {
       tName = [prefix, tName].join('_');
     }
+    classRef.storingName = tName;
     let entityClass = classRef.getClass();
     Entity(tName)(entityClass);
     // check if an ID exists in class else add one
@@ -398,7 +401,6 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       uniqueIndex.push(targetId);
     });
 
-
     if (entityDef instanceof EntityDef) {
 
       // TODO if revision support is enabled for entity then it must be handled also be the property
@@ -409,7 +411,6 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       }
     }
     Index(uniqueIndex)(refTargetClass)
-
   }
 
 
@@ -501,14 +502,14 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
 
-/*
-  isClassDefinedInStorage(fn: Function) {
-    for (let definedEntity of this.getStorageOptions().entities) {
-      if (_.isString(definedEntity) && fn.name == definedEntity) return true;
-      if (_.isFunction(definedEntity) && fn == definedEntity) return true;
+  /*
+    isClassDefinedInStorage(fn: Function) {
+      for (let definedEntity of this.getStorageOptions().entities) {
+        if (_.isString(definedEntity) && fn.name == definedEntity) return true;
+        if (_.isFunction(definedEntity) && fn == definedEntity) return true;
 
+      }
+      return false;
     }
-    return false;
-  }
-  */
+    */
 }
