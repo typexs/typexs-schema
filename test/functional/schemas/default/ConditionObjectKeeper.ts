@@ -1,5 +1,5 @@
-import {Entity, Property} from "../../../../src";
-import {And, Eq, Key, Value} from "../../../../src/libs/descriptors/Conditions";
+import {And, Entity, Eq, Key, Property, Value} from "../../../../src";
+
 import {ConditionObjectHolder} from "./ConditionObjectHolder";
 
 @Entity()

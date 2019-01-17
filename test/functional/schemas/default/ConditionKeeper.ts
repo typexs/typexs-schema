@@ -1,6 +1,6 @@
-import {Entity, Property} from "../../../../src";
+import {And, Entity, Eq, Key, Property, Value} from "../../../../src";
 import {ConditionHolder} from "./ConditionHolder";
-import {And, Eq, Key, Value} from "../../../../src/libs/descriptors/Conditions";
+
 
 @Entity()
 export class ConditionKeeper {

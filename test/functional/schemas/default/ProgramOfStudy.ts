@@ -1,6 +1,6 @@
 import {QualiKeys} from './QualiKeys';
-import {Entity, Property} from "../../../../src";
-import {Key} from "../../../../src/libs/descriptors/Conditions";
+import {Entity, Key, Property} from "../../../../src";
+
 
 @Entity()
 export class ProgramOfStudy {

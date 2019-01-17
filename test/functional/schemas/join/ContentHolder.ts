@@ -1,8 +1,8 @@
-import {Entity, Property, Schema} from "../../../../src";
+import {Entity, Eq, Key, Property, Schema, Value} from "../../../../src";
 import {Content} from "./Content";
 import {From, Join, To} from "../../../../src/libs/descriptors/Join";
 import {ContentRef} from "./ContentRef";
-import {Eq, Key, Value} from "../../../../src/libs/descriptors/Conditions";
+
 
 @Schema({name: 'join'})
 @Entity()

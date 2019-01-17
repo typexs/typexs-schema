@@ -1,6 +1,6 @@
-import {Entity, Property, Schema} from "../../../../src";
+import {And, Asc, Entity, Eq, Key, Property, Schema, Value} from "../../../../src";
 import {Teacher} from "./Teacher";
-import {And, Asc, Eq, Key, Value} from "../../../../src/libs/descriptors/Conditions";
+
 import {RBelongsTo} from "./RBelongsTo";
 import {From, Join, To} from "../../../../src/libs/descriptors/Join";
 

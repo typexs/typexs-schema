@@ -1,6 +1,6 @@
-import {CObject, Property} from "../../../../src";
+import {And, CObject, Eq, Key, Property, Value} from "../../../../src";
 import {ConditionObjectHolder} from "./ConditionObjectHolder";
-import {And, Eq, Key, Value} from "../../../../src/libs/descriptors/Conditions";
+
 
 @CObject({name: 'condition_obj_keeper'})
 export class ConditionObjKeeper {

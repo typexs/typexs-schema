@@ -1,6 +1,6 @@
-import {Entity, Property} from "../../../../src";
+import {Entity, Key, Property} from "../../../../src";
 import {Periode} from "./Periode";
-import {Key} from "../../../../src/libs/descriptors/Conditions";
+
 
 @Entity()
 export class Course {
