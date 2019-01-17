@@ -1,3 +1,5 @@
+//process.env['SQL_LOG'] = '1';
+
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
@@ -504,6 +506,13 @@ class Sql_direct_referencingSpec {
     expect(booksFound['$offset']).to.eq(7);
     expect(booksFound['$limit']).to.eq(5);
     expect(_.map(booksFound, (b: any) => b.label)).to.deep.eq(["Book12", "Book11", "Book10", "Book1"]);
+
+
+    booksFound = await xsem.find(Book, {'author.lastName': 'Kania5'}, {limit: 5, sort: {id: "desc"}});
+    expect(booksFound).to.have.length(1);
+    expect(booksFound['$count']).to.eq(1);
+    expect(_.map(booksFound, (b: any) => b.label)).to.deep.eq(["Book5"]);
+
 
     booksFound = await xsem.find(Book, {$or: [{label: 'Book5'}, {label: 'Book10'}]}, {
       hooks: {

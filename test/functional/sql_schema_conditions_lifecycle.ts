@@ -1,3 +1,4 @@
+
 import {suite, test} from 'mocha-typescript';
 import {IStorageOptions} from '@typexs/base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
@@ -107,13 +108,11 @@ class Scenario_06_conditions {
     holder_01.contents = []
 
     let content_01 = new CondObjectContent();
-    ;
     content_01.nickname = 'Robert';
     content_01.somenr = holder_01.mynr;
     content_01.subnr = 1;
 
     let content_02 = new CondObjectContent();
-    ;
     content_02.nickname = 'Franz';
     content_02.somenr = holder_01.mynr;
     content_02.subnr = 2;
@@ -126,14 +125,28 @@ class Scenario_06_conditions {
     expect(holder_01.contents[0]).to.deep.eq(content_01);
     expect(holder_01.contents[1]).to.deep.eq(content_02);
 
-    let holders = await xsem.find(CondEntityHolder,{id:holder_01.id});
-    let holder_res:any = holders.shift();
+    let holders = await xsem.find(CondEntityHolder, {id: holder_01.id});
+    let holder_res: any = holders.shift();
     // should be ordered by nickname asc
     expect(holder_res.contents[0]).to.deep.eq(content_02);
     expect(holder_res.contents[1]).to.deep.eq(content_01);
 
+    // try a complex query
+    holder_01 = new CondEntityHolder();
+    holder_01.mynr = 5;
+    holder_01.contents = [content_02];
+    holder_01 = await xsem.save(holder_01);
+    expect(holder_01).to.exist;
+    expect(holder_01.id).to.be.gt(0);
+    expect(holder_01.contents).to.have.length(1);
+
+    holders = await xsem.find(CondEntityHolder, {'contents.nickname': 'Robert'});
+    expect(holders).to.have.length(1);
+    expect(holder_res.contents[1].nickname).to.be.eq('Robert');
+
 
   }
+
 
   @test
   async 'entity lifecycle for conditional properties of type E-P-O[]-P-O[]'() {
