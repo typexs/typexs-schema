@@ -13,6 +13,7 @@ export * from "./libs/Constants";
 
 export * from "./libs/exceptions/ObjectsNotValidError";
 export * from "./libs/exceptions/HttpObjectsNotValidError";
+export * from "./libs/exceptions/ConditionValidationError";
 
 export * from "./libs/DataContainer";
 export * from "./libs/IValidationError";
@@ -25,9 +26,27 @@ export * from "./libs/decorators/Entity";
 export * from "./libs/decorators/Property";
 export * from "./libs/decorators/PropertyOf";
 export * from "./libs/decorators/Schema";
-export * from "./libs/descriptors/Conditions";
+
+// conditions
+export * from "./libs/descriptors/AbstractCondDesc";
 export * from "./libs/descriptors/IDesc";
+export * from "./libs/descriptors/CondDesc";
+export * from "./libs/descriptors/OpDesc";
 export * from "./libs/descriptors/Join";
+export * from "./libs/descriptors/AndDesc";
+export * from "./libs/descriptors/OrDesc";
+export * from "./libs/descriptors/EqDesc";
+export * from "./libs/descriptors/GeDesc";
+export * from "./libs/descriptors/GroupDesc";
+export * from "./libs/descriptors/KeyDesc";
+export * from "./libs/descriptors/LeDesc";
+export * from "./libs/descriptors/OrderDesc";
+export * from "./libs/descriptors/Selector";
+export * from "./libs/descriptors/ValueDesc";
+
+
+
+
 
 export * from "./libs/EntityController";
 export * from "./libs/EntityControllerFactory";
@@ -53,6 +72,7 @@ export * from "./libs/framework/typeorm/SqlFramework";
 export * from "./libs/framework/typeorm/SqlHelper";
 export * from "./libs/framework/typeorm/SqlSaveOp";
 export * from "./libs/framework/typeorm/SqlSchemaMapper";
+export * from "./libs/framework/typeorm/SqlConditionsBuilder";
 
 export * from "./libs/LookupRegistry";
 export * from "./libs/registry/AbstractDef";

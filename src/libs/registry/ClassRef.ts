@@ -54,6 +54,10 @@ export class ClassRef {
     return _.snakeCase(name);
   }
 
+  set storingName(v: string){
+    _.set(this.options, 'name', v);
+  }
+
   hasName() {
     return _.has(this.options, 'name');
   }

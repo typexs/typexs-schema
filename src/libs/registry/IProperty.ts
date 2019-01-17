@@ -1,6 +1,9 @@
 import {JoinDesc} from "./../descriptors/Join";
-import {CondDesc, KeyDesc, OrderDesc} from "./../descriptors/Conditions";
+
 import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
+import {CondDesc} from "../descriptors/CondDesc";
+import {KeyDesc} from "../descriptors/KeyDesc";
+import {OrderDesc} from "../descriptors/OrderDesc";
 
 export interface IProperty {
 

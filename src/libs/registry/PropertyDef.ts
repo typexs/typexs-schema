@@ -10,11 +10,12 @@ import {EntityDef} from "./EntityDef";
 import * as moment from "moment";
 import {OptionsHelper} from "./OptionsHelper";
 import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
-import {OrderDesc} from "../../libs/descriptors/Conditions";
+import {CondDesc} from "../descriptors/CondDesc";
+import {OrderDesc} from "../descriptors/OrderDesc";
 
-export const KNOW_PRIMATIVE_TYPES:JS_DATA_TYPES[] = [
-  'string' , 'text' , 'number' , 'boolean' , 'double' ,
-  'json' , 'date' , 'time' , 'datetime' , 'timestamp' , 'byte'
+export const KNOW_PRIMATIVE_TYPES: JS_DATA_TYPES[] = [
+  'string', 'text', 'number', 'boolean', 'double',
+  'json', 'date', 'time', 'datetime', 'timestamp', 'byte'
 ];
 
 export class PropertyDef extends AbstractDef {
@@ -150,7 +151,7 @@ export class PropertyDef extends AbstractDef {
     return this.getOptions('cond', false) !== false;
   }
 
-  getCondition() {
+  getCondition(): CondDesc {
     return this.getOptions('cond', null);
   }
 
@@ -166,9 +167,9 @@ export class PropertyDef extends AbstractDef {
     return this.getOptions('order', false) !== false;
   }
 
-  getOrder():OrderDesc[] {
+  getOrder(): OrderDesc[] {
     let arr = this.getOptions('order', null);
-    if(!_.isArray(arr)){
+    if (!_.isArray(arr)) {
       arr = [arr]
     }
     return arr;
