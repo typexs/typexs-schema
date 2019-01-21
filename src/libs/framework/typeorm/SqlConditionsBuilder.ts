@@ -1,13 +1,10 @@
 import * as _ from 'lodash';
 import {EntityDef} from "../../registry/EntityDef";
-import {Helper} from "@typexs/server";
-import {ClassRef, NameResolver, PropertyDef} from "../../..";
+import {ClassRef, NameResolver} from "../../..";
 import {Log, NotYetImplementedError} from "@typexs/base";
 
 export interface IConditionJoin {
   alias: string;
-  //from: ClassRef;
-  //ref: PropertyDef;
   table: string;
   condition: string;
 }
@@ -38,15 +35,18 @@ export class SqlConditionsBuilder {
     this.alias = alias ? alias : this.entityDef.storingName;
   }
 
+
   getJoins() {
     return this.joins;
   }
+
 
   private createAlias(tmp: ClassRef) {
     let name = _.snakeCase(tmp.storingName);
     name += '_' + (this.inc++);
     return name;
   }
+
 
   lookupKeys(key: string) {
     let joins = key.split('.');

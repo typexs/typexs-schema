@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import {NotYetImplementedError} from "@typexs/base";
+import {NotSupportedError, NotYetImplementedError} from "@typexs/base";
 import {KeyDesc} from "./KeyDesc";
 import {ValueDesc} from "./ValueDesc";
 
@@ -154,5 +154,22 @@ export abstract class AbstractCondDesc implements IDesc {
     throw new NotYetImplementedError()
   }
 
+  toJson(){
+    if(this.isGroup()){
+      let res:any= {};
+      res['$'+this.type] = _.map(this.values, x => x.toJson());
+      return res;
+    }else if(this.isOp()){
+      let res:any= {};
+      res[this.key] = {}
+      res[this.key]['$'+this.type] = this.value.toJson ? this.value.toJson() : this.value;
+      return res;
+    }else{
+      throw new NotSupportedError('toJson to this condition not supported');
+    }
+
+
+
+  }
 
 }

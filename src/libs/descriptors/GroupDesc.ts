@@ -6,6 +6,8 @@ export class GroupDesc extends CondDesc {
 
   values: CondDesc[] = [];
 
+  id?:number;
+
   constructor(...values: CondDesc[]) {
     super();
     this.values = values;

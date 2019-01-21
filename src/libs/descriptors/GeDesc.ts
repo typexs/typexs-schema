@@ -6,11 +6,10 @@ import {ValueDesc} from "./ValueDesc";
 import {OpDesc} from "./OpDesc";
 
 
-
-
 export class GeDesc extends OpDesc {
-  readonly type:string = 'ge';
-  constructor(key: string, value: Selector) {
+  readonly type: string = 'ge';
+
+  constructor(key: string | KeyDesc, value: Selector) {
     super(key, value);
   }
 
@@ -24,10 +23,7 @@ export class GeDesc extends OpDesc {
 }
 
 
-
-
-
-export function Ge(key: string, value: Selector) {
+export function Ge(key: string | KeyDesc, value: Selector) {
   return new GeDesc(key, value);
 }
 

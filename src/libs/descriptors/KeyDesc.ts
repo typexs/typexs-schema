@@ -10,6 +10,10 @@ export class KeyDesc extends Selector {
     this.key = key
   }
 
+  toJson(){
+    return this.key;
+  }
+
 }
 
 /**

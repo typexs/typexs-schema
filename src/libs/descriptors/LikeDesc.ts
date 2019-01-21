@@ -7,8 +7,9 @@ import {ValueDesc} from "./ValueDesc";
 import {OpDesc} from "./OpDesc";
 
 
-export class EqDesc extends OpDesc {
-  readonly type:string = 'eq';
+export class LikeDesc extends OpDesc {
+  readonly type: string = 'like';
+
   constructor(key: string | KeyDesc, value: Selector) {
     super(key, value);
   }
@@ -17,7 +18,7 @@ export class EqDesc extends OpDesc {
     const value = this.value instanceof KeyDesc ? source[this.value.key] : _.clone((<ValueDesc>this.value).value);
     const key = this.key;
     return function (target: any) {
-      return target[key] == value;
+      return (new RegExp(value.replace('%%', '.*'))).test(target[key]);
     }
   }
 
@@ -31,6 +32,6 @@ export class EqDesc extends OpDesc {
 
 }
 
-export function Eq(key: string | KeyDesc, value: Selector) {
-  return new EqDesc(key, value);
+export function Like(key: string | KeyDesc, value: Selector) {
+  return new LikeDesc(key, value);
 }

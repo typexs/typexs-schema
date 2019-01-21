@@ -2,12 +2,17 @@ import {Selector} from "./Selector";
 
 export class ValueDesc extends Selector {
   readonly type:string = 'value';
-  readonly value: string;
+  readonly value: string | number;
 
-  constructor(value: string) {
+  constructor(value: string | number) {
     super();
     this.value = value;
   }
+
+  toJson(){
+    return this.value;
+  }
+
 }
 
 
@@ -15,7 +20,7 @@ export class ValueDesc extends Selector {
  * Value
  *
  */
-export function Value(v: string) {
+export function Value(v: string | number) {
   return new ValueDesc(v);
 }
 

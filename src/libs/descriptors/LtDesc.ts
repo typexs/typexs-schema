@@ -7,8 +7,8 @@ import {KeyDesc} from "./KeyDesc";
 import {OpDesc} from "./OpDesc";
 
 
-export class LeDesc extends OpDesc {
-  readonly type: string = 'le';
+export class LtDesc extends OpDesc {
+  readonly type: string = 'lt';
 
   constructor(key: string | KeyDesc, value: Selector) {
     super(key, value);
@@ -18,11 +18,11 @@ export class LeDesc extends OpDesc {
     const value = this.value instanceof KeyDesc ? source[this.value.key] : _.clone((<ValueDesc>this.value).value);
     const key = this.key;
     return function (target: any) {
-      return target[key] <= value;
+      return target[key] < value;
     }
   }
 }
 
-export function Le(key: string | KeyDesc, value: Selector) {
-  return new LeDesc(key, value);
+export function Lt(key: string | KeyDesc, value: Selector) {
+  return new LtDesc(key, value);
 }
