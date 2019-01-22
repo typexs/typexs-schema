@@ -222,7 +222,7 @@ export class SqlConditionsBuilder {
 
   $like(condition: any, key: string = null, value:any = null) {
     let _key = this.lookupKeys(key);
-    return `${_key} LIKE '${this.escape(value).replace('%','%%').replace('*','%')}'`
+    return `${_key} LIKE '${this.escape(value).replace(/%/g,'%%').replace(/\*/g,'%')}'`
   }
 
   $in(condition: any, key: string = null, value:any = null) {
