@@ -15,7 +15,7 @@ import {Sql} from "../../src/libs/framework/typeorm/Sql";
 @suite('functional/sql_conditions')
 class Sql_conditionsSpec {
 
-  before() {
+  static before() {
     TestHelper.resetTypeorm();
   }
 
