@@ -2,7 +2,6 @@ import * as _ from 'lodash';
 import {EntityDef} from "../../registry/EntityDef";
 import {ClassRef} from "../../../libs/registry/ClassRef";
 import {NameResolver} from "../../../libs/framework/typeorm/NameResolver";
-import {Log} from "@typexs/base/libs/logging/Log";
 import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
 
 export interface IConditionJoin {
@@ -160,7 +159,7 @@ export class SqlConditionsBuilder {
     if (!_.isEmpty(control)) {
       control = control.shift();
       if (this[control]) {
-        return this[control](condition, k);
+        return this[control](condition, k, condition[control]);
       } else {
         throw new NotYetImplementedError()
       }
@@ -176,53 +175,59 @@ export class SqlConditionsBuilder {
         if (_.isString(value) || _.isNumber(value) || _.isDate(value)) {
           return `${key} = '${value}'`
         } else {
-          Log.warn(`SQL.build not a plain type ${key} = ${JSON.stringify(value)} (${typeof value})`);
-          return null;
+          throw new Error(`SQL.build not a plain type ${key} = ${JSON.stringify(value)} (${typeof value})`);
+          //return null;
         }
 
       }).filter(c => !_.isNull(c)).join(' AND ');
     }
   }
 
-
-  $eq(condition: any, key: string = null) {
-    let _key = this.lookupKeys(key);
-    return `${_key} = '${condition['$eq']}'`
+  escape(str:any){
+    if(_.isString(str)){
+      str = str.replace(/'/g,"\\'");
+    }
+    return str;
   }
 
-  $ne(condition: any, key: string = null) {
+  $eq(condition: any, key: string = null, value:any = null) {
     let _key = this.lookupKeys(key);
-    return `${_key} <> '${condition['$ne']}'`
+    return `${_key} = '${this.escape(value)}'`
   }
 
-  $lt(condition: any, key: string = null) {
+  $ne(condition: any, key: string = null, value:any = null) {
     let _key = this.lookupKeys(key);
-    return `${_key} < ${condition['$lt']}`
+    return `${_key} <> '${this.escape(value)}'`
   }
 
-  $le(condition: any, key: string = null) {
+  $lt(condition: any, key: string = null, value:any = null) {
     let _key = this.lookupKeys(key);
-    return `${_key} <= ${condition['$le']}`
+    return `${_key} < ${this.escape(value)}`
   }
 
-  $gt(condition: any, key: string = null) {
+  $le(condition: any, key: string = null, value:any = null) {
     let _key = this.lookupKeys(key);
-    return `${_key} > ${condition['$gt']}`
+    return `${_key} <= ${this.escape(value)}`
   }
 
-  $ge(condition: any, key: string = null) {
+  $gt(condition: any, key: string = null, value:any = null) {
     let _key = this.lookupKeys(key);
-    return `${_key} >= ${condition['$ge']}`
+    return `${_key} > ${this.escape(value)}`
   }
 
-  $like(condition: any, key: string = null) {
+  $ge(condition: any, key: string = null, value:any = null) {
     let _key = this.lookupKeys(key);
-    return `${_key} LIKE '${condition['$like']}'`
+    return `${_key} >= ${this.escape(value)}`
   }
 
-  $in(condition: any, key: string = null) {
+  $like(condition: any, key: string = null, value:any = null) {
     let _key = this.lookupKeys(key);
-    return `${_key} IN (${condition['$in'].join(',')})`
+    return `${_key} LIKE '${this.escape(value).replace('%','%%').replace('*','%')}'`
+  }
+
+  $in(condition: any, key: string = null, value:any = null) {
+    let _key = this.lookupKeys(key);
+    return `${_key} IN (${value.map((x:any) => this.escape(x)).join(',')})`
   }
 
   $and(condition: any, key: string = null): string {
