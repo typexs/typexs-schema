@@ -1,10 +1,18 @@
 import * as _ from 'lodash';
-import {And, ExprDesc, EntityDef, Eq, Ge, GroupDesc, Key, Le, Or, Value} from "../..";
 import {Like} from "../descriptors/LikeDesc";
 import {Lt} from "../descriptors/LtDesc";
 import {Gt} from "../descriptors/GtDesc";
 import {In} from "../descriptors/InDesc";
 import {Neq} from "../descriptors/NeqDesc";
+import {ExprDesc} from "../descriptors/ExprDesc";
+import {Eq} from "../descriptors/EqDesc";
+import {Le} from "../descriptors/LeDesc";
+import {Key} from "../descriptors/KeyDesc";
+import {Value} from "../descriptors/ValueDesc";
+import {Ge} from "../descriptors/GeDesc";
+import {GroupDesc} from "../descriptors/GroupDesc";
+import {And} from "../descriptors/AndDesc";
+import {Or} from "../descriptors/OrDesc";
 
 
 export class ExpressionInterpreter {

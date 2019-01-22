@@ -1,5 +1,5 @@
 import {IExpr} from "./IExpr";
-import {NotYetImplementedError} from "@typexs/base";
+import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
 import {ClassRef} from "../registry/ClassRef";
 
 import {PropertyDef} from "../registry/PropertyDef";
