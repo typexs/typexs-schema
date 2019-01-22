@@ -54,10 +54,10 @@ class Sql_scenario_featuresSpec {
     a.features[0].geometry.longitude = 13.15;
 
     a = await xsem.save(a, {validate: false});
-    console.log(inspect(a,false,10));
+    //console.log(inspect(a,false,10));
 
     let b = await xsem.find(PathFeatureCollection,{id:1});
-    console.log(inspect(b,false,10));
+    //console.log(inspect(b,false,10));
 
     expect(b.shift()).to.deep.eq(a);
 

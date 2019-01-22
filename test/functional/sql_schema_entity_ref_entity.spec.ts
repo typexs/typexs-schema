@@ -107,14 +107,14 @@ class Sql_schema_entity_ref_entitySpec {
     pers_save_01.address = addr_save_01;
 
     pers_save_01 = await xsem.save(pers_save_01, {validate: false});
-    console.log(inspect(pers_save_01, false, 10));
+    //console.log(inspect(pers_save_01, false, 10));
 
     let trai_save_01 = new Training();
     trai_save_01.trainer = {id: pers_save_01.id};
     trai_save_01.type = 'Running';
 
     trai_save_01 = await xsem.save(trai_save_01, {validate: false});
-    console.log(inspect(trai_save_01, false, 10));
+    //console.log(inspect(trai_save_01, false, 10));
 
     let trai_find_01 = await xsem.find(Training, {id: trai_save_01.id});
     expect(trai_find_01).to.have.length(1);

@@ -1,6 +1,6 @@
 import {Entity, Eq, Key, Property, Schema, Value} from "../../../../src";
 import {Content} from "./Content";
-import {From, Join, To} from "../../../../src/libs/descriptors/Join";
+import {From, Join, To} from "../../../../src/libs/descriptors/JoinDesc";
 import {ContentRef} from "./ContentRef";
 
 

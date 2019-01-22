@@ -43,7 +43,7 @@ class Sql_plain_entitySpec {
     expect(author_found).to.have.length(1);
 
     let deleted_entities = await xsem.remove(author_found);
-    console.log('delete', deleted_entities);
+    //console.log('delete', deleted_entities);
 
     let author_delete_01: any = deleted_entities.shift();
     expect(author_delete_01.id).to.be.undefined;

@@ -1,7 +1,7 @@
-import {IDesc} from "./IDesc";
+import {IExpr} from "./IExpr";
 import {KeyDesc} from "./KeyDesc";
 
-export class OrderDesc implements IDesc {
+export class OrderDesc implements IExpr {
   readonly type:string = 'order';
   readonly key: KeyDesc;
   readonly asc: boolean;

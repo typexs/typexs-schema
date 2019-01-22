@@ -1,14 +1,11 @@
 import {EntityAPIController} from "../../src/controllers/EntityAPIController";
-
-process.env['SQL_LOG'] = 'X';
+//process.env['SQL_LOG'] = 'X';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {Bootstrap, Container} from '@typexs/base';
 
 import {TestHelper} from "./TestHelper";
-
-import {TEST_STORAGE_OPTIONS} from "./config";
 
 import {K_ROUTE_CONTROLLER, Server} from "@typexs/server";
 import {Permission} from "./schemas/role_permissions/Permission";

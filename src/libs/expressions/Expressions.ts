@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {CondDesc} from "../../libs/descriptors/CondDesc";
+import {ExprDesc} from "../descriptors/ExprDesc";
 
 import {NotSupportedError} from "@typexs/base/libs/exceptions/NotSupportedError";
 import {In} from "../descriptors/InDesc";
@@ -14,12 +14,13 @@ import {Le} from "../descriptors/LeDesc";
 import {Or} from "../descriptors/OrDesc";
 import {Value} from "../descriptors/ValueDesc";
 import {GroupDesc} from "../descriptors/GroupDesc";
-import {ConditionsInterpreter} from "./ConditionsInterpreter";
+import {ExpressionInterpreter} from "./ExpressionInterpreter";
+import {EntityDef} from "../..";
 
 
-export class Conditions {
+export class Expressions {
 
-  static parse(str: any): CondDesc {
+  static parse(str: any): ExprDesc {
     if (_.isString(str)) {
       // check if JSON string
       try {
@@ -27,7 +28,7 @@ export class Conditions {
         return this.fromJson(obj);
       } catch (e) {
         try {
-          let interpreter = new ConditionsInterpreter();
+          let interpreter = new ExpressionInterpreter();
           return interpreter.interprete(str);
         } catch (e) {
           throw e;
@@ -39,6 +40,9 @@ export class Conditions {
       throw new NotSupportedError('object cant be interpreted to conditions, wrong format')
     }
   }
+
+
+  //static validate(entityDef:EntityDef, condition:CondDesc)
 
   /*
     static fromJson(object: any): CondDesc {
@@ -91,7 +95,7 @@ export class Conditions {
       return cond;
     }
   */
-  static fromJson(object: any, srcKey: string = null, parent: CondDesc = null): CondDesc {
+  static fromJson(object: any, srcKey: string = null, parent: ExprDesc = null): ExprDesc {
     if (_.isArray(object)) {
       if (!parent || !(parent instanceof GroupDesc)) {
         parent = Or()
@@ -165,7 +169,7 @@ export class Conditions {
         }
 
       } else if (operator.length == 0) {
-        let desc: CondDesc[] = [];
+        let desc: ExprDesc[] = [];
 
         for (let k of keys) {
           desc.push(this.fromJson(object[k], k, null))

@@ -54,7 +54,7 @@ export class ClassRef {
     return _.snakeCase(name);
   }
 
-  set storingName(v: string){
+  set storingName(v: string) {
     _.set(this.options, 'name', v);
   }
 
@@ -135,12 +135,12 @@ export class ClassRef {
     if (_.isFunction(this.originalValue)) {
       return this.originalValue;
     } else if (_.isString(this.originalValue) && this.isPlaceholder) {
-      if(create){
+      if (create) {
         this.originalValue = SchemaUtils.clazz(this.originalValue);
         return this.originalValue;
       }
     }
-    throw new NotYetImplementedError('getClass for '+this.originalValue);
+    throw new NotYetImplementedError('getClass for ' + this.originalValue);
 
   }
 
@@ -196,6 +196,9 @@ export class ClassRef {
     return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.object.getClass() === this.getClass());
   }
 
+  getPropertyDef(name: string): PropertyDef {
+    return LookupRegistry.$().find(XS_TYPE_PROPERTY, (e: PropertyDef) => e.object.getClass() === this.getClass() && e.name === name);
+  }
 
   id() {
     return this.schemas.join() + this.className;

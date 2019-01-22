@@ -2,7 +2,7 @@ import {And, Asc, Entity, Eq, Key, Property, Schema, Value} from "../../../../sr
 import {Teacher} from "./Teacher";
 
 import {RBelongsTo} from "./RBelongsTo";
-import {From, Join, To} from "../../../../src/libs/descriptors/Join";
+import {From, Join, To} from "../../../../src/libs/descriptors/JoinDesc";
 
 @Schema({name: 'join'})
 @Entity({name: 'veranstaltung'})

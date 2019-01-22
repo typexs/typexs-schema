@@ -1,11 +1,11 @@
 import * as _ from 'lodash';
 import {Selector} from "./Selector";
 
-import {CondDesc} from "./CondDesc";
+import {ExprDesc} from "./ExprDesc";
 import {KeyDesc} from "./KeyDesc";
 
 
-export class OpDesc extends CondDesc {
+export class OpDesc extends ExprDesc {
 
   readonly type: string = 'op';
 

@@ -123,11 +123,11 @@ class Sql_direct_referencingSpec {
     course2_save_1.literatur.titel = 'Bürgeliches Gesetzbuch';
     course2_save_1.literatur.titelid = 'BGB';
     course2_save_1 = await xsem.save(course2_save_1, {validate: false});
-    console.log(course2_save_1);
+    ////console.log(course2_save_1);
 
     let courses_found = await xsem.find(Course2, {id: 1});
     let course2_find_1 = courses_found.shift();
-    console.log(course2_find_1);
+    ////console.log(course2_find_1);
 
     expect(course2_find_1).to.deep.eq(course2_save_1);
     await c.close();
@@ -151,11 +151,11 @@ class Sql_direct_referencingSpec {
     edr_save_1.object = new EDR_Object_DR();
     edr_save_1.object.object = new EDR_Object();
     edr_save_1 = await xsem.save(edr_save_1, {validate: false});
-    console.log(edr_save_1);
+    //console.log(edr_save_1);
 
     let edrs_found = await xsem.find(EDR, {id: 1});
     let edr_find_1 = edrs_found.shift();
-    console.log(edr_find_1);
+    //console.log(edr_find_1);
 
     expect(edr_find_1).to.deep.eq(edr_save_1);
     await c.close();
@@ -195,14 +195,14 @@ class Sql_direct_referencingSpec {
     book_save_1.authors = [a, a2];
 
     book_save_1 = await xsem.save(book_save_1, {validate: false});
-    console.log(book_save_1);
+    //console.log(book_save_1);
     expect(book_save_1.id).to.be.eq(1);
     expect(book_save_1.authors).to.have.length(2);
     expect(_.find(book_save_1.authors, {lastName: 'Bania', id: 2})).to.deep.include({lastName: 'Bania', id: 2});
     expect(_.find(book_save_1.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
 
     let books: any[] = await xsem.find(Book2, {id: 1});
-    console.log(books);
+    //console.log(books);
     expect(books).to.have.length(1);
     let book_find_1 = books.shift();
     expect(book_find_1.id).to.be.eq(1);
@@ -214,13 +214,13 @@ class Sql_direct_referencingSpec {
     book_save_2.content = 'Robi tobi und das Fliwatüt';
     book_save_2.authors = [a];
     book_save_2 = await xsem.save(book_save_2, {validate: false});
-    console.log(book_save_2);
+    //console.log(book_save_2);
     expect(book_save_2.id).to.be.eq(2);
     expect(book_save_2.authors).to.have.length(1);
     expect(_.find(book_save_2.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
 
     books = await xsem.find(Book2, {id: 2});
-    console.log(books);
+    //console.log(books);
     expect(books).to.have.length(1);
     let book_find_3 = books.shift();
     expect(book_find_3.id).to.be.eq(2);
@@ -239,11 +239,11 @@ class Sql_direct_referencingSpec {
 
 
     let books_saved = await xsem.save([book_save_3, book_save_4], {validate: false});
-    console.log(inspect(books_saved, false, 10));
+    //console.log(inspect(books_saved, false, 10));
     expect(books_saved).to.have.length(2);
 
     let books_found = await xsem.find(Book2, [{id: 3}, {id: 4}]);
-    console.log(inspect(books_found, false, 10));
+    //console.log(inspect(books_found, false, 10));
     expect(books_found).to.have.length(2);
     expect(books_saved).to.deep.eq(books_found);
 
@@ -252,11 +252,11 @@ class Sql_direct_referencingSpec {
     book_save_5.content = 'Karate';
 
     books_saved = await xsem.save([book_save_5], {validate: false});
-    console.log(inspect(books_saved, false, 10));
+    //console.log(inspect(books_saved, false, 10));
     expect(books_saved).to.have.length(1);
 
     books_found = await xsem.find(Book2, [{id: 5}]);
-    console.log(inspect(books_found, false, 10));
+    //console.log(inspect(books_found, false, 10));
     expect(books_found).to.have.length(1);
     expect(books_saved).to.deep.eq(books_found);
 
@@ -266,10 +266,10 @@ class Sql_direct_referencingSpec {
     book_save_6.authors = [];
 
     books_saved = await xsem.save([book_save_6], {validate: false});
-    console.log(inspect(books_saved, false, 10));
+    //console.log(inspect(books_saved, false, 10));
 
     books_found = await xsem.find(Book2, [{id: 6}]);
-    console.log(inspect(books_found, false, 10));
+    //console.log(inspect(books_found, false, 10));
     expect(books_found).to.have.length(1);
     expect(books_saved).to.deep.eq(books_found);
 
@@ -297,7 +297,7 @@ class Sql_direct_referencingSpec {
 
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
     expect(tables).to.have.length(5);
-    expect(_.map(tables, table => table.name)).to.have.include.members(['car', 'skil', 'p_car_driver', 'p_car_driver']);
+    expect(_.map(tables, table => table.name)).to.have.include.members(['car', 'skil', 'p_car_driver', 'p_car_drivers']);
 
     let car_save_1 = new Car();
     car_save_1.producer = 'Volvo';
@@ -309,10 +309,10 @@ class Sql_direct_referencingSpec {
     car_save_1.driver.skill.quality = 123;
 
     car_save_1 = await xsem.save(car_save_1, {validate: false});
-    console.log(car_save_1);
+    //console.log(car_save_1);
 
     let cars_found = await xsem.find(Car, {id: 1});
-    console.log(inspect(cars_found, false, 10));
+    //console.log(inspect(cars_found, false, 10));
 
     let car_find_1 = cars_found.shift();
     expect(car_save_1).to.deep.eq(car_find_1);
@@ -359,11 +359,11 @@ class Sql_direct_referencingSpec {
     car_save_1.drivers = [driver1, driver2];
     car_save_1 = await xsem.save(car_save_1, {validate: false});
     expect(car_save_1.drivers).to.have.length(2);
-    console.log(inspect(car_save_1, false, 10));
+    //console.log(inspect(car_save_1, false, 10));
 
     let cars_found = await xsem.find(Car, {id: 1});
     let car_find_1 = cars_found.shift();
-    console.log(inspect(car_find_1, false, 10));
+    //console.log(inspect(car_find_1, false, 10));
     expect(car_save_1).to.deep.eq(car_find_1);
 
     await c.close();

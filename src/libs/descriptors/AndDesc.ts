@@ -1,6 +1,6 @@
 import * as _ from "lodash";
 import {GroupDesc} from "./GroupDesc";
-import {CondDesc} from "./CondDesc";
+import {ExprDesc} from "./ExprDesc";
 
 
 
@@ -9,7 +9,7 @@ export class AndDesc extends GroupDesc {
   readonly type:string = 'and';
 
 
-  constructor(...values: CondDesc[]) {
+  constructor(...values: ExprDesc[]) {
     super(...values);
   }
 
@@ -36,6 +36,6 @@ export class AndDesc extends GroupDesc {
 
 
 
-export function And(...values: CondDesc[]) {
+export function And(...values: ExprDesc[]) {
   return new AndDesc(...values);
 }

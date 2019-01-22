@@ -41,11 +41,11 @@ class Scenario_06_conditions {
     let keeper_save_01 = new ConditionKeeper();
     keeper_save_01.holders = [holder_01, holder_02];
     keeper_save_01 = await xsem.save(keeper_save_01, {validate: false});
-    console.log(keeper_save_01);
+    //console.log(keeper_save_01);
 
     let keeper_found = await xsem.find(ConditionKeeper, {id: 1});
     let keeper_find_01 = keeper_found.shift();
-    console.log(keeper_find_01);
+    //console.log(keeper_find_01);
     expect(keeper_save_01).to.deep.eq(keeper_find_01);
 
     // condition holder with condition setted fields
@@ -77,11 +77,11 @@ class Scenario_06_conditions {
     let keeper_save_01 = new ConditionObjectKeeper();
     keeper_save_01.objects = [holder_01, holder_02];
     keeper_save_01 = await xsem.save(keeper_save_01, {validate: false});
-    console.log(keeper_save_01);
+    //console.log(keeper_save_01);
 
     let keeper_found = await xsem.find(ConditionObjectKeeper, {id: 1});
     let keeper_find_01 = keeper_found.shift();
-    console.log(keeper_find_01);
+    //console.log(keeper_find_01);
     expect(keeper_save_01).to.deep.eq(keeper_find_01);
 
     // condition holder with condition setted fields
@@ -179,11 +179,11 @@ class Scenario_06_conditions {
 
 
     base_save_01 = await xsem.save(base_save_01, {validate: false});
-    console.log(inspect(base_save_01, false, 10));
+    //console.log(inspect(base_save_01, false, 10));
 
     let bases_found = await xsem.find(ConditionObjBase, {id: 1});
     let base_find_01 = bases_found.shift();
-    console.log(inspect(base_find_01, false, 10));
+    //console.log(inspect(base_find_01, false, 10));
     expect(base_find_01).to.deep.eq(base_save_01);
 
     // condition holder with condition setted fields

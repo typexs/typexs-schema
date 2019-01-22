@@ -1,38 +1,38 @@
-import {IDesc} from "./IDesc";
+import {IExpr} from "./IExpr";
 import {NotYetImplementedError} from "@typexs/base";
 import {ClassRef} from "../registry/ClassRef";
 
 import {PropertyDef} from "../registry/PropertyDef";
 import {EntityRegistry} from "../EntityRegistry";
 import * as _ from 'lodash';
-import {CondDesc} from "./CondDesc";
+import {ExprDesc} from "./ExprDesc";
 import {OrderDesc} from "./OrderDesc";
 import {ConditionValidationError} from "../exceptions/ConditionValidationError";
 import {And} from "./AndDesc";
 
 export type KeyMapType = 'from' | 'to';
 
-export class KeyMapDesc implements IDesc {
-  cond: CondDesc;
+export class KeyMapDesc implements IExpr {
+  cond: ExprDesc;
   type: KeyMapType;
 
-  constructor(cond: CondDesc, type: KeyMapType = 'from') {
+  constructor(cond: ExprDesc, type: KeyMapType = 'from') {
     this.cond = cond;
     this.type = type;
   }
 }
 
-export class JoinDesc implements IDesc {
+export class JoinDesc implements IExpr {
   readonly type:string = 'join';
   readonly joinRef: ClassRef;
 
   readonly keyMaps: KeyMapDesc[] = [];
 
-  readonly condition: CondDesc;
+  readonly condition: ExprDesc;
 
   readonly order: OrderDesc[] = [];
 
-  constructor(base: string | Function, keyMaps: KeyMapDesc[], conditions?: CondDesc, order?: OrderDesc | OrderDesc[]) {
+  constructor(base: string | Function, keyMaps: KeyMapDesc[], conditions?: ExprDesc, order?: OrderDesc | OrderDesc[]) {
     if (_.isString(base)) {
       throw new NotYetImplementedError()
     }
@@ -83,14 +83,14 @@ export class JoinDesc implements IDesc {
 }
 
 
-export function Join(base: Function, keyMaps: KeyMapDesc[], conditions?: CondDesc, order?: OrderDesc | OrderDesc[]) {
+export function Join(base: Function, keyMaps: KeyMapDesc[], conditions?: ExprDesc, order?: OrderDesc | OrderDesc[]) {
   return new JoinDesc(base, keyMaps, conditions, order);
 }
 
-export function To(cond: CondDesc) {
+export function To(cond: ExprDesc) {
   return new KeyMapDesc(cond, 'to')
 }
 
-export function From(cond: CondDesc) {
+export function From(cond: ExprDesc) {
   return new KeyMapDesc(cond, 'from')
 }

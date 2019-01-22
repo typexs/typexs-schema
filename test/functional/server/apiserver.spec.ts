@@ -19,8 +19,8 @@ const settingsTemplate: any = {
       synchronize: true,
       type: 'sqlite',
       database: ':memory:',
-      logging: 'all',
-      logger: 'simple-console'
+      //logging: 'all',
+      //logger: 'simple-console'
     }
   },
 
@@ -68,7 +68,6 @@ class ApiserverSpec {
   static async before() {
     TestHelper.resetTypeorm();
     let settings = _.clone(settingsTemplate);
-
 
     bootstrap = Bootstrap
       .setConfigSources([{type: 'system'}])

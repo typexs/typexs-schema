@@ -1,4 +1,4 @@
-import {IDesc} from "./IDesc";
+import {IExpr} from "./IExpr";
 import * as _ from "lodash";
 import {KeyDesc} from "./KeyDesc";
 import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
@@ -9,9 +9,10 @@ import {ClassRef} from "../../libs/registry/ClassRef";
 import {EntityRegistry} from "../../libs/EntityRegistry";
 import {ConditionValidationError} from '../../libs/exceptions/ConditionValidationError'
 
-export class CondDesc implements IDesc {
+export class ExprDesc implements IExpr {
 
   readonly type:string = 'cond';
+
   key?: any;
 
   value?:any;
@@ -52,6 +53,29 @@ export class CondDesc implements IDesc {
       keys = _.concat(keys, ..._.map(this.values, v => v.getTargetKeys()));
     }
     return keys;
+  }
+
+  /**
+   * Test if conditions matching class properties and references
+   */
+  test(sourceRef: ClassRef, errors:string[] = []){
+    let sourceKeys = this.getSourceKeys();
+    for(let sourceKey of sourceKeys){
+      let keyChain = sourceKey.split('.');
+      let root = sourceRef;
+      while(keyChain.length > 0){
+        let _k = keyChain.shift();
+        let p = root.getPropertyDef(_k);
+        if(p){
+          if(p.isReference()){
+            root = p.targetRef;
+          }
+        }else{
+          errors.push('key '+_k + ' is no property of '+root.className);
+        }
+      }
+    }
+    return errors.length == 0;
   }
 
   /**

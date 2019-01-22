@@ -1,5 +1,5 @@
-import {IDesc} from "./IDesc";
+import {IExpr} from "./IExpr";
 
-export class Selector implements IDesc {
+export class Selector implements IExpr {
   readonly type:string = 'selector';
 }

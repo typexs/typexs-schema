@@ -12,7 +12,6 @@ export interface IConditionJoin {
 }
 
 
-
 export class SqlConditionsBuilder {
 
   private inc: number = 1;
@@ -26,6 +25,7 @@ export class SqlConditionsBuilder {
   private nameResolver: NameResolver = new NameResolver();
 
   constructor(entityDef: EntityDef, alias: string = null) {
+    this.inc = 1;
     this.entityDef = entityDef;
     this.alias = alias ? alias : this.entityDef.storingName;
   }
@@ -49,8 +49,7 @@ export class SqlConditionsBuilder {
     let names: string[] = [this.alias];
     let rootAlias = this.alias;
     for (let _join of joins) {
-      let prop = tmp.getPropertyDefs().find(x => x.name == _join);
-
+      let prop = tmp.getPropertyDef(_join);
       if (prop.isReference()) {
         let from = tmp;
         tmp = prop.targetRef ? prop.targetRef : null;
@@ -88,8 +87,9 @@ export class SqlConditionsBuilder {
         } else if (prop.hasJoinRef()) {
           let joinRef = prop.joinRef;
           let sourceIds = from.getPropertyDefs().filter(x => x.identifier);
+          let targetIds = tmp.getPropertyDefs().filter(x => x.identifier);
 
-          let conditions:string[] = [];
+          let conditions: string[] = [];
           join = {
             alias: this.createAlias(joinRef),
             //      from: from,
@@ -100,27 +100,30 @@ export class SqlConditionsBuilder {
           this.joins.push(join);
           sourceIds.forEach(x => {
             let [targetId, targetName] = this.nameResolver.forSource(x);
-            conditions.push(join.alias + '.'+targetName+' = '+rootAlias+'.'+x.storingName);
+            conditions.push(join.alias + '.' + targetName + ' = ' + rootAlias + '.' + x.storingName);
           });
           join.condition = conditions.join(' AND ');
           rootAlias = join.alias;
 
-          conditions = [];
-          join = {
-            alias: this.createAlias(tmp),
-            //      from: from,
-            //    ref: prop,
-            table: tmp.storingName,
-            condition: null
-          };
-          this.joins.push(join);
-          let targetIds = tmp.getPropertyDefs().filter(x => x.identifier);
-          targetIds.forEach(x => {
-            let [targetId, targetName] = this.nameResolver.forTarget(x);
-            conditions.push(join.alias + '.'+x.storingName+' = '+rootAlias+'.'+targetName);
-          });
-          join.condition = conditions.join(' AND ');
-          rootAlias = join.alias;
+          if (targetIds.length > 0) {
+            // not an join over reference
+            conditions = [];
+            join = {
+              alias: this.createAlias(tmp),
+              //      from: from,
+              //    ref: prop,
+              table: tmp.storingName,
+              condition: null
+            };
+            this.joins.push(join);
+
+            targetIds.forEach(x => {
+              let [targetId, targetName] = this.nameResolver.forTarget(x);
+              conditions.push(join.alias + '.' + x.storingName + ' = ' + rootAlias + '.' + targetName);
+            });
+            join.condition = conditions.join(' AND ');
+            rootAlias = join.alias;
+          }
           names = [rootAlias];
         } else {
           join = {
@@ -149,6 +152,7 @@ export class SqlConditionsBuilder {
   }
 
   build(condition: any, k: string = null): string {
+
     if (_.isEmpty(condition)) {
       return null;
     }
@@ -172,28 +176,44 @@ export class SqlConditionsBuilder {
         if (_.isString(value) || _.isNumber(value) || _.isDate(value)) {
           return `${key} = '${value}'`
         } else {
-          Log.warn(`SQL.conditionToString not a plain type ${key} = ${JSON.stringify(value)} (${typeof value})`);
+          Log.warn(`SQL.build not a plain type ${key} = ${JSON.stringify(value)} (${typeof value})`);
           return null;
         }
 
       }).filter(c => !_.isNull(c)).join(' AND ');
     }
-    /*
-    Helper.walk(condition, (x: WalkValues) => {
-      console.log(x);
-
-      if (/^$/.test(x.key)) {
-
-      } else if (x.key) {
-        // is object
-        let mappedKey = this.lookupKeys(x.key);
-
-
-        this.wheres.push(mappedKey)
-      }
-    })*/
   }
 
+
+  $eq(condition: any, key: string = null) {
+    let _key = this.lookupKeys(key);
+    return `${_key} = '${condition['$eq']}'`
+  }
+
+  $ne(condition: any, key: string = null) {
+    let _key = this.lookupKeys(key);
+    return `${_key} <> '${condition['$ne']}'`
+  }
+
+  $lt(condition: any, key: string = null) {
+    let _key = this.lookupKeys(key);
+    return `${_key} < ${condition['$lt']}`
+  }
+
+  $le(condition: any, key: string = null) {
+    let _key = this.lookupKeys(key);
+    return `${_key} <= ${condition['$le']}`
+  }
+
+  $gt(condition: any, key: string = null) {
+    let _key = this.lookupKeys(key);
+    return `${_key} > ${condition['$gt']}`
+  }
+
+  $ge(condition: any, key: string = null) {
+    let _key = this.lookupKeys(key);
+    return `${_key} >= ${condition['$ge']}`
+  }
 
   $like(condition: any, key: string = null) {
     let _key = this.lookupKeys(key);

@@ -263,7 +263,7 @@ class Sql_schema_basic_generationsSpec {
 
     let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
     expect(_.map(tables, t => t.name)).to.have.include.members(['path_feature_collection', 'p_path_feature_collection_features']);
-    console.log(tables);
+    //console.log(tables);
 
     await c.close();
 

@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import {And, CondDesc, EntityDef, Eq, Ge, GroupDesc, Key, Le, Or, Value} from "../..";
+import {And, ExprDesc, EntityDef, Eq, Ge, GroupDesc, Key, Le, Or, Value} from "../..";
 import {Like} from "../descriptors/LikeDesc";
 import {Lt} from "../descriptors/LtDesc";
 import {Gt} from "../descriptors/GtDesc";
@@ -7,7 +7,7 @@ import {In} from "../descriptors/InDesc";
 import {Neq} from "../descriptors/NeqDesc";
 
 
-export class ConditionsInterpreter {
+export class ExpressionInterpreter {
 
   //rootEntityDef:EntityDef;
 
@@ -59,7 +59,7 @@ export class ConditionsInterpreter {
     },
   ];
 
-  res: CondDesc[] = [];
+  res: ExprDesc[] = [];
 
   queue: any[] = [];
 
@@ -184,7 +184,7 @@ export class ConditionsInterpreter {
     let key = this.queue.pop();
 
 
-    let erg: CondDesc;
+    let erg: ExprDesc;
     if (op.state == 'onOperator' && key && key.state == 'onKey') {
       switch (op.value.trim().toLowerCase()) {
         case '=':
@@ -263,7 +263,7 @@ export class ConditionsInterpreter {
       let prevGid = this.groupLevel - 1;
       let prevGroup = _.find(this.res, g => g instanceof GroupDesc ? g.id == prevGid : false);
       if (prevGroup) {
-        group.values.forEach((v: CondDesc) => prevGroup.values.push(v));
+        group.values.forEach((v: ExprDesc) => prevGroup.values.push(v));
         group.values = [];
       } else {
         throw new Error('cant find previous group to move values to ... ');

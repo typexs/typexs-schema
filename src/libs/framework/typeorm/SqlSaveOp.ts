@@ -10,7 +10,7 @@ import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from "../../Con
 import * as _ from "lodash";
 import {IDataExchange} from "../IDataExchange";
 import {SqlHelper} from "./SqlHelper";
-import {JoinDesc} from "../../descriptors/Join";
+import {JoinDesc} from "../../descriptors/JoinDesc";
 import {EntityRegistry} from "../../EntityRegistry";
 import {Sql} from "./Sql";
 import {DataContainer} from "../../DataContainer";

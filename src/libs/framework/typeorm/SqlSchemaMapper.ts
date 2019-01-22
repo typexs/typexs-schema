@@ -20,7 +20,7 @@ import {ISchemaMapper} from "./../ISchemaMapper";
 import {IDataExchange} from "../IDataExchange";
 import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {NameResolver} from "./NameResolver";
-import {JoinDesc} from "../../descriptors/Join";
+import {JoinDesc,Join} from "../../descriptors/JoinDesc";
 import {IDBType} from "@typexs/base/libs/storage/IDBType";
 
 

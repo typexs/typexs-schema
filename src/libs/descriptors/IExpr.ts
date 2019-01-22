@@ -1,5 +1,5 @@
 
 
-export interface IDesc {
+export interface IExpr {
   readonly type:string;
 }

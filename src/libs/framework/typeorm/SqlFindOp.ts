@@ -19,7 +19,7 @@ import {
 import {IDataExchange} from "../IDataExchange";
 import {SqlHelper} from "./SqlHelper";
 import {Sql} from "./Sql";
-import {JoinDesc} from "../../descriptors/Join";
+import {JoinDesc,Join} from "../../descriptors/JoinDesc";
 import {EntityRegistry} from "../../EntityRegistry";
 import {IFindOptions} from "../IFindOptions";
 import {OrderDesc} from "../../..";

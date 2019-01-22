@@ -3,11 +3,11 @@ import {expect} from 'chai';
 import {EntityController} from "../../src";
 import {TestHelper} from "./TestHelper";
 import {StorageRef} from "@typexs/base";
-import {ConditionsInterpreter} from "../../src/libs/conditions/ConditionsInterpreter";
+import {ExpressionInterpreter} from "../../src/libs/expressions/ExpressionInterpreter";
 
 
 @suite('functional/conditions_interpreter')
-class Conditions_interpreterSpec {
+class Expressions_interpreterSpec {
 
   before() {
     TestHelper.resetTypeorm();
@@ -20,7 +20,7 @@ class Conditions_interpreterSpec {
   @test
   async 'simple string equal condition'() {
     let conditions_string = '\'test\' = \'searchfor\'';
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
     let json = cond.toJson();
     expect(json).to.deep.eq({
@@ -32,7 +32,7 @@ class Conditions_interpreterSpec {
   async 'simple numeric equal condition'() {
     let conditions_string = '\'testnr\' = 1';
 
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
     let json = cond.toJson();
     expect(json).to.deep.eq({
@@ -44,9 +44,9 @@ class Conditions_interpreterSpec {
   @test
   async '"and" boolean grouping'() {
     let conditions_string = '\'testnr\' = 1 AND \'test\' = \'searchfor\'';
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
-    console.log(interpreter.queue)
+    //console.log(interpreter.queue)
     let json = cond.toJson();
     expect(json).to.deep.eq({
       '$and': [
@@ -59,7 +59,7 @@ class Conditions_interpreterSpec {
   @test
   async '"or" boolean grouping'() {
     let conditions_string = '\'testnr\' = 1 OR \'test\' = \'searchfor\'';
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
     //console.log(interpreter.queue)
     let json = cond.toJson();
@@ -74,7 +74,7 @@ class Conditions_interpreterSpec {
   @test
   async 'multiple "and" boolean grouping'() {
     let conditions_string = '\'testnr\' = 1 AND \'test\' = \'searchfor\' AND adc.def=1';
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
     //console.log(interpreter.queue)
     let json = cond.toJson();
@@ -91,7 +91,7 @@ class Conditions_interpreterSpec {
   @test
   async 'multiple "or" boolean grouping'() {
     let conditions_string = '\'testnr\' = 1 OR \'test\' = \'searchfor\' OR adc.def=1';
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
     //console.log(interpreter.queue)
     let json = cond.toJson();
@@ -107,7 +107,7 @@ class Conditions_interpreterSpec {
   @test
   async 'combination of "and" and "or" expressions'() {
     let conditions_string = '\'testnr\' = 1 AND \'test\' = \'searchfor\' OR adc.def=1';
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
     //console.log(interpreter.queue)
     let json = cond.toJson();
@@ -128,7 +128,7 @@ class Conditions_interpreterSpec {
   @test
   async 'full expression brackets'() {
     let conditions_string = '(\'testnr\' = 1 AND \'test\' = \'searchfor\')';
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
     //console.log(interpreter.queue);
 
@@ -145,7 +145,7 @@ class Conditions_interpreterSpec {
   @test
   async 'single expression brackets without boolean operator'() {
     let conditions_string = '\'testnr\' = 1 AND (\'test\' = \'searchfor\')';
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
     // console.log(inspect(interpreter.queue,false,10));
 
@@ -158,7 +158,7 @@ class Conditions_interpreterSpec {
     });
 
     conditions_string = '\'testnr\' = 1 AND ((\'test\' = \'searchfor\'))';
-    interpreter = new ConditionsInterpreter();
+    interpreter = new ExpressionInterpreter();
     cond = interpreter.interprete(conditions_string);
     //console.log(inspect(interpreter.queue,false,10));
 
@@ -171,7 +171,7 @@ class Conditions_interpreterSpec {
     });
 
     conditions_string = '(\'testnr\' = 1 AND (\'test\' = \'searchfor\'))';
-    interpreter = new ConditionsInterpreter();
+    interpreter = new ExpressionInterpreter();
     cond = interpreter.interprete(conditions_string);
 
     json = cond.toJson();
@@ -187,7 +187,7 @@ class Conditions_interpreterSpec {
   @test
   async '"like" expression'() {
     let conditions_string = 'test like \'searchfor\'';
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
     //console.log(interpreter.queue);
 
@@ -201,7 +201,7 @@ class Conditions_interpreterSpec {
   @test
   async '"in" expression'() {
     let conditions_string = 'test in (\'searchfor\')';
-    let interpreter = new ConditionsInterpreter();
+    let interpreter = new ExpressionInterpreter();
     let cond = interpreter.interprete(conditions_string);
     //console.log(interpreter.queue);
 
@@ -215,7 +215,7 @@ class Conditions_interpreterSpec {
 
 
     conditions_string = 'test in (\'searchfor\', 3)';
-    interpreter = new ConditionsInterpreter();
+    interpreter = new ExpressionInterpreter();
     cond = interpreter.interprete(conditions_string);
     //console.log(interpreter.queue);
 

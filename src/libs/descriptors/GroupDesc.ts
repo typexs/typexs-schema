@@ -1,14 +1,14 @@
-import {CondDesc} from "./CondDesc";
+import {ExprDesc} from "./ExprDesc";
 
-export class GroupDesc extends CondDesc {
+export class GroupDesc extends ExprDesc {
 
   readonly type:string = 'group';
 
-  values: CondDesc[] = [];
+  values: ExprDesc[] = [];
 
   id?:number;
 
-  constructor(...values: CondDesc[]) {
+  constructor(...values: ExprDesc[]) {
     super();
     this.values = values;
   }

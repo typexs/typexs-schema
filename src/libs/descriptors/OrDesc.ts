@@ -1,12 +1,12 @@
 import * as _ from "lodash";
 import {GroupDesc} from "./GroupDesc";
-import {CondDesc} from "./CondDesc";
+import {ExprDesc} from "./ExprDesc";
 
 
 
 export class OrDesc extends GroupDesc {
   readonly type:string = 'or';
-  constructor(...values: CondDesc[]) {
+  constructor(...values: ExprDesc[]) {
     super(...values);
   }
 
@@ -31,6 +31,6 @@ export class OrDesc extends GroupDesc {
 
 }
 
-export function Or(...values: CondDesc[]) {
+export function Or(...values: ExprDesc[]) {
   return new OrDesc(...values);
 }

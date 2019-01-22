@@ -10,7 +10,7 @@ import {EntityDef} from "./EntityDef";
 import * as moment from "moment";
 import {OptionsHelper} from "./OptionsHelper";
 import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
-import {CondDesc} from "../descriptors/CondDesc";
+import {ExprDesc} from "../descriptors/ExprDesc";
 import {OrderDesc} from "../descriptors/OrderDesc";
 
 export const KNOW_PRIMATIVE_TYPES: JS_DATA_TYPES[] = [
@@ -151,7 +151,7 @@ export class PropertyDef extends AbstractDef {
     return this.getOptions('cond', false) !== false;
   }
 
-  getCondition(): CondDesc {
+  getCondition(): ExprDesc {
     return this.getOptions('cond', null);
   }
 

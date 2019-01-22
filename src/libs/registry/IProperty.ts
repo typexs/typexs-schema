@@ -1,7 +1,7 @@
-import {JoinDesc} from "./../descriptors/Join";
+import {JoinDesc} from "../descriptors/JoinDesc";
 
 import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
-import {CondDesc} from "../descriptors/CondDesc";
+import {ExprDesc} from "../descriptors/ExprDesc";
 import {KeyDesc} from "../descriptors/KeyDesc";
 import {OrderDesc} from "../descriptors/OrderDesc";
 
@@ -74,7 +74,7 @@ export interface IProperty {
   /**
    * Condition definition
    */
-  cond?: CondDesc;
+  cond?: ExprDesc;
 
 
   /**

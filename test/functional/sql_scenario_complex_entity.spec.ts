@@ -58,11 +58,11 @@ class Sql_scenario_complex_entitySpec {
     person_save_1.jobs = [job_1, job_2];
 
     person_save_1 = await xsem.save(person_save_1, {validate: false});
-    console.log(inspect(person_save_1, false, 10));
+    //console.log(inspect(person_save_1, false, 10));
 
     let person_found = await xsem.find(Person, {ident: 1});
     let person_find_1 = person_found.shift();
-    console.log(inspect(person_find_1, false, 10));
+    //console.log(inspect(person_find_1, false, 10));
 
     expect(person_save_1).to.deep.eq(person_find_1);
   }

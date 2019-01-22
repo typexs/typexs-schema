@@ -1,16 +1,12 @@
-import {EntityAPIController} from "../../src/controllers/EntityAPIController";
-
-process.env['SQL_LOG'] = 'X';
+//process.env['SQL_LOG'] = 'X';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-import {Container} from '@typexs/base';
 
 import {TestHelper} from "./TestHelper";
 
 import {TEST_STORAGE_OPTIONS} from "./config";
 import {Permission} from "./schemas/role_permissions/Permission";
-import {EntityControllerFactory, EntityRegistry} from "../../src";
 
 
 @suite('functional/sql_schema_predefined_join_bidirect')

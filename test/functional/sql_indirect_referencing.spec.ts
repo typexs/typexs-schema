@@ -51,7 +51,7 @@ class Sql_indirect_referencingSpec {
 
     book_save_1 = await xsem.save(book_save_1, {validate: false});
 
-    console.log(book_save_1)
+    //console.log(book_save_1)
 
     // let data2 = await c.connection.query('SELECT name FROM sqlite_master WHERE type=\'table\';');
     // expect(data2).to.have.length(5);
@@ -79,7 +79,7 @@ class Sql_indirect_referencingSpec {
     let books_found = await xsem.find(Book, {id: 1});
     expect(books_found).to.have.length(1);
     let book_find_1 = books_found.shift();
-    console.log(book_find_1);
+    //console.log(book_find_1);
     expect((book_find_1 as any).summary.size).to.be.eq(summary.size);
     expect(book_save_1).to.deep.eq(book_find_1);
 
@@ -119,7 +119,7 @@ class Sql_indirect_referencingSpec {
     room_save_1.equipment.push(s);
 
     room_save_1 = await xsem.save(room_save_1, {validate: false});
-    console.log(room_save_1);
+    //console.log(room_save_1);
     let data = await c.connection.query('select * from p_equipment');
     expect(data).to.have.length(2);
 
@@ -127,7 +127,7 @@ class Sql_indirect_referencingSpec {
     expect(room_found).to.have.length(1);
 
     let room_find_1 = room_found.shift();
-    console.log(room_find_1);
+    //console.log(room_find_1);
     expect(room_find_1).to.deep.eq(room_save_1);
 
     await c.close();

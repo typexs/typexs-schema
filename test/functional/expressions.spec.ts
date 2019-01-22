@@ -4,11 +4,11 @@ import {expect} from 'chai';
 import {And, ClassRef, ConditionValidationError, Eq, Key, Value} from "../../src";
 import {TestHelper} from "./TestHelper";
 import {inspect} from "util";
-import {Conditions} from "../../src/libs/conditions/Conditions";
+import {Expressions} from "../../src/libs/expressions/Expressions";
 
 
-@suite('functional/conditions')
-class ConditionsSpec {
+@suite('functional/expressions')
+class ExpressionsSpec {
 
 
   before() {
@@ -63,6 +63,29 @@ class ConditionsSpec {
     }).to.throw('validation error: referrer key(s) ids not in targetRef');
   }
 
+
+  @test
+  async 'test on class reference'() {
+    const cond_01 = And(Eq('holders.tableName', Value('condition_keeper')), Eq('holders.tableId', Value(23)));
+    let log: string[] = [];
+    const ConditionHolder = require('./schemas/default/ConditionHolder').ConditionHolder;
+    const ConditionKeeper = require('./schemas/default/ConditionKeeper').ConditionKeeper;
+
+    let referrer = ClassRef.get(ConditionKeeper);
+    let test = cond_01.test(referrer);
+    expect(test).to.be.true;
+
+    const cond_02 = Eq('tableName', Value('condition_keeper'));
+    referrer = ClassRef.get(ConditionKeeper);
+    test = cond_02.test(referrer, log);
+    expect(test).to.be.false;
+    expect(log.shift()).to.be.eq('key tableName is no property of ConditionKeeper');
+
+    referrer = ClassRef.get(ConditionHolder);
+    test = cond_02.test(referrer, log);
+    expect(test).to.be.true;
+  }
+
   @test
   async 'get map'() {
     const cond_02 = And(Eq('tableNameWrong', Value('condition_keeper')), Eq('tableId', Key('id')));
@@ -75,7 +98,7 @@ class ConditionsSpec {
   async 'to and from json for "and" expression'() {
     const cond_02 = And(Eq('tableNameWrong', Value('condition_keeper')), Eq('tableId', Key('id')));
     let json = cond_02.toJson();
-    let cond_parsed = Conditions.fromJson(json);
+    let cond_parsed = Expressions.fromJson(json);
     let json2 = cond_parsed.toJson();
     expect(json).to.deep.eq(json2);
 
@@ -89,11 +112,11 @@ class ConditionsSpec {
     const json_src = {
       test: 'hallo'
     };
-    let cond_parsed = Conditions.fromJson(json_src);
+    let cond_parsed = Expressions.fromJson(json_src);
     let json2 = cond_parsed.toJson();
     expect(json2).to.deep.eq(json_src_full);
 
-    cond_parsed = Conditions.fromJson(json_src_full);
+    cond_parsed = Expressions.fromJson(json_src_full);
     json2 = cond_parsed.toJson();
     expect(json2).to.deep.eq(json_src_full);
 
@@ -113,11 +136,11 @@ class ConditionsSpec {
       test: 'hallo',
       test2: 2
     };
-    let cond_parsed = Conditions.fromJson(json_src);
+    let cond_parsed = Expressions.fromJson(json_src);
     let json2 = cond_parsed.toJson();
     expect(json2).to.deep.eq(json_src_full);
 
-    cond_parsed = Conditions.fromJson(json_src_full);
+    cond_parsed = Expressions.fromJson(json_src_full);
     json2 = cond_parsed.toJson();
     expect(json2).to.deep.eq(json_src_full);
 
@@ -139,7 +162,7 @@ class ConditionsSpec {
     };
 
 
-    let cond_parsed = Conditions.fromJson(json_src_full);
+    let cond_parsed = Expressions.fromJson(json_src_full);
     let json2 = cond_parsed.toJson();
     expect(json2).to.deep.eq(json_src_full);
 
@@ -160,7 +183,7 @@ class ConditionsSpec {
     };
 
 
-    cond_parsed = Conditions.fromJson(json_src_full2);
+    cond_parsed = Expressions.fromJson(json_src_full2);
     json2 = cond_parsed.toJson();
     expect(json2).to.deep.eq(json_src_full2);
 
@@ -174,7 +197,7 @@ class ConditionsSpec {
     };
 
 
-    let cond_parsed = Conditions.fromJson(json_src_full2);
+    let cond_parsed = Expressions.fromJson(json_src_full2);
     let json2 = cond_parsed.toJson();
     expect(json2).to.deep.eq(json_src_full2);
   }

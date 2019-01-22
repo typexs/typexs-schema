@@ -1,4 +1,4 @@
-import {And, Asc, Entity, Eq, From, Join, Key, Property, Schema, To, Value} from "../../../../src";
+import {Property, Schema} from "../../../../src";
 
 
 @Schema({name: 'embedded'})
