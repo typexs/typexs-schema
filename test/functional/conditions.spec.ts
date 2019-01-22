@@ -3,6 +3,8 @@ import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {And, ClassRef, ConditionValidationError, Eq, Key, Value} from "../../src";
 import {TestHelper} from "./TestHelper";
+import {inspect} from "util";
+import {Conditions} from "../../src/libs/conditions/Conditions";
 
 
 @suite('functional/conditions')
@@ -65,7 +67,116 @@ class ConditionsSpec {
   async 'get map'() {
     const cond_02 = And(Eq('tableNameWrong', Value('condition_keeper')), Eq('tableId', Key('id')));
     let map = cond_02.getMap();
-    expect(map).to.be.deep.eq({ tableNameWrong: '\'condition_keeper\'', tableId: 'id' });
+    expect(map).to.be.deep.eq({tableNameWrong: '\'condition_keeper\'', tableId: 'id'});
+  }
+
+
+  @test
+  async 'to and from json for "and" expression'() {
+    const cond_02 = And(Eq('tableNameWrong', Value('condition_keeper')), Eq('tableId', Key('id')));
+    let json = cond_02.toJson();
+    let cond_parsed = Conditions.fromJson(json);
+    let json2 = cond_parsed.toJson();
+    expect(json).to.deep.eq(json2);
+
+  }
+
+  @test
+  async 'from json for simple equal expression'() {
+    const json_src_full = {
+      test: {$eq: 'hallo'}
+    };
+    const json_src = {
+      test: 'hallo'
+    };
+    let cond_parsed = Conditions.fromJson(json_src);
+    let json2 = cond_parsed.toJson();
+    expect(json2).to.deep.eq(json_src_full);
+
+    cond_parsed = Conditions.fromJson(json_src_full);
+    json2 = cond_parsed.toJson();
+    expect(json2).to.deep.eq(json_src_full);
+
+  }
+
+
+  @test
+  async 'from json for implicit and expression'() {
+    const json_src_full = {
+      $and: [
+        {test: {$eq: 'hallo'}},
+        {test2: {$eq: 2}},
+      ]
+
+    };
+    const json_src = {
+      test: 'hallo',
+      test2: 2
+    };
+    let cond_parsed = Conditions.fromJson(json_src);
+    let json2 = cond_parsed.toJson();
+    expect(json2).to.deep.eq(json_src_full);
+
+    cond_parsed = Conditions.fromJson(json_src_full);
+    json2 = cond_parsed.toJson();
+    expect(json2).to.deep.eq(json_src_full);
+
+  }
+
+
+  @test
+  async 'from json for multiple and | or combined expression'() {
+    const json_src_full = {
+      $and: [
+        {test: {$eq: 'hallo'}},
+        {test2: {$eq: 2}},
+        {
+          $or: [
+            {welt: {$eq: 'test'}}, {welt: {$eq: 2}}
+          ]
+        }
+      ]
+    };
+
+
+    let cond_parsed = Conditions.fromJson(json_src_full);
+    let json2 = cond_parsed.toJson();
+    expect(json2).to.deep.eq(json_src_full);
+
+    const json_src_full2 = {
+      $and: [
+        {
+          $or: [
+            {welt: {$eq: 'test'}}, {welt: {$eq: '2'}}
+          ]
+        },
+        {
+          $or: [
+            {welt2: {$eq: 'test'}}, {welt2: {$eq: 2}}
+          ]
+        }
+
+      ]
+    };
+
+
+    cond_parsed = Conditions.fromJson(json_src_full2);
+    json2 = cond_parsed.toJson();
+    expect(json2).to.deep.eq(json_src_full2);
+
+  }
+
+
+  @test
+  async 'from json support for "in" expression'() {
+    const json_src_full2 = {
+      welt: {$in: ['test', 2]}
+    };
+
+
+    let cond_parsed = Conditions.fromJson(json_src_full2);
+    let json2 = cond_parsed.toJson();
+    expect(json2).to.deep.eq(json_src_full2);
   }
 }
 

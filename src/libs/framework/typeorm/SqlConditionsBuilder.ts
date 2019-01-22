@@ -1,7 +1,9 @@
 import * as _ from 'lodash';
 import {EntityDef} from "../../registry/EntityDef";
-import {ClassRef, NameResolver} from "../../..";
-import {Log, NotYetImplementedError} from "@typexs/base";
+import {ClassRef} from "../../../libs/registry/ClassRef";
+import {NameResolver} from "../../../libs/framework/typeorm/NameResolver";
+import {Log} from "@typexs/base/libs/logging/Log";
+import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
 
 export interface IConditionJoin {
   alias: string;
@@ -9,14 +11,7 @@ export interface IConditionJoin {
   condition: string;
 }
 
-interface WalkValues {
-  value: any,
-  key: string,
-  index: number,
-  location: any
-  parent: any
-  isLeaf: boolean
-}
+
 
 export class SqlConditionsBuilder {
 

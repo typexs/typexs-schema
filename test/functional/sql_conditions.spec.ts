@@ -1,6 +1,6 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityController, EntityRegistry, Sql} from "../../src";
+import {EntityController, EntityRegistry} from "../../src";
 import {SqlConditionsBuilder} from "../../src/libs/framework/typeorm/SqlConditionsBuilder";
 import {Car} from "./schemas/direct_property/Car";
 import {CondEntityHolder} from "./schemas/conditions/CondEntityHolder";
@@ -9,6 +9,7 @@ import * as _ from "lodash";
 import {TEST_STORAGE_OPTIONS} from "./config";
 import {TestHelper} from "./TestHelper";
 import {StorageRef} from "@typexs/base";
+import {Sql} from "../../src/libs/framework/typeorm/Sql";
 
 
 @suite('functional/sql_conditions')

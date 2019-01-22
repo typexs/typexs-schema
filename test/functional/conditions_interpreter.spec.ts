@@ -1,16 +1,9 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityController, EntityRegistry, Sql} from "../../src";
-import {SqlConditionsBuilder} from "../../src/libs/framework/typeorm/SqlConditionsBuilder";
-import {Car} from "./schemas/direct_property/Car";
-import {CondEntityHolder} from "./schemas/conditions/CondEntityHolder";
-import {Book} from "./schemas/default/Book";
-import * as _ from "lodash";
-import {TEST_STORAGE_OPTIONS} from "./config";
+import {EntityController} from "../../src";
 import {TestHelper} from "./TestHelper";
 import {StorageRef} from "@typexs/base";
 import {ConditionsInterpreter} from "../../src/libs/conditions/ConditionsInterpreter";
-import {inspect} from "util";
 
 
 @suite('functional/conditions_interpreter')
@@ -216,6 +209,25 @@ class Conditions_interpreterSpec {
     expect(json).to.deep.eq(
       {test: {$in: ['searchfor']}}
     );
+
+    //let obj = {test:'searchfor'};
+    //let erg = cond.lookup(obj);
+
+
+    conditions_string = 'test in (\'searchfor\', 3)';
+    interpreter = new ConditionsInterpreter();
+    cond = interpreter.interprete(conditions_string);
+    //console.log(interpreter.queue);
+
+    json = cond.toJson();
+    expect(json).to.deep.eq(
+      {test: {$in: ['searchfor', 3]}}
+    );
+
+
+
   }
+
+
 }
 

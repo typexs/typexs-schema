@@ -52,7 +52,7 @@ export class ConditionsInterpreter {
     },
     {
       name: 'onValue',
-      regex: /('[^']*')|("[^"]*")|\d+|\d+.\d+|(\(((('[^']*')|("[^"]*")|\d+|\d+.\d+),?)+\))/,
+      regex: /('[^']*')|("[^"]*")|\d+|\d+.\d+|(\(((('[^']*')|("[^"]*")|\d+|\d+.\d+)\s*,?\s*)+\))/,
       method: this.onValue,
       skipIndex: 7,
       after: ['onOperator']
@@ -103,14 +103,15 @@ export class ConditionsInterpreter {
       inc = x.skipIndex ? inc + x.skipIndex : inc + 1;
     });
 
-    const regex = new RegExp('^' + currentOps.map(x => '(' + x.regex.source + ')').join('|'), 'gim');
+    const regex = new RegExp('^\\s*' + currentOps.map(x => '(' + x.regex.source + ')').join('|'), 'gim');
     let arr = regex.exec(str);
     if (arr) {
       let index = _.findIndex(arr, x => !_.isUndefined(x), 1) - 1;
-      console.log(map, regex, arr, regex.lastIndex);
+
       if (index > -1) {
         let opId = map[index]
         let op = currentOps[opId];
+        // console.log(map, regex, arr, regex.lastIndex,op.name);
         op.method.apply(this, [arr[index + 1], str]);
         const nextStr = str.substring(regex.lastIndex);
         if (!_.isEmpty(nextStr)) {
@@ -120,7 +121,7 @@ export class ConditionsInterpreter {
         throw new Error('no match found at "' + JSON.stringify(arr) + '"');
       }
     } else {
-      throw new Error('nothing found at "' + str + '"');
+      throw new Error('nothing found at "' + str + '" with regex '+regex.source);
     }
   }
 

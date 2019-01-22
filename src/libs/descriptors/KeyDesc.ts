@@ -2,7 +2,7 @@ import {Selector} from "./Selector";
 
 
 export class KeyDesc extends Selector {
-  readonly type:string = 'key';
+  readonly type: string = 'key';
   readonly key: string;
 
   constructor(key: string) {
@@ -10,8 +10,8 @@ export class KeyDesc extends Selector {
     this.key = key
   }
 
-  toJson(){
-    return this.key;
+  toJson() {
+    return {$key: this.key};
   }
 
 }
