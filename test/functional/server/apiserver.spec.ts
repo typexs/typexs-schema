@@ -61,6 +61,7 @@ let bootstrap: Bootstrap = null;
 let server: Server = null;
 
 @suite('functional/server/apiserver')
+@timeout(30000)
 class ApiserverSpec {
 
 
