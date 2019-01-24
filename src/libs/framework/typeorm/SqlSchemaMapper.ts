@@ -55,7 +55,9 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     }
     this.clear();
     //let data = getMetadataArgsStorage();
-    return this.storageRef.reload();
+    if(this.storageRef.getOptions().connectOnStartup){
+      await this.storageRef.reload();
+    }
   }
 
 

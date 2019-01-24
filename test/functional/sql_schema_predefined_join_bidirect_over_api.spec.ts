@@ -3,7 +3,9 @@ import {EntityAPIController} from "../../src/controllers/EntityAPIController";
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-import {Bootstrap, Container} from '@typexs/base';
+
+import {Container} from '@typexs/base';
+import {Bootstrap} from '@typexs/base/Bootstrap';
 
 import {TestHelper} from "./TestHelper";
 
@@ -34,7 +36,7 @@ const settingsTemplate: any = {
 
   modules: {
     paths: [
-     // __dirname + '/packages'
+      // __dirname + '/packages'
     ],
   },
 
@@ -42,7 +44,7 @@ const settingsTemplate: any = {
   logging: {
     enable: true,
     level: 'debug',
-    transports: [{console: {name:'sql_schema_predefined_join_bidirect_over_api'}}],
+    transports: [{console: {name: 'sql_schema_predefined_join_bidirect_over_api'}}],
   },
 
 
@@ -76,8 +78,7 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
     let settings = _.clone(settingsTemplate);
 
 
-    bootstrap = Bootstrap
-      .setConfigSources([{type: 'system'}])
+    bootstrap = Bootstrap.setConfigSources([{type: 'system'}])
       .configure(settings)
       .activateErrorHandling()
       .activateLogger();
@@ -91,13 +92,12 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
   }
 
   static async after() {
-    if(server){
+    if (server) {
       await server.stop();
     }
     Bootstrap.reset();
 
   }
-
 
 
   @test
@@ -129,7 +129,7 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
     role.rolename = 'user';
     role.disabled = false;
 
-    let results = await api.save('role',JSON.parse(JSON.stringify(role)),null);
+    let results = await api.save('role', JSON.parse(JSON.stringify(role)), null);
     expect(results.$state).to.exist;
     expect(results.$state.isValidated).to.be.true;
     expect(results.$state.isSuccessValidated).to.be.true;
@@ -137,7 +137,7 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
 
     // save again
     role = results;
-    results = await api.save('role',JSON.parse(JSON.stringify(role)),null);
+    results = await api.save('role', JSON.parse(JSON.stringify(role)), null);
     expect(results.$state).to.exist;
     expect(results.$state.isValidated).to.be.true;
     expect(results.$state.isSuccessValidated).to.be.true;
@@ -145,13 +145,11 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
 
     role = results;
     role.permissions.push(perm03);
-    results = await api.save('role',JSON.parse(JSON.stringify(role)),null);
+    results = await api.save('role', JSON.parse(JSON.stringify(role)), null);
     expect(results.$state).to.exist;
     expect(results.$state.isValidated).to.be.true;
     expect(results.$state.isSuccessValidated).to.be.true;
     expect(results.permissions).to.have.length(3);
-
-
 
 
   }
