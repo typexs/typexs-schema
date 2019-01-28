@@ -1,16 +1,17 @@
 import {EntityDef} from "./registry/EntityDef";
 import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
 import * as _ from "./LoDash";
+import {ClassRef} from "./registry/ClassRef";
 
 
 export interface IBuildOptions {
-  beforeBuild?: (entityDef: EntityDef, from: any, to: any) => void
-  afterBuild?: (entityDef: EntityDef, from: any, to: any) => void
+  beforeBuild?: (entityDef: EntityDef | ClassRef, from: any, to: any) => void
+  afterBuild?: (entityDef: EntityDef | ClassRef, from: any, to: any) => void
 }
 
 export class TransformExecutor {
 
-  transform(entityDef: EntityDef, data: any, options: IBuildOptions = {}) {
+  transform(entityDef: EntityDef | ClassRef, data: any, options: IBuildOptions = {}) {
     let object = entityDef.new();
     if (options.beforeBuild) {
       options.beforeBuild(entityDef, data, object)
@@ -21,18 +22,14 @@ export class TransformExecutor {
         continue;
       }
       if (p.isReference()) {
-        if (p.isEntityReference()) {
-          let refEntityDef = p.getEntity();
-          if (p.isCollection()) {
-            object[p.name] = [];
-            for (let i = 0; i < data[p.name].length; i++) {
-              object[p.name][i] = refEntityDef.build(data[p.name][i], options);
-            }
-          } else {
-            object[p.name] = refEntityDef.build(data[p.name], options);
+        let ref = p.isEntityReference() ? p.getEntity() : p.targetRef;
+        if (p.isCollection()) {
+          object[p.name] = [];
+          for (let i = 0; i < data[p.name].length; i++) {
+            object[p.name][i] = ref.build(data[p.name][i], options);
           }
         } else {
-          throw new NotYetImplementedError()
+          object[p.name] = ref.build(data[p.name], options);
         }
       } else {
         if (p.isCollection() && (_.isArray(data[p.name]) || _.isSet(data[p.name]))) {

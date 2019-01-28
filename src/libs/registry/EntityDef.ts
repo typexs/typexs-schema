@@ -82,18 +82,31 @@ export class EntityDef extends AbstractDef {
   }
 
   new<T>(): T {
-    let klass = this.object.getClass();
-    let instance = Reflect.construct(klass, []);
+    let instance = <T>this.object.new();
     let id = this.id();
     // TODO make constant of xs:entity_id
-    Reflect.defineProperty(instance, 'xs:entity_name', {value: this.name});
-    Reflect.defineProperty(instance, 'xs:entity_id', {
+    Reflect.defineProperty(<any>instance, 'xs:entity_id', {
       value: id,
       writable: false,
       enumerable: false,
       configurable: false
     });
     return instance;
+    /*
+    let klass = this.object.getClass();
+    let instance = Reflect.construct(klass, []);
+    let id = this.id();
+    // TODO make constant of xs:entity_id
+    Reflect.defineProperty(instance, 'xs:schema', {value: this.object.getSchema()});
+    Reflect.defineProperty(instance, 'xs:name', {value: this.name});
+    Reflect.defineProperty(instance, 'xs:id', {
+      value: id,
+      writable: false,
+      enumerable: false,
+      configurable: false
+    });
+    return instance;
+    */
   }
 
   buildLookupConditions(data: any | any[]) {

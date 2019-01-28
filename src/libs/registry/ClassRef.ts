@@ -9,6 +9,7 @@ import {XS_TYPE_PROPERTY, XS_TYPE_SCHEMA} from "../Constants";
 import {PropertyDef} from "./PropertyDef";
 import {IClassRefMetadata} from "./IClassRefMetadata";
 import {SchemaUtils} from "../SchemaUtils";
+import {IBuildOptions, TransformExecutor} from "../TransformExecutor";
 
 export class ClassRef {
 
@@ -186,9 +187,13 @@ export class ClassRef {
     return this._cacheEntity;
   }
 
-  new() {
+  new<T>(): T {
     let klass = this.getClass();
     let instance = Reflect.construct(klass, []);
+
+    Reflect.defineProperty(instance, 'xs:schema', {value: this.getSchema()});
+    Reflect.defineProperty(instance, 'xs:name', {value: this.className});
+
     return instance;
   }
 
@@ -202,6 +207,11 @@ export class ClassRef {
 
   id() {
     return this.schemas.join() + this.className;
+  }
+
+  build(data: any, options: IBuildOptions = {}) {
+    let t = new TransformExecutor();
+    return t.transform(this, data, options);
   }
 
 

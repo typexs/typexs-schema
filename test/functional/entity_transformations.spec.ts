@@ -61,5 +61,55 @@ class Entity_transformationsSpec {
 
   }
 
+
+  @test
+  async 'entity with object integration'() {
+    let EntityWithEmbedded = require('./schemas/embedded/EntityWithEmbedded').EntityWithEmbedded;
+    let EmbeddedSubObject = require('./schemas/embedded/EmbeddedSubObject').EmbeddedSubObject;
+    let EmbeddedObject = require('./schemas/embedded/EmbeddedObject').EmbeddedObject;
+
+    let p = new EntityWithEmbedded();
+    p.id = 2;
+    p.obj = new EmbeddedObject();
+    p.obj.inner = new EmbeddedSubObject();
+    p.obj.innerName = 'test';
+    p.obj.inner.subName = 'test2';
+    p.obj.inner.SubOtherVar = 1;
+
+
+    let registry = EntityRegistry.$();
+    let entityDef = registry.getEntityDefByName('EntityWithEmbedded');
+    let entityWithEmbedded: any = entityDef.build(JSON.parse(JSON.stringify(p)));
+    expect(entityWithEmbedded).to.deep.eq(p);
+
+  }
+
+  @test
+  async 'entity with multiple object integration'() {
+    let Car = require('./schemas/direct_property/Car').Car;
+    let Driver = require('./schemas/direct_property/Driver').Driver;
+    let Skil = require('./schemas/direct_property/Skil').Skil;
+
+    let p = new Car();
+    p.id = 1;
+    p.producer = 'Volvo';
+    p.drivers = [new Driver(),new Driver()];
+    p.drivers[0].age = 18;
+    p.drivers[0].nickName = 'Bert';
+    p.drivers[0].skill = new Skil();
+    p.drivers[1].age = 21;
+    p.drivers[1].nickName = 'Runny';
+    p.drivers[1].skill = new Skil();
+
+
+
+    let registry = EntityRegistry.$();
+    let entityDef = registry.getEntityDefByName('Car');
+    let entityWithEmbedded: any = entityDef.build(JSON.parse(JSON.stringify(p)));
+    expect(entityWithEmbedded).to.deep.eq(p);
+    console.log(entityWithEmbedded)
+
+  }
+
 }
 
