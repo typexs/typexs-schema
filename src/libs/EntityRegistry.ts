@@ -1,28 +1,28 @@
-import {NotYetImplementedError} from '@typexs/base/libs/exceptions/NotYetImplementedError';
-import {XS_DEFAULT_SCHEMA, XS_TYPE_CLASS_REF, XS_TYPE_ENTITY, XS_TYPE_PROPERTY, XS_TYPE_SCHEMA} from './Constants';
 
-import {SchemaDef} from './registry/SchemaDef';
-import {PropertyDef} from './registry/PropertyDef';
-import {LookupRegistry} from './LookupRegistry';
-import {AbstractDef} from './registry/AbstractDef';
-import {EntityDef} from './registry/EntityDef';
+import {SchemaRef} from './registry/SchemaRef';
+import {PropertyRef} from './registry/PropertyRef';
+import {EntityRef} from './registry/EntityRef';
 import {IProperty} from './registry/IProperty';
 import {IEntity} from './registry/IEntity';
 import {ISchema} from './registry/ISchema';
 import * as _ from './LoDash'
-import {ClassRef} from "./registry/ClassRef";
-import {Binding} from "./registry/Binding";
-import {SchemaUtils} from "./SchemaUtils";
-import {IEntityMetadata} from "./registry/IEntityMetadata";
-import {IPropertyMetadata} from "./registry/IPropertyMetadata";
-import {IClassRefMetadata} from "./registry/IClassRefMetadata";
 import {ValidationMetadata} from "class-validator/metadata/ValidationMetadata";
 import {getFromContainer} from "class-validator/container";
 import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
+import {
+  AbstractRef,
+  Binding,
+  ClassRef, IClassRefMetadata,
+  IEntityRefMetadata,
+  ILookupRegistry, IPropertyRefMetadata,
+  LookupRegistry,
+  SchemaUtils, XS_DEFAULT_SCHEMA, XS_TYPE_CLASS_REF, XS_TYPE_ENTITY, XS_TYPE_PROPERTY, XS_TYPE_SCHEMA
+} from "commons-schema-api/browser";
+import {NotYetImplementedError} from "@typexs/base/browser";
+import {ClassUtils} from "commons-base/browser";
 
 
-
-export class EntityRegistry {
+export class EntityRegistry implements ILookupRegistry{
 
   static NAME : string = 'EntityRegistry';
 
@@ -33,7 +33,7 @@ export class EntityRegistry {
 
   private constructor() {
     this._lookup = LookupRegistry.$();
-    let defaultSchema = new SchemaDef({name: 'default'});
+    let defaultSchema = new SchemaRef({name: 'default'});
     this._lookup.add(XS_TYPE_SCHEMA, defaultSchema);
   }
 
@@ -46,7 +46,7 @@ export class EntityRegistry {
   }
 
 
-  static getSchema(name: string): SchemaDef {
+  static getSchema(name: string): SchemaRef {
     return LookupRegistry.$().find(XS_TYPE_SCHEMA, {name: name});
   }
 
@@ -71,12 +71,12 @@ export class EntityRegistry {
   }
 
 
-  static register(xsdef: AbstractDef | Binding): AbstractDef | Binding {
-    if (xsdef instanceof EntityDef) {
+  static register(xsdef: AbstractRef | Binding): AbstractRef | Binding {
+    if (xsdef instanceof EntityRef) {
       return this.$()._lookup.add(XS_TYPE_ENTITY, xsdef);
-    } else if (xsdef instanceof PropertyDef) {
+    } else if (xsdef instanceof PropertyRef) {
       return this.$()._lookup.add(XS_TYPE_PROPERTY, xsdef);
-    } else if (xsdef instanceof SchemaDef) {
+    } else if (xsdef instanceof SchemaRef) {
       return this.$()._lookup.add(XS_TYPE_SCHEMA, xsdef);
     } else if (xsdef instanceof Binding) {
       return this.$()._lookup.add(xsdef.bindingType, xsdef);
@@ -86,10 +86,10 @@ export class EntityRegistry {
   }
 
 
-  static createSchema(fn: Function, options: ISchema): SchemaDef {
-    let schema = <SchemaDef>this.$()._lookup.find(XS_TYPE_SCHEMA, {name: options.name});
+  static createSchema(fn: Function, options: ISchema): SchemaRef {
+    let schema = <SchemaRef>this.$()._lookup.find(XS_TYPE_SCHEMA, {name: options.name});
     if (!schema) {
-      schema = new SchemaDef(options);
+      schema = new SchemaRef(options);
       schema = this.$()._lookup.add(XS_TYPE_SCHEMA, schema);
     }
     let classRef = ClassRef.get(fn);
@@ -101,27 +101,32 @@ export class EntityRegistry {
   }
 
 
-  static fromJson(json: IEntityMetadata): EntityDef {
+  fromJson(json: IEntityRefMetadata): EntityRef {
     let classRef = ClassRef.find(json.name);
     if (!classRef) {
       classRef = ClassRef.get(SchemaUtils.clazz(json.name));
     }
     classRef.setSchema(json.schema);
 
-    let entity = EntityRegistry.$().getEntityDefByName(json.name);
+    let entity = EntityRegistry.$().getEntityRefByName(json.name);
     if (!entity) {
-      entity = this.createEntity(classRef, json.options);
-      this.register(entity);
+      entity = EntityRegistry.createEntity(classRef, json.options);
+      EntityRegistry.register(entity);
 
       json.properties.forEach(property => {
-        this._fromJsonProperty(property, classRef);
+        EntityRegistry._fromJsonProperty(property, classRef);
       });
     }
     return entity;
   }
 
 
-  private static _fromJsonProperty(property: IPropertyMetadata, classRef: ClassRef) {
+  static fromJson(json: IEntityRefMetadata): EntityRef {
+    return this.$().fromJson(json);
+  }
+
+
+  private static _fromJsonProperty(property: IPropertyRefMetadata, classRef: ClassRef) {
     let options = _.clone(property.options);
     options.sourceClass = classRef;
 
@@ -163,42 +168,60 @@ export class EntityRegistry {
   }
 
 
-  static createEntity(fn: Function | ClassRef, options: IEntity = {}): EntityDef {
-    return new EntityDef(fn, options);
+  static createEntity(fn: Function | ClassRef, options: IEntity = {}): EntityRef {
+    return new EntityRef(fn, options);
   }
 
 
-  static createProperty(options: IProperty): PropertyDef {
-    return new PropertyDef(options);
+  static createProperty(options: IProperty): PropertyRef {
+    return new PropertyRef(options);
   }
 
 
-  getSchemaDefByName(name: string): SchemaDef {
-    return this._lookup.find(XS_TYPE_SCHEMA, (e: EntityDef) => {
+  getSchemaRefByName(name: string): SchemaRef {
+    return this._lookup.find(XS_TYPE_SCHEMA, (e: EntityRef) => {
       return e.machineName == _.snakeCase(name)
     });
   }
 
 
-  getEntityDefByName(name: string): EntityDef {
-    return this._lookup.find(XS_TYPE_ENTITY, (e: EntityDef) => {
+  getEntityRefByName(name: string): EntityRef {
+    return this._lookup.find(XS_TYPE_ENTITY, (e: EntityRef) => {
       return e.machineName == _.snakeCase(name)
     });
   }
+/*
 
-
-  getPropertyDefsFor(entity: EntityDef | ClassRef): PropertyDef[] {
-    if (entity instanceof EntityDef) {
-      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyDef) => x.object.id() === entity.getClassRef().id());
+  getPropertyDefsFor(entity: EntityRef | ClassRef): PropertyRef[] {
+    if (entity instanceof EntityRef) {
+      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => x.object.id() === entity.getClassRef().id());
     } else {
-      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyDef) => {
+      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => {
+        return x.object.id() === entity.id()
+      });
+    }
+  }
+*/
+  private find(instance: any): EntityRef {
+    let cName = ClassUtils.getClassName(instance);
+    return this._lookup.find(XS_TYPE_ENTITY, {name: cName});
+  }
+
+  getEntityRefFor(instance: Object | string): EntityRef {
+    return this.find(instance);
+  }
+
+  getPropertyRefsFor(entity: EntityRef | ClassRef): PropertyRef[] {
+    if (entity instanceof EntityRef) {
+      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => x.object.id() === entity.getClassRef().id());
+    } else {
+      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => {
         return x.object.id() === entity.id()
       });
     }
   }
 
-
-  static getEntityDefFor(instance: Object | string): EntityDef {
+  static getEntityRefFor(instance: Object | string): EntityRef {
     let cName = null;
     if (_.isString(instance)) {
       cName = instance;
@@ -209,8 +232,8 @@ export class EntityRegistry {
   }
 
 
-  static getPropertyDefsFor(entity: EntityDef | ClassRef) {
-    return this.$().getPropertyDefsFor(entity);
+  static getPropertyRefsFor(entity: EntityRef | ClassRef) {
+    return this.$().getPropertyRefsFor(entity);
   }
 
   static reset() {
@@ -218,5 +241,7 @@ export class EntityRegistry {
     this._self = null;
 
   }
+
+
 }
 

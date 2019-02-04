@@ -1,18 +1,18 @@
-import {PropertyDef} from '../../registry/PropertyDef';
+import {PropertyRef} from '../../registry/PropertyRef';
 import {XS_REL_SOURCE_PREFIX, XS_REL_TARGET_PREFIX} from '../../Constants';
 import * as _ from '../../LoDash'
 import {INameResolver} from "./../INameResolver";
-import {NotSupportedError} from "@typexs/base/libs/exceptions/NotSupportedError";
+import {NotSupportedError} from "@typexs/base/browser";
 
 export class NameResolver implements INameResolver {
 
 
-  forTarget(property: PropertyDef | string, prefix: string = null): [string, string] {
+  forTarget(property: PropertyRef | string, prefix: string = null): [string, string] {
     return this.for(XS_REL_TARGET_PREFIX, property);
   }
 
 
-  forSource(property: PropertyDef | string, prefix: string = null): [string, string] {
+  forSource(property: PropertyRef | string, prefix: string = null): [string, string] {
     return this.for(XS_REL_SOURCE_PREFIX, property);
   }
 
@@ -20,7 +20,7 @@ export class NameResolver implements INameResolver {
    * Id is the key for an object, name is the storeage value
    */
 
-  for(prefix: PropertyDef | string, property?: PropertyDef | string): [string, string] {
+  for(prefix: PropertyRef | string, property?: PropertyRef | string): [string, string] {
     let sourceId, sourceName;
     if (prefix && property) {
       if (_.isString(property)) {

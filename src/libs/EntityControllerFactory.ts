@@ -21,7 +21,7 @@ export class EntityControllerFactory {
 
     const storages = this.storage.getNames();
     for (let storageName of storages) {
-      let schemaDef = this.registry.getSchemaDefByName(storageName);
+      let schemaDef = this.registry.getSchemaRefByName(storageName);
       if (schemaDef) {
         let storageRef = this.storage.get(storageName);
         let framework: IFramework = null;

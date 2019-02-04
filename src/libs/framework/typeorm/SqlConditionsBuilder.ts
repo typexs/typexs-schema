@@ -1,8 +1,10 @@
 import * as _ from 'lodash';
-import {EntityDef} from "../../registry/EntityDef";
-import {ClassRef} from "../../../libs/registry/ClassRef";
+import {EntityRef} from "../../registry/EntityRef";
 import {NameResolver} from "../../../libs/framework/typeorm/NameResolver";
-import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
+import {NotYetImplementedError} from "@typexs/base/browser";
+import {ClassRef} from "commons-schema-api/browser";
+import {PropertyRef} from "../../..";
+import {AbstractSqlConditionsBuilder} from "@typexs/base/libs/storage/framework/AbstractSqlConditionsBuilder";
 
 export interface IConditionJoin {
   alias: string;
@@ -11,47 +13,28 @@ export interface IConditionJoin {
 }
 
 
-export class SqlConditionsBuilder {
+export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
 
-  private inc: number = 1;
-
-  private entityDef: EntityDef;
-
-  private alias: string;
-
-  private joins: IConditionJoin[] = [];
 
   private nameResolver: NameResolver = new NameResolver();
 
-  constructor(entityDef: EntityDef, alias: string = null) {
+  constructor(entityDef: EntityRef, alias: string = null) {
+    super(entityDef,alias);
     this.inc = 1;
-    this.entityDef = entityDef;
-    this.alias = alias ? alias : this.entityDef.storingName;
   }
 
-
-  getJoins() {
-    return this.joins;
-  }
-
-
-  private createAlias(tmp: ClassRef) {
-    let name = _.snakeCase(tmp.storingName);
-    name += '_' + (this.inc++);
-    return name;
-  }
 
 
   lookupKeys(key: string) {
     let joins = key.split('.');
-    let tmp: ClassRef = this.entityDef.getClassRef();
+    let tmp = this.entityDef.getClassRef();
     let names: string[] = [this.alias];
     let rootAlias = this.alias;
     for (let _join of joins) {
-      let prop = tmp.getPropertyDef(_join);
+      let prop = <PropertyRef>tmp.getPropertyRef(_join);
       if (prop.isReference()) {
         let from = tmp;
-        tmp = prop.targetRef ? prop.targetRef : null;
+        tmp = prop.getTargetRef() ? <ClassRef>prop.getTargetRef() : null;
         let join: IConditionJoin = null;
 
         if (prop.hasConditions()) {
@@ -85,8 +68,8 @@ export class SqlConditionsBuilder {
           throw new NotYetImplementedError();
         } else if (prop.hasJoinRef()) {
           let joinRef = prop.joinRef;
-          let sourceIds = from.getPropertyDefs().filter(x => x.identifier);
-          let targetIds = tmp.getPropertyDefs().filter(x => x.identifier);
+          let sourceIds = from.getPropertyRefs().filter(x => x.isIdentifier());
+          let targetIds = tmp.getPropertyRefs().filter(x => x.isIdentifier());
 
           let conditions: string[] = [];
           join = {
@@ -98,7 +81,7 @@ export class SqlConditionsBuilder {
           };
           this.joins.push(join);
           sourceIds.forEach(x => {
-            let [targetId, targetName] = this.nameResolver.forSource(x);
+            let [targetId, targetName] = this.nameResolver.forSource(<PropertyRef>x);
             conditions.push(join.alias + '.' + targetName + ' = ' + rootAlias + '.' + x.storingName);
           });
           join.condition = conditions.join(' AND ');
@@ -117,7 +100,7 @@ export class SqlConditionsBuilder {
             this.joins.push(join);
 
             targetIds.forEach(x => {
-              let [targetId, targetName] = this.nameResolver.forTarget(x);
+              let [targetId, targetName] = this.nameResolver.forTarget(<PropertyRef>x);
               conditions.push(join.alias + '.' + x.storingName + ' = ' + rootAlias + '.' + targetName);
             });
             join.condition = conditions.join(' AND ');
@@ -134,8 +117,8 @@ export class SqlConditionsBuilder {
           };
           this.joins.push(join);
           let conditions: string[] = [];
-          from.getPropertyDefs().filter(x => x.identifier).forEach(property => {
-            let [targetId, targetName] = this.nameResolver.forSource(property);
+          from.getPropertyRefs().filter(x => x.isIdentifier()).forEach(property => {
+            let [targetId, targetName] = this.nameResolver.forSource(<PropertyRef>property);
             conditions.push([join.alias + '.' + targetName, rootAlias + '.' + property.storingName].join(' = '))
           });
           join.condition = conditions.join(' AND ')

@@ -1,13 +1,14 @@
 import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {IDeleteOp} from "../IDeleteOp";
-import {EntityDef} from "../../registry/EntityDef";
-import {PropertyDef} from "../../registry/PropertyDef";
-import {ClassRef} from "../../registry/ClassRef";
+import {EntityRef} from "../../registry/EntityRef";
+import {PropertyRef} from "../../registry/PropertyRef";
+
 import {IDataExchange} from "../IDataExchange";
 import {EntityController} from "../../EntityController";
 import {ConnectionWrapper} from "@typexs/base";
 import * as _ from "../../LoDash";
 import {XS_P_PREV_ID} from "../../Constants";
+import {ClassRef} from "commons-schema-api";
 
 
 export interface IDeleteData extends IDataExchange<any[]> {
@@ -30,10 +31,10 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
     this.em = em;
   }
 
-  visitDataProperty(propertyDef: PropertyDef, sourceDef: EntityDef | ClassRef, sources: IDeleteData, targets: IDeleteData): void {
+  visitDataProperty(propertyDef: PropertyRef, sourceDef: EntityRef | ClassRef, sources: IDeleteData, targets: IDeleteData): void {
   }
 
-  async visitEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: IDeleteData): Promise<IDeleteData> {
+  async visitEntity(entityDef: EntityRef, propertyDef: PropertyRef, sources: IDeleteData): Promise<IDeleteData> {
     if (this.entityDepth === 0) {
       let ids = entityDef.resolveIds(sources.next);
       await this.c.manager.remove(entityDef.getClass(), sources.next);
@@ -45,36 +46,36 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
   }
 
 
-  async leaveEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: IDeleteData): Promise<IDeleteData> {
+  async leaveEntity(entityDef: EntityRef, propertyDef: PropertyRef, sources: IDeleteData): Promise<IDeleteData> {
     // todo delete
     return sources;
   }
 
-  async visitEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: IDeleteData): Promise<IDeleteData> {
+  async visitEntityReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, entityDef: EntityRef, sources: IDeleteData): Promise<IDeleteData> {
     this.entityDepth++;
     return sources;
   }
 
-  leaveEntityReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: IDeleteData, visitResult: IDeleteData): Promise<IDeleteData> {
+  leaveEntityReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, entityDef: EntityRef, sources: IDeleteData, visitResult: IDeleteData): Promise<IDeleteData> {
     this.entityDepth--;
     return null;
   }
 
 
-  visitExternalReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+  visitExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return null;
   }
 
-  leaveExternalReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+  leaveExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return null;
   }
 
 
-  visitObjectReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+  visitObjectReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return undefined;
   }
 
-  leaveObjectReference(sourceDef: EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+  leaveObjectReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return undefined;
   }
 
@@ -90,7 +91,7 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
   }
 
 
-  private async deleteByEntityDef<T>(entityName: string | EntityDef, objects: T[]): Promise<T[]> {
+  private async deleteByEntityDef<T>(entityName: string | EntityRef, objects: T[]): Promise<T[]> {
     let entityDef = _.isString(entityName) ? this.em.schema().getEntity(entityName) : entityName;
     return await this.walk(entityDef, objects);
   }

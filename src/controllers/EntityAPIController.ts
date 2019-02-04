@@ -1,12 +1,15 @@
 import {Body, CurrentUser, Delete, Get, JsonController, Param, Post, QueryParam} from "routing-controllers";
 
 import {Inject} from "typedi";
-import {Invoker} from "@typexs/base/base/Invoker";
-import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
+import {
+  Invoker, NotYetImplementedError, XS_P_$COUNT,
+  XS_P_$LIMIT,
+  XS_P_$OFFSET
+} from "@typexs/base/browser";
 
 import {Access, ContextGroup} from "@typexs/server";
 import {EntityRegistry} from "../libs/EntityRegistry";
-import {EntityDef} from "../libs/registry/EntityDef";
+import {EntityRef} from "../libs/registry/EntityRef";
 import {EntityControllerFactory} from "../libs/EntityControllerFactory";
 import {EntityController} from "../libs/EntityController";
 import * as _ from "lodash";
@@ -20,9 +23,7 @@ import {
   PERMISSION_ALLOW_DELETE_ENTITY_PATTERN,
   PERMISSION_ALLOW_UPDATE_ENTITY,
   PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN,
-  XS_P_$COUNT,
-  XS_P_$LIMIT,
-  XS_P_$OFFSET,
+
   XS_P_LABEL,
   XS_P_URL
 } from "../libs/Constants";
@@ -34,16 +35,15 @@ import {EntityControllerApi} from "../api/entity.controller.api";
 @JsonController()
 export class EntityAPIController {
 
-
   @Inject('EntityRegistry')
   registry: EntityRegistry;
-
 
   @Inject('EntityControllerFactory')
   factory: EntityControllerFactory;
 
   @Inject(Invoker.NAME)
   invoker: Invoker;
+
 
   /**
    * Return list of schemas with their entities
@@ -62,7 +62,7 @@ export class EntityAPIController {
   @Access(PERMISSION_ALLOW_ACCESS_METADATA)
   @Get('/metadata/schema/:schemaName')
   async schema(@Param('schemaName') schemaName: string, @CurrentUser() user: any) {
-    let schema = this.registry.getSchemaDefByName(schemaName);
+    let schema = this.registry.getSchemaRefByName(schemaName);
     if (schema) {
       return schema.toJson();
     } else {
@@ -87,10 +87,10 @@ export class EntityAPIController {
   @Access(PERMISSION_ALLOW_ACCESS_METADATA)
   @Get('/metadata/entity/:entityName')
   async entity(@Param('entityName') entityName: string, @CurrentUser() user: any) {
-    let entity = this.registry.getEntityDefByName(entityName);
+    let entity = this.registry.getEntityRefByName(entityName);
     if (entity) {
       let json = entity.toJson();
-      json.properties = entity.getPropertyDefs().map(x => x.toJson());
+      json.properties = entity.getPropertyRefs().map(x => x.toJson());
       return json;
     } else {
       throw new Error('no entity found for ' + entityName);
@@ -257,7 +257,7 @@ export class EntityAPIController {
   }
 
 
-  private getControllerForEntityName(name: string): [EntityDef, EntityController] {
+  private getControllerForEntityName(name: string): [EntityRef, EntityController] {
     const entityDef = this.getEntityDef(name);
     const schema = entityDef.getClassRef().getSchema();
     if (!_.isArray(schema)) {
@@ -277,8 +277,8 @@ export class EntityAPIController {
   }
 
 
-  private getEntityDef(entityName: string): EntityDef {
-    const entityDef = this.registry.getEntityDefByName(entityName);
+  private getEntityDef(entityName: string): EntityRef {
+    const entityDef = this.registry.getEntityRefByName(entityName);
     if (entityDef) {
       return entityDef;
     }
@@ -286,7 +286,7 @@ export class EntityAPIController {
   }
 
 
-  static _afterEntity(entityDef: EntityDef, entity: any[]): void {
+  static _afterEntity(entityDef: EntityRef, entity: any[]): void {
     entity.forEach(e => {
       let idStr = entityDef.buildLookupConditions(e);
       let url = `api/entity/${entityDef.machineName}/${idStr}`;
@@ -296,7 +296,7 @@ export class EntityAPIController {
   }
 
 
-  static _beforeBuild(entityDef: EntityDef, from: any, to: any) {
+  static _beforeBuild(entityDef: EntityRef, from: any, to: any) {
     _.keys(from).filter(k => k.startsWith('$')).map(k => {
       to[k] = from[k];
     })

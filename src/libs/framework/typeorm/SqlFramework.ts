@@ -5,7 +5,7 @@ import {IFindOp} from "../IFindOp";
 import {ISaveOp} from "../ISaveOp";
 import {ISchemaMapper} from "../ISchemaMapper";
 import {StorageRef} from "@typexs/base";
-import {SchemaDef} from "../../registry/SchemaDef";
+import {SchemaRef} from "../../registry/SchemaRef";
 import {SqlSchemaMapper} from "./SqlSchemaMapper";
 import {SqlFindOp} from "./SqlFindOp";
 import {SqlSaveOp} from "./SqlSaveOp";
@@ -26,7 +26,7 @@ export class SqlFramework implements IFramework {
     return new SqlSaveOp(entityController);
   }
 
-  getSchemaMapper(storageRef: StorageRef, schemaDef: SchemaDef): ISchemaMapper {
+  getSchemaMapper(storageRef: StorageRef, schemaDef: SchemaRef): ISchemaMapper {
     return new SqlSchemaMapper(storageRef, schemaDef);
   }
 

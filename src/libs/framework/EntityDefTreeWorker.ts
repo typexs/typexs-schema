@@ -1,14 +1,15 @@
 // TODO prevent circulations
-import {EntityDef} from '../registry/EntityDef';
-import {PropertyDef} from '../registry/PropertyDef';
-import {ClassRef} from "../registry/ClassRef";
+import {EntityRef} from '../registry/EntityRef';
+import {PropertyRef} from '../registry/PropertyRef';
+
 import {EntityRegistry} from "../EntityRegistry";
-import * as _ from "../LoDash";
+import * as _ from "lodash";
 import {IDataExchange} from "./IDataExchange";
+import {ClassRef} from "commons-schema-api";
 
 interface IQEntry {
-  def: EntityDef | PropertyDef | ClassRef,
-  refer?: PropertyDef
+  def: EntityRef | PropertyRef | ClassRef,
+  refer?: PropertyRef
   sources?: IDataExchange<any>,
   result?: IDataExchange<any>
 }
@@ -40,19 +41,19 @@ export abstract class EntityDefTreeWorker {
   }
 
 
-  abstract visitEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
+  abstract visitEntity(entityDef: EntityRef, propertyDef: PropertyRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
 
 
-  abstract leaveEntity(entityDef: EntityDef, propertyDef: PropertyDef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
+  abstract leaveEntity(entityDef: EntityRef, propertyDef: PropertyRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
 
 
-  protected async onEntity(entityDef: EntityDef, referPropertyDef?: PropertyDef, sources?: IDataExchange<any>): Promise<IDataExchange<any>> {
+  protected async onEntity(entityDef: EntityRef, referPropertyDef?: PropertyRef, sources?: IDataExchange<any>): Promise<IDataExchange<any>> {
 
     let def: IQEntry = {def: entityDef, sources: sources, refer: referPropertyDef};
     this.queue.push(def);
     def.result = await this.visitEntity(entityDef, referPropertyDef, sources);
     if (!(_.has(def.result, 'abort') && def.result.abort)) {
-      let properties = entityDef.getPropertyDefs();
+      let properties = entityDef.getPropertyRefs();
       await this.walkProperties(properties, def);
     }
     def.result = await this.leaveEntity(entityDef, referPropertyDef, def.result);
@@ -62,7 +63,7 @@ export abstract class EntityDefTreeWorker {
   }
 
 
-  private async onInternalProperty(propertyDef: PropertyDef, previous: IQEntry): Promise<void> {
+  private async onInternalProperty(propertyDef: PropertyRef, previous: IQEntry): Promise<void> {
     if (propertyDef.isReference()) {
       if (propertyDef.isEntityReference()) {
         await this.onEntityReference(propertyDef, previous);
@@ -75,19 +76,19 @@ export abstract class EntityDefTreeWorker {
   }
 
 
-  abstract visitDataProperty(propertyDef: PropertyDef, sourceDef: PropertyDef | EntityDef | ClassRef, sources: IDataExchange<any>, targets: IDataExchange<any>): void;
+  abstract visitDataProperty(propertyDef: PropertyRef, sourceDef: PropertyRef | EntityRef | ClassRef, sources: IDataExchange<any>, targets: IDataExchange<any>): void;
 
-  onDataProperty(propertyDef: PropertyDef, previous: IQEntry) {
+  onDataProperty(propertyDef: PropertyRef, previous: IQEntry) {
     this.visitDataProperty(propertyDef, previous.def, previous.sources, previous.result);
   }
 
 
-  abstract visitEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
+  abstract visitEntityReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, entityDef: EntityRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
 
-  abstract leaveEntityReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, entityDef: EntityDef, sources: IDataExchange<any>, visitResult: IDataExchange<any>): Promise<IDataExchange<any>>;
+  abstract leaveEntityReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, entityDef: EntityRef, sources: IDataExchange<any>, visitResult: IDataExchange<any>): Promise<IDataExchange<any>>;
 
 
-  async onEntityReference(property: PropertyDef, previous: IQEntry): Promise<void> {
+  async onEntityReference(property: PropertyRef, previous: IQEntry): Promise<void> {
     let entityDef = property.getEntity();
     // Ignore circular entity relations
     if(!this.isCircular(entityDef)){
@@ -116,16 +117,16 @@ export abstract class EntityDefTreeWorker {
     }
   }
 
-  isCircular(sourceDef: PropertyDef | EntityDef | ClassRef){
+  isCircular(sourceDef: PropertyRef | EntityRef | ClassRef){
     let exists = _.find(this.queue,(q:IQEntry) => q.def == sourceDef);
     return exists != null;
   }
 
-  abstract visitObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
+  abstract visitObjectReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
 
-  abstract leaveObjectReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
+  abstract leaveObjectReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
 
-  private async onObjectReference(property: PropertyDef, previous: IQEntry): Promise<void> {
+  private async onObjectReference(property: PropertyRef, previous: IQEntry): Promise<void> {
     let classDef = property.targetRef;
     let def: IQEntry = {def: classDef, sources: previous.result, refer: property};
     this.queue.push(def);
@@ -135,7 +136,7 @@ export abstract class EntityDefTreeWorker {
       delete def.result['status'];
     }
     if (!(_.has(def.result, 'abort') && def.result.abort)) {
-      let properties = EntityRegistry.getPropertyDefsFor(classDef);
+      let properties = EntityRegistry.getPropertyRefsFor(classDef);
       await this.walkProperties(properties, def);
     }
     if(status){
@@ -150,11 +151,11 @@ export abstract class EntityDefTreeWorker {
   }
 
 
-  abstract visitExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
+  abstract visitExternalReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
 
-  abstract leaveExternalReference(sourceDef: PropertyDef | EntityDef | ClassRef, propertyDef: PropertyDef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
+  abstract leaveExternalReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDataExchange<any>): Promise<IDataExchange<any>>;
 
-  private async onExternalProperty(property: PropertyDef, previous: IQEntry): Promise<void> {
+  private async onExternalProperty(property: PropertyRef, previous: IQEntry): Promise<void> {
     let classDef = property.propertyRef;
     let def: IQEntry = {def: classDef, sources: previous.result, refer: property};
     this.queue.push(def);
@@ -164,7 +165,7 @@ export abstract class EntityDefTreeWorker {
       delete def.result['status'];
     }
     if (!(_.has(def.result, 'abort') && def.result.abort)) {
-      let properties = EntityRegistry.getPropertyDefsFor(classDef);
+      let properties = EntityRegistry.getPropertyRefsFor(classDef);
       await this.walkProperties(properties, def);
     }
     if(status){
@@ -178,20 +179,20 @@ export abstract class EntityDefTreeWorker {
   }
 
 
-  async walk(entityDef: EntityDef, sources?: any[]): Promise<any> {
+  async walk(entityDef: EntityRef, sources?: any[]): Promise<any> {
     let result = await this.onEntity(entityDef, null, {next: sources});
     return result.next;
   }
 
 
-  async walkProperties(properties: PropertyDef[], previous: IQEntry) {
+  async walkProperties(properties: PropertyRef[], previous: IQEntry) {
     for (let propertyDef of properties) {
       await this.onProperty(propertyDef, previous);
     }
   }
 
 
-  private async onProperty(propertyDef: PropertyDef, previous: IQEntry): Promise<any> {
+  private async onProperty(propertyDef: PropertyRef, previous: IQEntry): Promise<any> {
     this.queue.push({def: propertyDef});
     let res: any = null;
     if (propertyDef.isInternal()) {

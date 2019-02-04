@@ -1,9 +1,9 @@
-import {PropertyDef} from "../../registry/PropertyDef";
+import {PropertyRef} from "../../registry/PropertyRef";
 import {INameResolver} from "../INameResolver";
 
 export class SqlHelper {
 
-  static getEmbeddedPropertyIds(propertyDef: PropertyDef) {
+  static getEmbeddedPropertyIds(propertyDef: PropertyRef) {
     let refProps: string[] = [];
     if (propertyDef.hasIdKeys()) {
       refProps = propertyDef.getIdKeys();
@@ -13,7 +13,7 @@ export class SqlHelper {
     return refProps;
   }
 
-  static resolveNameForEmbeddedIds(n: INameResolver, name: string, propertyDef: PropertyDef, prop: PropertyDef) {
+  static resolveNameForEmbeddedIds(n: INameResolver, name: string, propertyDef: PropertyRef, prop: PropertyRef) {
     let targetName, targetId;
     if (propertyDef.hasIdKeys()) {
       [targetId, targetName] = n.for(name);

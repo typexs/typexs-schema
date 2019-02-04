@@ -1,14 +1,11 @@
-import {IExpr} from "./IExpr";
-import {NotYetImplementedError} from "@typexs/base/libs/exceptions/NotYetImplementedError";
-import {ClassRef} from "../registry/ClassRef";
-
-import {PropertyDef} from "../registry/PropertyDef";
+import {NotYetImplementedError} from "@typexs/base/browser";
+import {PropertyRef} from "../registry/PropertyRef";
 import {EntityRegistry} from "../EntityRegistry";
 import * as _ from 'lodash';
-import {ExprDesc} from "./ExprDesc";
 import {OrderDesc} from "./OrderDesc";
 import {ConditionValidationError} from "../exceptions/ConditionValidationError";
-import {And} from "./AndDesc";
+import {IExpr, ExprDesc, And} from "commons-expressions/browser";
+import {ClassRef} from "commons-schema-api/browser";
 
 export type KeyMapType = 'from' | 'to';
 
@@ -23,7 +20,7 @@ export class KeyMapDesc implements IExpr {
 }
 
 export class JoinDesc implements IExpr {
-  readonly type:string = 'join';
+  readonly type: string = 'join';
   readonly joinRef: ClassRef;
 
   readonly keyMaps: KeyMapDesc[] = [];
@@ -54,11 +51,12 @@ export class JoinDesc implements IExpr {
     return _.find(this.keyMaps, k => k.type == 'to');
   }
 
-  validate(sourceDef: ClassRef, propertyDef: PropertyDef, targetDef: ClassRef, throwing: boolean = true) {
-    this.condition.validate(this.joinRef);
-    this.getFrom().cond.validate(this.joinRef, sourceDef);
-    this.getTo().cond.validate(targetDef, this.joinRef);
-    const props = EntityRegistry.getPropertyDefsFor(this.joinRef).map(p => p.name);
+  validate(sourceDef: ClassRef, propertyDef: PropertyRef, targetDef: ClassRef, throwing: boolean = true) {
+    let registry = EntityRegistry.$();
+    this.condition.validate(registry, this.joinRef);
+    this.getFrom().cond.validate(registry, this.joinRef, sourceDef);
+    this.getTo().cond.validate(registry, targetDef, this.joinRef);
+    const props = EntityRegistry.getPropertyRefsFor(this.joinRef).map(p => p.name);
     this.order.forEach(o => {
       if (props.indexOf(o.key.key) == -1) {
         throw new ConditionValidationError('no property with order key ' + o.key.key + ' found.');

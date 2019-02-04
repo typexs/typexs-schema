@@ -1,9 +1,8 @@
 import {JoinDesc} from "../descriptors/JoinDesc";
 
-import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
-import {ExprDesc} from "../descriptors/ExprDesc";
-import {KeyDesc} from "../descriptors/KeyDesc";
 import {OrderDesc} from "../descriptors/OrderDesc";
+import {JS_DATA_TYPES} from "commons-schema-api/browser";
+import {ExprDesc, KeyDesc} from "commons-expressions/browser";
 
 export interface IProperty {
 

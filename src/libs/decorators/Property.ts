@@ -1,7 +1,8 @@
 import {EntityRegistry} from '../EntityRegistry';
 import {IProperty} from '../registry/IProperty';
-import * as _ from '../LoDash'
-import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
+import * as _ from "lodash";
+import {JS_DATA_TYPES} from "commons-schema-api/browser";
+
 
 export function Property(typeOrOptions: IProperty | string = null) {
   return function (object: any, property: string, _options: any = {}) {

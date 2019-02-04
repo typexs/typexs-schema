@@ -1,24 +1,28 @@
-import {AbstractDef} from './AbstractDef';
 import {IProperty} from './IProperty';
-import {ClassRef} from './ClassRef';
-import {LookupRegistry} from './../LookupRegistry';
-import {XS_TYPE_PROPERTY} from './../Constants';
-import {NotYetImplementedError} from '@typexs/base/libs/exceptions/NotYetImplementedError';
-import {NotSupportedError} from "@typexs/base/libs/exceptions/NotSupportedError";
 import * as _ from 'lodash';
-import {EntityDef} from "./EntityDef";
+import {EntityRef} from "./EntityRef";
 import * as moment from "moment";
 import {OptionsHelper} from "./OptionsHelper";
-import {JS_DATA_TYPES} from "@typexs/base/libs/Constants";
-import {ExprDesc} from "../descriptors/ExprDesc";
-import {OrderDesc} from "../descriptors/OrderDesc";
+
+import {
+  AbstractRef,
+  ClassRef,
+  IPropertyRef,
+  JS_DATA_TYPES,
+  LookupRegistry,
+  XS_TYPE_PROPERTY
+} from "commons-schema-api/browser";
+import {NotSupportedError, NotYetImplementedError} from "@typexs/base/browser";
+import {ExprDesc} from "commons-expressions/browser";
+import {OrderDesc} from "../..";
+
 
 export const KNOW_PRIMATIVE_TYPES: JS_DATA_TYPES[] = [
   'string', 'text', 'number', 'boolean', 'double',
   'json', 'date', 'time', 'datetime', 'timestamp', 'byte'
 ];
 
-export class PropertyDef extends AbstractDef {
+export class PropertyRef extends AbstractRef implements IPropertyRef {
 
   readonly cardinality: number = 1;
 
@@ -107,11 +111,7 @@ export class PropertyDef extends AbstractDef {
   }
 
   id() {
-    let ids = this.object.schemas.map(s => [s, this.object.className, this.name].join('--').toLowerCase());
-    if (ids.length === 1) {
-      return ids.shift();
-    }
-    return ids;
+    return [this.getSourceRef().id(), this.name].join('--').toLowerCase();
   }
 
   /*
@@ -133,7 +133,7 @@ export class PropertyDef extends AbstractDef {
 
   isEntityReference(): boolean {
     if (this.isReference()) {
-      let entityDef = this.targetRef.getEntity();
+      let entityDef = this.targetRef.getEntityRef();
       return !(_.isNull(entityDef) || _.isUndefined(entityDef));
     }
     return false;
@@ -188,9 +188,9 @@ export class PropertyDef extends AbstractDef {
     }
   }
 
-  getEntity(): EntityDef {
+  getEntity(): EntityRef {
     if (this.isEntityReference()) {
-      return this.targetRef.getEntity();
+      return this.getEntityRef();
     }
     throw new NotSupportedError('no entity')
   }
@@ -203,7 +203,7 @@ export class PropertyDef extends AbstractDef {
     throw new NotSupportedError('no  target class')
   }
 
-  getSubPropertyDef(): PropertyDef[] {
+  getSubPropertyRef(): PropertyRef[] {
     if (!this.propertyRef) {
       return [];
     }
@@ -291,7 +291,7 @@ export class PropertyDef extends AbstractDef {
       const prefix = this.object.isEntity ? 'p' : 'i';// + _.snakeCase(this.object.className);
 
       if (this.isReference() && !this.isEmbedded()) {
-        name = [prefix, this.object.machineName(), this.machineName].join('_');
+        name = [prefix, this.getSourceRef().machineName, this.machineName].join('_');
         /*
         if (this.isEntityReference()) {
           if (this.object.isEntity) {
@@ -338,7 +338,7 @@ export class PropertyDef extends AbstractDef {
   }
 
 
-  get label() {
+  label() {
     let label = null;
     let options = this.getOptions();
     if (options.label) {
@@ -357,7 +357,7 @@ export class PropertyDef extends AbstractDef {
     let o = super.toJson();
     o.schema = this.object.getSchema();
     o.entityName = this.entityName;
-    o.label = this.label;
+    o.label = this.label();
     o.dataType = this.dataType;
     o.generated = this.generated;
     o.identifier = this.identifier;
@@ -365,7 +365,7 @@ export class PropertyDef extends AbstractDef {
     delete o.options['sourceClass'];
 
     if (this.targetRef) {
-      o.targetRef = this.targetRef.toJson();
+      o.targetRef = this.targetRef.toJson(!this.isEntityReference());
     }
 
     if (this.propertyRef) {
@@ -373,10 +373,22 @@ export class PropertyDef extends AbstractDef {
     }
 
     if (withSubProperties && this.isReference()) {
-      o.embedded = this.getSubPropertyDef().map(x => x.toJson());
+      o.embedded = this.getSubPropertyRef().map(x => x.toJson());
     }
 
     return o;
+  }
+
+  getEntityRef(): EntityRef {
+    return this.isEntityReference() ? <EntityRef>this.getTargetRef().getEntityRef() : null;
+  }
+
+  getTargetRef(): ClassRef {
+    return this.targetRef;
+  }
+
+  isIdentifier(): boolean {
+    return this.identifier;
   }
 
 }

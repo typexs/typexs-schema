@@ -1,6 +1,6 @@
 import {StorageRef} from '@typexs/base/libs/storage/StorageRef';
-import {SchemaDef} from './registry/SchemaDef';
-import {EntityDef} from './registry/EntityDef';
+import {SchemaRef} from './registry/SchemaRef';
+import {EntityRef} from './registry/EntityRef';
 import {ISchemaMapper} from "./framework/ISchemaMapper";
 import {INameResolver} from "./framework/INameResolver";
 import {IFramework} from "./framework/IFramework";
@@ -14,7 +14,7 @@ export class EntityController {
   // revision support
   readonly storageRef: StorageRef;
 
-  readonly schemaDef: SchemaDef;
+  readonly schemaDef: SchemaRef;
 
   readonly mapper: ISchemaMapper;
 
@@ -22,7 +22,7 @@ export class EntityController {
 
   readonly framework: IFramework;
 
-  constructor(name: string, schema: SchemaDef = null, storageRef: StorageRef = null, framework: IFramework = null) {
+  constructor(name: string, schema: SchemaRef = null, storageRef: StorageRef = null, framework: IFramework = null) {
     this.name = name;
     this.storageRef = storageRef;
     this.schemaDef = schema;
@@ -39,7 +39,7 @@ export class EntityController {
     throw new NotSupportedError('no framework support')
   }
 
-  schema(): SchemaDef {
+  schema(): SchemaRef {
     return this.schemaDef;
   }
 
@@ -81,7 +81,7 @@ export class EntityController {
   static resolveByEntityDef<T>(objs: T[]) {
     let resolved: { [entityType: string]: T[] } = {};
     for (let obj of objs) {
-      let entityName = EntityDef.resolveName(obj);
+      let entityName = EntityRef.resolveName(obj);
       if (!resolved[entityName]) {
         resolved[entityName] = [];
       }

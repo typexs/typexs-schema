@@ -12,7 +12,7 @@ import {
   PERMISSION_ALLOW_UPDATE_ENTITY,
   PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN
 } from "./libs/Constants";
-import {EntityDef} from "./libs/registry/EntityDef";
+import {EntityRef} from "./libs/registry/EntityRef";
 
 
 export class Activator implements IActivator, IPermissions {
@@ -41,7 +41,7 @@ export class Activator implements IActivator, IPermissions {
     ];
 
     const registry = EntityRegistry.$();
-    registry.listEntities().map((e:EntityDef) => {
+    registry.listEntities().map((e:EntityRef) => {
       if(e.isStoreable()){
         permissions.push(PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN.replace(':name', e.machineName));
         permissions.push(PERMISSION_ALLOW_CREATE_ENTITY_PATTERN.replace(':name', e.machineName));

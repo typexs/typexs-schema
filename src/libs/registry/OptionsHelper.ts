@@ -1,8 +1,10 @@
 import * as _ from "lodash";
 import {MetaArgs} from "@typexs/base/base/MetaArgs";
-import {XS_ANNOTATION_OPTIONS_CACHE, XS_TYPE, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from "../Constants";
-import {ClassRef} from "./ClassRef";
+import {XS_ANNOTATION_OPTIONS_CACHE} from "../Constants";
+
 import {EntityRegistry} from "../EntityRegistry";
+import {ClassRef, XS_TYPE, XS_TYPE_ENTITY, XS_TYPE_PROPERTY} from "commons-schema-api/browser";
+import {EntityRef} from "./EntityRef";
 
 
 export interface IPropertyExtentions {
@@ -17,7 +19,7 @@ export class OptionsHelper {
 
   static forPropertyOn(object: ClassRef, property: string, options: any) {
 
-    let prop = EntityRegistry.getPropertyDefsFor(object).find(p => p.name == property);
+    let prop = EntityRegistry.getPropertyRefsFor(object).find(p => p.name == property);
     if(prop){
       let pOptions = prop.getOptions();
       _.defaults(pOptions,options);
@@ -33,7 +35,7 @@ export class OptionsHelper {
   }
 
   static forEntityOn(object: ClassRef, options: any) {
-    let ent = object.getEntity();
+    let ent = <EntityRef>object.getEntityRef();
     if(ent){
       let pOptions = ent.getOptions();
       _.defaults(pOptions,options);

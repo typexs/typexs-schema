@@ -1,7 +1,7 @@
-import {SchemaDef} from './registry/SchemaDef';
-import {EntityDef} from './registry/EntityDef';
+import {SchemaRef} from './registry/SchemaRef';
+import {EntityRef} from './registry/EntityRef';
 import * as _ from './LoDash'
-import {PropertyDef} from "./registry/PropertyDef";
+import {PropertyRef} from "./registry/PropertyRef";
 
 export class SchemaUtils {
 
@@ -18,15 +18,15 @@ export class SchemaUtils {
     return y;
   }
 
-  static resolve(schemaDef: SchemaDef, entityName: string | EntityDef) {
-    let entityDef: EntityDef = <EntityDef>entityName;
+  static resolve(schemaDef: SchemaRef, entityName: string | EntityRef) {
+    let entityDef: EntityRef = <EntityRef>entityName;
     if (_.isString(entityName))
       entityDef = schemaDef.getEntity(entityName);
     return entityDef;
   }
 
 
-  static extractPropertyObjects(propertyDef: PropertyDef, objects: any[], prefixed: string = null): [number[][], any[]] {
+  static extractPropertyObjects(propertyDef: PropertyRef, objects: any[], prefixed: string = null): [number[][], any[]] {
     let innerObjects: any[] = SchemaUtils.get(prefixed ? [prefixed, propertyDef.name].join('__') : propertyDef.name, objects);
 
     let map: number[][] = [];
@@ -50,7 +50,7 @@ export class SchemaUtils {
   }
 
 
-  static remap(propertyDef: PropertyDef, flattenObjects: any[], map: number[][], objects: any[], prefixed: string = null) {
+  static remap(propertyDef: PropertyRef, flattenObjects: any[], map: number[][], objects: any[], prefixed: string = null) {
     let propName = prefixed ? [prefixed, propertyDef.name].join('__') : propertyDef.name;
 
     for (let i = 0; i < flattenObjects.length; i++) {

@@ -1,14 +1,14 @@
-import {PropertyDef} from "../registry/PropertyDef";
+import {PropertyRef} from "../registry/PropertyRef";
 
 export interface INameResolver {
 
 
-  forTarget(property: PropertyDef | string, prefix?: string): [string, string];
+  forTarget(property: PropertyRef | string, prefix?: string): [string, string];
 
-  forSource(property: PropertyDef | string, prefix?: string): [string, string];
+  forSource(property: PropertyRef | string, prefix?: string): [string, string];
 
   /**
    * Id is the key for an object, name is the storeage value
    */
-  for(prefix: string | PropertyDef, property?: PropertyDef | string): [string, string];
+  for(prefix: string | PropertyRef, property?: PropertyRef | string): [string, string];
 }

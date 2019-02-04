@@ -20,39 +20,16 @@ export * from "./libs/decorators/PropertyOf";
 export * from "./libs/decorators/Schema";
 
 // conditions
-export * from "./libs/descriptors/IExpr";
-export * from "./libs/descriptors/ExprDesc";
-export * from "./libs/descriptors/OpDesc";
 export * from "./libs/descriptors/JoinDesc";
-export * from "./libs/descriptors/InDesc";
-export * from "./libs/descriptors/AndDesc";
-export * from "./libs/descriptors/OrDesc";
-export * from "./libs/descriptors/EqDesc";
-export * from "./libs/descriptors/GeDesc";
-export * from "./libs/descriptors/GroupDesc";
-export * from "./libs/descriptors/KeyDesc";
-export * from "./libs/descriptors/LeDesc";
-export * from "./libs/descriptors/LikeDesc";
-export * from "./libs/descriptors/NeqDesc";
 export * from "./libs/descriptors/OrderDesc";
-export * from "./libs/descriptors/Selector";
-export * from "./libs/descriptors/ValueDesc";
 
 
-export * from "./libs/LookupRegistry";
-export * from "./libs/registry/AbstractDef";
 export * from "./libs/registry/OptionsHelper";
-export * from "./libs/registry/Binding";
-export * from "./libs/registry/ClassRef";
-export * from "./libs/registry/EntityDef";
+export * from "./libs/registry/EntityRef";
 export * from "./libs/registry/IEntity";
-export * from "./libs/registry/IEntityMetadata";
 export * from "./libs/registry/IObject";
 export * from "./libs/registry/IProperty";
-export * from "./libs/registry/IPropertyMetadata";
 export * from "./libs/registry/ISchema";
-export * from "./libs/registry/PropertyDef";
-export * from "./libs/registry/SchemaDef";
+export * from "./libs/registry/PropertyRef";
+export * from "./libs/registry/SchemaRef";
 
-export * from "./libs/SchemaUtils";
-export * from "./libs/TransformExecutor";

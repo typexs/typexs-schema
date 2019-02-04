@@ -4,11 +4,12 @@ import {EntityRegistry} from './EntityRegistry';
 import {IValidationResult} from "./IValidationResult";
 import {IValidationError} from "./IValidationError";
 import {IValidationMessage} from "./IValidationMessage";
+import {DataContainer as _DataContainer} from "@typexs/base/browser";
 
 
 export const STATE_KEY = '$state';
 
-export class DataContainer<T> {
+export class DataContainer<T> extends _DataContainer<T>{
 
   static keys:string[] = ['isValidated','isSuccess','isSuccessValidated', 'errors'];
 
@@ -26,16 +27,7 @@ export class DataContainer<T> {
 
 
   constructor(instance: T) {
-    this.instance = instance;
-    let entityDef = EntityRegistry.getEntityDefFor(this.instance);
-    entityDef.getPropertyDefs().forEach(propDef => {
-      this.validation[propDef.name] = {
-        key: propDef.name,
-        valid: false,
-        checked: false,
-        messages: []
-      };
-    });
+    super(instance,EntityRegistry.$());
   }
 
 
