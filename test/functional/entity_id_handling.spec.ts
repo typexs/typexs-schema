@@ -14,7 +14,7 @@ class Entity_id_handlingSpec {
     require('./schemas/default/ComplexIdsKeys');
 
     let registry = EntityRegistry.$();
-    let entityDef = registry.getEntityDefByName('author');
+    let entityDef = registry.getEntityRefByName('author');
 
     let conditions = entityDef.createLookupConditions('1');
     expect(_.has(conditions, 'id')).to.be.true;
@@ -37,7 +37,7 @@ class Entity_id_handlingSpec {
     expect(conditions).to.have.length(3);
     expect(conditions).to.be.deep.eq([{id: 1}, {id: 2}, {id: 3}]);
 
-    let entityDefPKs = registry.getEntityDefByName('ComplexIdsKeys');
+    let entityDefPKs = registry.getEntityRefByName('ComplexIdsKeys');
 
     conditions = entityDefPKs.createLookupConditions("inc=1,code='test'");
     expect(conditions).to.be.deep.eq({inc: 1, code: 'test'});
@@ -60,7 +60,7 @@ class Entity_id_handlingSpec {
     require('./schemas/default/ComplexIdsKeys');
 
     let registry = EntityRegistry.$();
-    let entityDef = registry.getEntityDefByName('author');
+    let entityDef = registry.getEntityRefByName('author');
 
     let str = entityDef.buildLookupConditions({id:1});
     expect(str).to.be.eq("1");
@@ -68,7 +68,7 @@ class Entity_id_handlingSpec {
     str = entityDef.buildLookupConditions([{id:1},{id:2}]);
     expect(str).to.be.eq("1,2");
 
-    let entityDefPKs = registry.getEntityDefByName('ComplexIdsKeys');
+    let entityDefPKs = registry.getEntityRefByName('ComplexIdsKeys');
     str = entityDefPKs.buildLookupConditions({inc: 1, code: 'test'});
     expect(str).to.be.eq("1,'test'");
 

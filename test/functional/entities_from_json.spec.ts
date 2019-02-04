@@ -28,6 +28,7 @@ class Entities_from_jsonSpec {
             "id": "default--personal--id",
             "name": "id",
             "type": "property",
+            "label": "Id",
             "machineName": "id",
             "options": {
               "type": "number",
@@ -37,7 +38,6 @@ class Entities_from_jsonSpec {
             },
             "schema": "default",
             "entityName": "Personal",
-            "label": "Id",
             "dataType": "number",
             "generated": true,
             "identifier": true,
@@ -48,6 +48,7 @@ class Entities_from_jsonSpec {
             "id": "default--personal--firstname",
             "name": "firstName",
             "type": "property",
+            "label": "Firstname",
             "machineName": "first_name",
             "options": {
               "type": "string",
@@ -57,7 +58,7 @@ class Entities_from_jsonSpec {
             },
             "schema": "default",
             "entityName": "Personal",
-            "label": "Firstname",
+
             "dataType": "string",
             "generated": false,
             "identifier": false,
@@ -79,6 +80,7 @@ class Entities_from_jsonSpec {
             "id": "default--personal--lastname",
             "name": "lastName",
             "type": "property",
+            "label": "Lastname",
             "machineName": "last_name",
             "options": {
               "type": "string",
@@ -88,7 +90,7 @@ class Entities_from_jsonSpec {
             },
             "schema": "default",
             "entityName": "Personal",
-            "label": "Lastname",
+
             "dataType": "string",
             "generated": false,
             "identifier": false
@@ -98,7 +100,7 @@ class Entities_from_jsonSpec {
 
 
     let entityDef = EntityRegistry.fromJson(d);
-    let regEntityDef = EntityRegistry.getEntityDefFor("Personal");
+    let regEntityDef = EntityRegistry.getEntityRefFor("Personal");
     expect(entityDef).to.be.eq(regEntityDef);
 
     let output = JSON.parse(JSON.stringify(entityDef.toJson()));
@@ -209,10 +211,10 @@ class Entities_from_jsonSpec {
 
 
     let entityDef = EntityRegistry.fromJson(d);
-    let regEntityDef = EntityRegistry.getEntityDefFor("Bookk");
+    let regEntityDef = EntityRegistry.getEntityRefFor("Bookk");
     expect(entityDef).to.be.eq(regEntityDef);
 
-    let authorProp = entityDef.getPropertyDefs().find((p) => p.name == 'author');
+    let authorProp = entityDef.getPropertyRefs().find((p) => p.name == 'author');
     expect(authorProp.isReference()).to.be.true;
 
 

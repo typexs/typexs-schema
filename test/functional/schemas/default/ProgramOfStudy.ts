@@ -1,5 +1,6 @@
 import {QualiKeys} from './QualiKeys';
-import {Entity, Key, Property} from "../../../../src";
+import {Entity,  Property} from "../../../../src";
+import {Key} from "commons-expressions";
 
 
 @Entity()

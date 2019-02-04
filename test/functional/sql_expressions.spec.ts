@@ -52,7 +52,7 @@ class Sql_expressionsSpec {
 
 
 
-    let CarDef = EntityRegistry.getEntityDefFor("Car");
+    let CarDef = EntityRegistry.getEntityRefFor("Car");
     let builder = new SqlConditionsBuilder(CarDef);
     let where = builder.build({
       producer: 'Volvo',
@@ -75,7 +75,7 @@ class Sql_expressionsSpec {
 
 
     const CondEntityHolder = require("./schemas/conditions/CondEntityHolder");
-    let CondEntityHolderDef = EntityRegistry.getEntityDefFor("CondEntityHolder");
+    let CondEntityHolderDef = EntityRegistry.getEntityRefFor("CondEntityHolder");
     let builder = new SqlConditionsBuilder(CondEntityHolderDef);
     let where = builder.build({
       'contents.nickname': 'Bert'
@@ -99,7 +99,7 @@ class Sql_expressionsSpec {
     let connect = await this.connect(options);
 
 
-    let CondEntityHolderDef = EntityRegistry.getEntityDefFor("Book");
+    let CondEntityHolderDef = EntityRegistry.getEntityRefFor("Book");
     let builder = new SqlConditionsBuilder(CondEntityHolderDef);
     let where = builder.build({
       'author.lastName': 'Bert'

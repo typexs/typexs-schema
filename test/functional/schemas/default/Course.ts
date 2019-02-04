@@ -1,5 +1,6 @@
-import {Entity, Key, Property} from "../../../../src";
+import {Entity,  Property} from "../../../../src";
 import {Periode} from "./Periode";
+import {Key} from "commons-expressions";
 
 
 @Entity()

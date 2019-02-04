@@ -1,17 +1,16 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import {
-  ClassRef,
   Entity,
-  EntityDef,
+  EntityRef,
   EntityRegistry,
   Property,
   XS_ANNOTATION_OPTIONS_CACHE,
-  XS_DEFAULT_SCHEMA
 } from "../../src";
 import * as _ from "lodash";
 import {OptionsHelper} from "../../src/libs/registry/OptionsHelper";
 import {MetaArgs} from "@typexs/base";
+import {ClassRef, XS_DEFAULT_SCHEMA} from "commons-schema-api";
 
 
 @suite('functional/entity_registry')
@@ -42,13 +41,13 @@ class Entity_registrySpec {
       "default--book--author"
     ]);
 
-    let entity = EntityRegistry.getEntityDefFor('Author');
+    let entity = EntityRegistry.getEntityRefFor('Author');
     expect(entity).to.not.be.empty;
 
-    let props = entity.getPropertyDefs();
+    let props = entity.getPropertyRefs();
     expect(props).to.have.length(3);
 
-    entity = registry.getEntityDefByName('author');
+    entity = registry.getEntityRefByName('author');
     expect(entity).to.not.be.empty;
 
     let eJson = entity.toJson();
@@ -66,7 +65,7 @@ class Entity_registrySpec {
     expect(eJson.properties).to.have.length(3);
     expect(_.map(eJson.properties, x => x.machineName)).to.deep.eq(['id', 'first_name', 'last_name']);
 
-    props = entity.getPropertyDefs();
+    props = entity.getPropertyRefs();
     expect(props).to.have.length(3);
 
     let pJsons = _.map(props, p => p.toJson());
@@ -96,9 +95,9 @@ class Entity_registrySpec {
 
     ]); // 5 before and 2 from summary and summary as new prop of book
 
-    let entity = EntityRegistry.getEntityDefFor('Author');
+    let entity = EntityRegistry.getEntityRefFor('Author');
     expect(entity).to.not.be.null;
-    let props = entity.getPropertyDefs();
+    let props = entity.getPropertyRefs();
     expect(props).to.have.length(3);
 
   }
@@ -126,10 +125,10 @@ class Entity_registrySpec {
 
     ]); // 5 before and 2 from summary and summary as new prop of book
 
-    let entity = EntityRegistry.getEntityDefFor('Book');
+    let entity = EntityRegistry.getEntityRefFor('Book');
     expect(entity).to.not.be.null;
 
-    let props = entity.getPropertyDefs().map(p => p.id());
+    let props = entity.getPropertyRefs().map(p => p.id());
 
 
     expect(props).to.include.members([
@@ -147,9 +146,9 @@ class Entity_registrySpec {
 
     require('./schemas/default/Author'); // Book imports Author
     // require('./schemas/default/Summary');
-    let entity = EntityRegistry.getEntityDefFor('Author');
+    let entity = EntityRegistry.getEntityRefFor('Author');
     let instance = entity.new<any>();
-    let def = EntityDef.resolve(instance);
+    let def = EntityRef.resolve(instance);
     expect(def).to.eq(entity);
 
     let registry = EntityRegistry.$();
@@ -167,7 +166,7 @@ class Entity_registrySpec {
     const classRef = ClassRef.get(require('./schemas/direct_property/Driver').Driver); // Book imports Author
     // require('./schemas/default/Summary');
     const registry = EntityRegistry.$();
-    let props = registry.getPropertyDefsFor(classRef);
+    let props = registry.getPropertyRefsFor(classRef);
     expect(props.length).to.be.eq(3);
   }
 
@@ -196,8 +195,8 @@ class Entity_registrySpec {
     }
 
     const registry = EntityRegistry.$();
-    let entityDef = registry.getEntityDefByName('TestAnno');
-    let props = entityDef.getPropertyDefs();
+    let entityDef = registry.getEntityRefByName('TestAnno');
+    let props = entityDef.getPropertyRefs();
     expect(props).to.have.length(2);
     let test1 = props.find(p => p.name == 'test1');
     expect(test1.getOptions()).to.deep.include({hallo:'welt'})
@@ -230,9 +229,9 @@ class Entity_registrySpec {
     }
 
     const registry = EntityRegistry.$();
-    let entityDef1 = registry.getEntityDefByName('TestAnno2');
+    let entityDef1 = registry.getEntityRefByName('TestAnno2');
     expect(entityDef1.getOptions()).to.deep.include({hallo:'welt'})
-    let entityDef2 = registry.getEntityDefByName('TestAnno3');
+    let entityDef2 = registry.getEntityRefByName('TestAnno3');
     expect(entityDef2.getOptions()).to.deep.include({hallo:'welt2'})
 
     expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);

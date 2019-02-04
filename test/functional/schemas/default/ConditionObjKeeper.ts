@@ -1,5 +1,7 @@
-import {And, CObject, Eq, Key, Property, Value} from "../../../../src";
+
 import {ConditionObjectHolder} from "./ConditionObjectHolder";
+import {CObject, Property} from "../../../../src";
+import {And, Eq, Key, Value} from "commons-expressions";
 
 
 @CObject({name: 'condition_obj_keeper'})

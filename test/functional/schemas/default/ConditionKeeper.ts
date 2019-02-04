@@ -1,5 +1,7 @@
-import {And, Entity, Eq, Key, Property, Value} from "../../../../src";
+
 import {ConditionHolder} from "./ConditionHolder";
+import {Entity, Property} from "../../../../src";
+import {And, Eq, Key, Value} from "commons-expressions";
 
 
 @Entity()

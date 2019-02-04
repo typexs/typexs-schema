@@ -1,7 +1,8 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {ClassRef, EntityDef, EntityRegistry, SchemaUtils, XS_DEFAULT_SCHEMA} from "../../src";
+
 import * as _ from "lodash";
+import {ClassRef, SchemaUtils} from "commons-schema-api";
 
 
 @suite('functional/class_ref')

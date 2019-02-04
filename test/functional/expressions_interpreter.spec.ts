@@ -3,7 +3,8 @@ import {expect} from 'chai';
 import {EntityController} from "../../src";
 import {TestHelper} from "./TestHelper";
 import {StorageRef} from "@typexs/base";
-import {ExpressionInterpreter} from "../../src/libs/expressions/ExpressionInterpreter";
+import {ExpressionInterpreter} from "commons-expressions";
+
 
 
 @suite('functional/conditions_interpreter')

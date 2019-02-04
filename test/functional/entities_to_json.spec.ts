@@ -10,7 +10,7 @@ class Entities_to_jsonSpec {
   @test
   async 'with entity reference'() {
     require('./schemas/default/Book');
-    let regEntityDef = EntityRegistry.getEntityDefFor("Book");
+    let regEntityDef = EntityRegistry.getEntityRefFor("Book");
     let data = regEntityDef.toJson();
     expect(data.properties).to.have.length(4);
     expect(data.properties[3].targetRef).to.deep.eq({
@@ -35,7 +35,7 @@ class Entities_to_jsonSpec {
   @test
   async 'with classref reference'() {
     require('./schemas/direct_property/Car');
-    let regEntityDef = EntityRegistry.getEntityDefFor("Car");
+    let regEntityDef = EntityRegistry.getEntityRefFor("Car");
     let data = regEntityDef.toJson();
     // console.log(inspect(data, false, 10))
     expect(data.properties).to.have.length(4);

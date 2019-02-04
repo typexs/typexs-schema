@@ -1,10 +1,12 @@
 import {suite, test} from 'mocha-typescript';
 
 import {expect} from 'chai';
-import {And, ClassRef, ConditionValidationError, Eq, Key, Value} from "../../src";
+
 import {TestHelper} from "./TestHelper";
 import {inspect} from "util";
-import {Expressions} from "../../src/libs/expressions/Expressions";
+import {And, Eq, Expressions, ExpressionValidationError, Key, Value} from "commons-expressions";
+import {ClassRef} from "commons-schema-api";
+import {EntityRegistry} from "../../src";
 
 
 @suite('functional/expressions')
@@ -30,7 +32,7 @@ class ExpressionsSpec {
 
   @test
   async 'validate against source and target class'() {
-
+  let registry = EntityRegistry.$();
     const cond_01 = And(Eq('tableName', Value('condition_keeper')), Eq('tableId', Key('id')));
 
     const ConditionHolder = require('./schemas/default/ConditionHolder').ConditionHolder;
@@ -39,28 +41,28 @@ class ExpressionsSpec {
     let referred = ClassRef.get(ConditionHolder);
     let referrer = ClassRef.get(ConditionKeeper);
 
-    const isValid_01 = cond_01.validate(referred, referrer);
+    const isValid_01 = cond_01.validate(registry,referred, referrer);
     expect(isValid_01).to.be.true;
 
     const cond_02 = And(Eq('tableNameWrong', Value('condition_keeper')), Eq('tableId', Key('id')));
-    const isValid_02 = cond_02.validate(referred, referrer, false);
+    const isValid_02 = cond_02.validate(registry,referred, referrer, false);
     expect(isValid_02).to.be.false;
     expect(function () {
-      cond_02.validate(referred, referrer)
-    }).to.throw(ConditionValidationError);
+      cond_02.validate(registry,referred, referrer)
+    }).to.throw(ExpressionValidationError);
     expect(function () {
-      cond_02.validate(referred, referrer)
-    }).to.throw('validation error: referred key(s) tableNameWrong not in sourceRef');
+      cond_02.validate(registry,referred, referrer) // TODO fix this message
+    }).to.throw('referred key(s) tableNameWrong not in sourceRef');
 
     const cond_03 = Eq('tableId', Key('ids'));
-    const isValid_03 = cond_03.validate(referred, referrer, false);
+    const isValid_03 = cond_03.validate(registry,referred, referrer, false);
     expect(isValid_03).to.be.false;
     expect(function () {
-      cond_03.validate(referred, referrer)
-    }).to.throw(ConditionValidationError);
+      cond_03.validate(registry,referred, referrer)
+    }).to.throw(ExpressionValidationError);
     expect(function () {
-      cond_03.validate(referred, referrer)
-    }).to.throw('validation error: referrer key(s) ids not in targetRef');
+      cond_03.validate(registry,referred, referrer)
+    }).to.throw('referrer key(s) ids not in targetRef');
   }
 
 

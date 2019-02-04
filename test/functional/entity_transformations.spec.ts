@@ -13,7 +13,7 @@ class Entity_transformationsSpec {
     require('./schemas/default/Author');
     let registry = EntityRegistry.$();
     let data = {id: 1, lastName: 'Engels', firstName: 'Friedrich'};
-    let entityDef = registry.getEntityDefByName('author');
+    let entityDef = registry.getEntityRefByName('author');
     let author = entityDef.build(data);
     expect(author).to.deep.eq(data);
   }
@@ -28,7 +28,7 @@ class Entity_transformationsSpec {
     p.permission = 'permission;)';
     p.roles = [{id: 1, rolename: 'role1'}, {id: 2, rolename: 'role2'}];
     let registry = EntityRegistry.$();
-    let entityDef = registry.getEntityDefByName('Permission');
+    let entityDef = registry.getEntityRefByName('Permission');
     let permission: any = entityDef.build(p);
     expect(_.isArray(permission.roles)).to.be.true;
     expect(permission.roles).to.have.length(2);
@@ -44,7 +44,7 @@ class Entity_transformationsSpec {
     p.permission = 'permission;)';
     p.roles = [{id: 1, rolename: 'role1'}, {id: 2, rolename: 'role2'}];
     let registry = EntityRegistry.$();
-    let entityDef = registry.getEntityDefByName('Permission');
+    let entityDef = registry.getEntityRefByName('Permission');
     let permission: any = entityDef.build(p);
     expect(_.isBoolean(permission.disabled)).to.be.true;
     expect(permission.disabled).to.be.false;
@@ -78,7 +78,7 @@ class Entity_transformationsSpec {
 
 
     let registry = EntityRegistry.$();
-    let entityDef = registry.getEntityDefByName('EntityWithEmbedded');
+    let entityDef = registry.getEntityRefByName('EntityWithEmbedded');
     let entityWithEmbedded: any = entityDef.build(JSON.parse(JSON.stringify(p)));
     expect(entityWithEmbedded).to.deep.eq(p);
 
@@ -104,7 +104,7 @@ class Entity_transformationsSpec {
 
 
     let registry = EntityRegistry.$();
-    let entityDef = registry.getEntityDefByName('Car');
+    let entityDef = registry.getEntityRefByName('Car');
     let entityWithEmbedded: any = entityDef.build(JSON.parse(JSON.stringify(p)));
     expect(entityWithEmbedded).to.deep.eq(p);
     console.log(entityWithEmbedded)
