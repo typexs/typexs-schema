@@ -1,16 +1,10 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {
-  Entity,
-  EntityRef,
-  EntityRegistry,
-  Property,
-  XS_ANNOTATION_OPTIONS_CACHE,
-} from "../../src";
+import {Entity, EntityRef, EntityRegistry, Property, XS_ANNOTATION_OPTIONS_CACHE,} from "../../src";
 import * as _ from "lodash";
-import {OptionsHelper} from "../../src/libs/registry/OptionsHelper";
+
 import {MetaArgs} from "@typexs/base";
-import {ClassRef, XS_DEFAULT_SCHEMA} from "commons-schema-api";
+import {AnnotationsHelper, ClassRef, XS_DEFAULT_SCHEMA} from "commons-schema-api";
 
 
 @suite('functional/entity_registry')
@@ -176,7 +170,7 @@ class Entity_registrySpec {
 
     function PropAddOn(opts: any = {}) {
       return function (object: any, property: string, _options: any = {}) {
-        OptionsHelper.forPropertyOn(ClassRef.get(object), property, opts);
+        AnnotationsHelper.forPropertyOn(ClassRef.get(object), property, opts);
       }
     }
 
@@ -211,7 +205,7 @@ class Entity_registrySpec {
 
     function EntityPropAddOn(opts: any = {}) {
       return function (object: any) {
-        OptionsHelper.forEntityOn(ClassRef.get(object), opts);
+        AnnotationsHelper.forEntityOn(ClassRef.get(object), opts);
       }
     }
 

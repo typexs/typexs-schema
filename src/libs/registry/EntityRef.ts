@@ -4,19 +4,19 @@ import * as _ from 'lodash'
 import {getFromContainer} from "class-validator/container";
 import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
 import {ValidationMetadataArgs} from "class-validator/metadata/ValidationMetadataArgs";
-import {OptionsHelper} from "./OptionsHelper";
+
 import {
   AbstractRef,
   ClassRef,
   IBuildOptions,
   IEntityRef,
-  LookupRegistry, SchemaUtils, XS_TYPE_ENTITY,
+  LookupRegistry,
+  SchemaUtils,
+  XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
 } from "commons-schema-api/browser";
 import {ClassUtils} from "commons-base/browser"
 import {XS_P_LABEL} from "../Constants";
-import {NotYetImplementedError} from "@typexs/base/browser";
-
 import {Expressions} from "commons-expressions/browser"
 
 const DEFAULT_OPTIONS: IEntity = {
@@ -34,7 +34,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
 
   constructor(fn: ClassRef | Function, options: IEntity = {}) {
     super('entity', fn instanceof ClassRef ? fn.className : fn.name, fn);
-    OptionsHelper.merge(this.object, options);
+    //OptionsHelper.merge(this.object, options);
     this.object.isEntity = true;
     options = _.defaults(options, DEFAULT_OPTIONS);
     this.setOptions(options);

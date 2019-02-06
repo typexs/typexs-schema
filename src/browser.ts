@@ -24,7 +24,7 @@ export * from "./libs/descriptors/JoinDesc";
 export * from "./libs/descriptors/OrderDesc";
 
 
-export * from "./libs/registry/OptionsHelper";
+
 export * from "./libs/registry/EntityRef";
 export * from "./libs/registry/IEntity";
 export * from "./libs/registry/IObject";

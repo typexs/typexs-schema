@@ -2,7 +2,6 @@ import {IProperty} from './IProperty';
 import * as _ from 'lodash';
 import {EntityRef} from "./EntityRef";
 import * as moment from "moment";
-import {OptionsHelper} from "./OptionsHelper";
 
 import {
   AbstractRef,
@@ -14,7 +13,7 @@ import {
 } from "commons-schema-api/browser";
 import {NotSupportedError, NotYetImplementedError} from "@typexs/base/browser";
 import {ExprDesc} from "commons-expressions/browser";
-import {OrderDesc} from "../..";
+import {OrderDesc} from "../../libs/descriptors/OrderDesc";
 
 
 export const KNOW_PRIMATIVE_TYPES: JS_DATA_TYPES[] = [
@@ -45,8 +44,6 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
 
   constructor(options: IProperty) {
     super('property', options.propertyName, options.sourceClass);
-    // workaround to apply other previous called
-    OptionsHelper.merge(this.object, options, this.name);
     this.setOptions(options);
     this.entityName = this.object.className;
 
