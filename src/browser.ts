@@ -7,11 +7,9 @@ export * from "./libs/exceptions/ObjectsNotValidError";
 export * from "./libs/exceptions/HttpObjectsNotValidError";
 export * from "./libs/exceptions/ConditionValidationError";
 
-export * from "./libs/DataContainer";
 export * from "./libs/IValidationError";
 export * from "./libs/IValidationResult";
 export * from "./libs/IValidationMessage";
-
 
 export * from "./libs/decorators/CObject";
 export * from "./libs/decorators/Entity";

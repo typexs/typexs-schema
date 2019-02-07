@@ -1,4 +1,4 @@
-import {ConnectionWrapper, NotYetImplementedError} from '@typexs/base';
+import {ConnectionWrapper, DataContainer, NotYetImplementedError} from '@typexs/base';
 import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
 import {ISaveOp} from "../ISaveOp";
 import {EntityController} from "../../EntityController";
@@ -11,7 +11,7 @@ import {SqlHelper} from "./SqlHelper";
 import {JoinDesc} from "../../descriptors/JoinDesc";
 import {EntityRegistry} from "../../EntityRegistry";
 import {Sql} from "./Sql";
-import {DataContainer} from "../../DataContainer";
+
 import {ObjectsNotValidError} from "../../exceptions/ObjectsNotValidError";
 import {ISaveOptions} from "../ISaveOptions";
 import {ClassRef} from "commons-schema-api";
@@ -631,7 +631,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
   private async validate() {
     let valid: boolean = true;
-    await Promise.all(_.map(this.objects, o => new DataContainer(o)).map(async c => {
+    await Promise.all(_.map(this.objects, o => new DataContainer(o, EntityRegistry.$())).map(async c => {
       valid = valid && await c.validate();
       c.applyState();
     }));
