@@ -14,7 +14,7 @@ import {
 import {NotSupportedError, NotYetImplementedError} from "@typexs/base/browser";
 import {ExprDesc} from "commons-expressions/browser";
 import {OrderDesc} from "../../libs/descriptors/OrderDesc";
-
+import {ClassUtils} from 'commons-base/browser';
 
 export const KNOW_PRIMATIVE_TYPES: JS_DATA_TYPES[] = [
   'string', 'text', 'number', 'boolean', 'double',
@@ -349,6 +349,15 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     return label;
   }
 
+  getType(){
+    if(this.dataType){
+      return this.dataType;
+    }else if(this.targetRef){
+      return ClassUtils.getClassName(this.targetRef.getClass());
+    }
+    return null;
+
+  }
 
   toJson(withSubProperties: boolean = true) {
     let o = super.toJson();
@@ -377,7 +386,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   getEntityRef(): EntityRef {
-    return this.isEntityReference() ? <EntityRef>this.getTargetRef().getEntityRef() : null;
+    return this.isEntityReference() ? <EntityRef><any>this.getTargetRef().getEntityRef() : null;
   }
 
   getTargetRef(): ClassRef {
