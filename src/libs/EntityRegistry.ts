@@ -1,4 +1,3 @@
-
 import {SchemaRef} from './registry/SchemaRef';
 import {PropertyRef} from './registry/PropertyRef';
 import {EntityRef} from './registry/EntityRef';
@@ -12,11 +11,18 @@ import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
 import {
   AbstractRef,
   Binding,
-  ClassRef, IClassRefMetadata,
+  ClassRef,
+  IClassRefMetadata,
   IEntityRefMetadata,
-  ILookupRegistry, IPropertyRefMetadata,
+  ILookupRegistry,
+  IPropertyRefMetadata,
   LookupRegistry,
-  SchemaUtils, XS_DEFAULT_SCHEMA, XS_TYPE_CLASS_REF, XS_TYPE_ENTITY, XS_TYPE_PROPERTY, XS_TYPE_SCHEMA
+  SchemaUtils,
+  XS_DEFAULT_SCHEMA,
+  XS_TYPE_CLASS_REF,
+  XS_TYPE_ENTITY,
+  XS_TYPE_PROPERTY,
+  XS_TYPE_SCHEMA
 } from "commons-schema-api/browser";
 import {NotYetImplementedError} from "@typexs/base/browser";
 import {ClassUtils} from "commons-base/browser";

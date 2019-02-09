@@ -4,7 +4,7 @@ import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 
-import {Container} from '@typexs/base';
+import {Container, IRuntimeLoaderOptions, TypeOrmEntityRegistry} from '@typexs/base';
 import {Bootstrap} from '@typexs/base/Bootstrap';
 
 import {TestHelper} from "./TestHelper";
@@ -12,6 +12,8 @@ import {TestHelper} from "./TestHelper";
 import {K_ROUTE_CONTROLLER, Server} from "@typexs/server";
 import {Permission} from "./schemas/role_permissions/Permission";
 import {Role} from "./schemas/role_permissions/Role";
+import {RBelongsTo2} from "./schemas/role_permissions/RBelongsTo2";
+import {EntityRegistry} from "../../src";
 
 
 const settingsTemplate: any = {
@@ -34,10 +36,15 @@ const settingsTemplate: any = {
 
   app: {name: 'demo', path: __dirname + '/../..'},
 
-  modules: {
+  modules: <IRuntimeLoaderOptions>{
     paths: [
       // __dirname + '/packages'
     ],
+
+    libs: [{
+      topic: 'entities.role_permissions',
+      refs: [__dirname + '/schema/role_permissions']
+    }]
   },
 
 
@@ -95,6 +102,9 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
     if (server) {
       await server.stop();
     }
+    if (bootstrap) {
+      await bootstrap.shutdown();
+    }
     Bootstrap.reset();
 
   }
@@ -151,6 +161,16 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
     expect(results.$state.isSuccessValidated).to.be.true;
     expect(results.permissions).to.have.length(3);
 
+
+  }
+
+
+  @test
+  async 'metadata for overlapping entity check'() {
+
+    let entity = TypeOrmEntityRegistry.$().getEntityRefFor("RBelongsTo2");
+    let props = entity.getPropertyRefs();
+    expect(props).to.have.length(7);
 
   }
 }

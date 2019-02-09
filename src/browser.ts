@@ -26,4 +26,5 @@ export * from "./libs/registry/IProperty";
 export * from "./libs/registry/ISchema";
 export * from "./libs/registry/PropertyRef";
 export * from "./libs/registry/SchemaRef";
+export * from "./libs/EntityRegistry";
 
