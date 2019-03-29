@@ -13,18 +13,12 @@ import {K_ROUTE_CONTROLLER, Server} from "@typexs/server";
 import {Permission} from "./schemas/role_permissions/Permission";
 import {Role} from "./schemas/role_permissions/Role";
 import {RBelongsTo2} from "./schemas/role_permissions/RBelongsTo2";
-import {EntityRegistry} from "../../src";
+import {TEST_STORAGE_OPTIONS} from "./config";
 
 
 const settingsTemplate: any = {
   storage: {
-    default: {
-      synchronize: true,
-      type: 'sqlite',
-      database: ':memory:',
-      logging: 'all',
-      logger: 'simple-console'
-    },
+    default: TEST_STORAGE_OPTIONS,
     role_permissions: {
       synchronize: true,
       type: 'sqlite',
@@ -83,7 +77,7 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
   static async before() {
     TestHelper.resetTypeorm();
     let settings = _.clone(settingsTemplate);
-
+    Bootstrap.reset();
 
     bootstrap = Bootstrap.setConfigSources([{type: 'system'}])
       .configure(settings)

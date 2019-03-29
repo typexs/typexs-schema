@@ -5,16 +5,11 @@ import * as _ from "lodash";
 import * as request from 'request-promise-native';
 import {expect} from 'chai';
 import {TestHelper} from "../TestHelper";
+import {TEST_STORAGE_OPTIONS} from "../config";
 
 const settingsTemplate: any = {
   storage: {
-    default: {
-      synchronize: true,
-      type: 'sqlite',
-      database: ':memory:',
-      logging: 'all',
-      logger: 'simple-console'
-    },
+    default: TEST_STORAGE_OPTIONS,
     literature: {
       synchronize: true,
       type: 'sqlite',
@@ -85,6 +80,7 @@ class ApiserverSpec {
 
   static async after() {
     await server.stop();
+    await bootstrap.shutdown();
     Bootstrap.reset();
 
   }
