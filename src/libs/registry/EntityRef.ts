@@ -21,7 +21,7 @@ import {Expressions} from "commons-expressions/browser"
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true
-}
+};
 
 const REGEX_ID = /(([\w_]+)=((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\'),?)/;
 const REGEX_ID_G = /(([\w_]+)=((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\'),?)/g;

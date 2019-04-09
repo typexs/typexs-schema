@@ -239,7 +239,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
   static extractKeyableValues(data: any[]) {
     return data.map(obj => {
-      let id: any = {}
+      let id: any = {};
       _.keys(obj)
         .filter(k => _.isString(obj[k]) || _.isNumber(obj[k]) || _.isDate(obj[k]) || _.isBoolean(obj[k]))
         .map(k => id[k] = obj[k]);
@@ -321,27 +321,27 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   }
 
 
-  async visitExternalReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
+  async visitExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
     return this._visitReference(sourceDef, propertyDef, classRef, sources);
   }
 
 
-  async leaveExternalReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<any> {
+  async leaveExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<any> {
     return this._leaveReference(sourceDef, propertyDef, classRef, sources);
   }
 
 
-  async visitObjectReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
+  async visitObjectReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
     return this._visitReference(sourceDef, propertyDef, classRef, sources);
   }
 
 
-  async leaveObjectReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
+  async leaveObjectReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
     return this._leaveReference(sourceDef, propertyDef, classRef, sources);
   }
 
 
-  async _visitReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
+  async _visitReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
     let [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
     let joinObjs: any[] = [];
 
@@ -374,6 +374,15 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
 
       return targets;
+    } else if (propertyDef.hasJoin()) {
+
+      joinObjs = this.handleJoinDefintionVisit(sourceDef, propertyDef, classRef, sources);
+      return {
+        next: targetObjects,
+        join: joinObjs,
+        target: sources.next,
+        abort: targetObjects.length === 0
+      };
     } else if (propertyDef.hasJoinRef()) {
       let targetIdProps = this.em.schema().getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
 
@@ -560,7 +569,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
   }
 
-  async _leaveReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
+  async _leaveReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
     if (propertyDef.hasJoinRef()) {
 
       if (sourceDef instanceof EntityRef) {
@@ -577,7 +586,10 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           return {next: saved};
         }
       }
-
+    } else if (propertyDef.hasJoin()) {
+      let saved: any[] = await this.c.manager.save(classRef.getClass(), sources.next);
+      await this.handleJoinDefintionLeave(sourceDef, propertyDef, classRef, sources, sources);
+      return {next: saved};
     } else if (propertyDef.isEmbedded()) {
 
       // set saved referrer id to base entity

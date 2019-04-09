@@ -180,9 +180,11 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       propertyDef,
       targetRef instanceof EntityRef ? targetRef.getClassRef() : targetRef);
 
+
     if (targetRef instanceof EntityRef) {
       return {next: joinClass};
     }
+    //propertyDef.joinRef = join.joinRef;
     return {next: this.handleCreateObjectClass(targetRef)};
   }
 
@@ -283,7 +285,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
         return {next: storeClass};
       }
     }
-    throw new NotYetImplementedError('object reference for ' + sourceDef)
+    throw new NotYetImplementedError('object reference for ' + sourceDef);
   }
 
 

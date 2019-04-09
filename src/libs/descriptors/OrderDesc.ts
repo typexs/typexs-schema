@@ -6,7 +6,7 @@ export class OrderDesc implements IExpr {
   readonly asc: boolean;
 
   constructor(key: KeyDesc, direction: boolean = true) {
-    this.key = key
+    this.key = key;
     this.asc = direction;
   }
 }

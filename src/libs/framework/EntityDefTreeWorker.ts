@@ -135,6 +135,7 @@ export abstract class EntityDefTreeWorker {
     if(def.result){
       delete def.result['status'];
     }
+
     if (!(_.has(def.result, 'abort') && def.result.abort)) {
       let properties = EntityRegistry.getPropertyRefsFor(classDef);
       await this.walkProperties(properties, def);

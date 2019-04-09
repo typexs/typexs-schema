@@ -54,7 +54,7 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
             // let c =
             let sourceKey = /\'/.test(map[targetKey]) ? map[targetKey] : rootAlias + '.' + map[targetKey];
             conditions.push([join.alias + '.' + targetKey, sourceKey].join(' = '))
-          })
+          });
           join.condition = conditions.join(' AND ');
           this.joins.push(join);
           rootAlias = join.alias;
@@ -121,7 +121,7 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
             let [targetId, targetName] = this.nameResolver.forSource(<PropertyRef>property);
             conditions.push([join.alias + '.' + targetName, rootAlias + '.' + property.storingName].join(' = '))
           });
-          join.condition = conditions.join(' AND ')
+          join.condition = conditions.join(' AND ');
           rootAlias = join.alias;
           names = [rootAlias];
         }

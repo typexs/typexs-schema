@@ -180,7 +180,7 @@ export class EntityAPIController {
         $count: result[XS_P_$COUNT],
         $limit: result[XS_P_$LIMIT],
         $offset: result[XS_P_$OFFSET]
-      }
+      };
       result = results;
     } else {
       result = await controller.find(entityDef.getClass(), conditions, {
