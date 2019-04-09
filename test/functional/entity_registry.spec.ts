@@ -193,9 +193,9 @@ class Entity_registrySpec {
     let props = entityDef.getPropertyRefs();
     expect(props).to.have.length(2);
     let test1 = props.find(p => p.name == 'test1');
-    expect(test1.getOptions()).to.deep.include({hallo:'welt'})
+    expect(test1.getOptions()).to.deep.include({hallo:'welt'});
     let test2 = props.find(p => p.name == 'test2');
-    expect(test2.getOptions()).to.deep.include({hallo:'welt2'})
+    expect(test2.getOptions()).to.deep.include({hallo:'welt2'});
 
     expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);
   }
@@ -224,9 +224,9 @@ class Entity_registrySpec {
 
     const registry = EntityRegistry.$();
     let entityDef1 = registry.getEntityRefByName('TestAnno2');
-    expect(entityDef1.getOptions()).to.deep.include({hallo:'welt'})
+    expect(entityDef1.getOptions()).to.deep.include({hallo:'welt'});
     let entityDef2 = registry.getEntityRefByName('TestAnno3');
-    expect(entityDef2.getOptions()).to.deep.include({hallo:'welt2'})
+    expect(entityDef2.getOptions()).to.deep.include({hallo:'welt2'});
 
     expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);
 

@@ -105,7 +105,7 @@ class Scenario_06_conditions {
     // condition holder without condition setted fields
     let holder_01 = new CondEntityHolder();
     holder_01.mynr = 2;
-    holder_01.contents = []
+    holder_01.contents = [];
 
     let content_01 = new CondObjectContent();
     content_01.nickname = 'Robert';

@@ -13,6 +13,10 @@ export class ContentHolder {
   @Property({type: 'number', auto: true})
   id: number;
 
+
+  @Property({type: 'string'})
+  value: number;
+
   @Property({
     type: Content, cardinality: 0,
     join: Join(ContentRef,

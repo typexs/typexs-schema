@@ -47,7 +47,7 @@ class Sql_plain_entitySpec {
 
     let author_delete_01: any = deleted_entities.shift();
     expect(author_delete_01.id).to.be.undefined;
-    expect(author_delete_01[XS_P_PREV_ID]).to.be.deep.eq(ids)
+    expect(author_delete_01[XS_P_PREV_ID]).to.be.deep.eq(ids);
 
     author_found = await xsem.find(Author, author_delete_01[XS_P_PREV_ID]);
     expect(author_found).to.have.length(0);

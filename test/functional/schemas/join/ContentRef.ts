@@ -13,7 +13,7 @@ export class ContentRef {
   @Property({type: 'number'})
   tableId: number;
 
-  @Property({type: 'number'})
+  @Property({type: 'number', nullable: true})
   blobid: number;
 
 }

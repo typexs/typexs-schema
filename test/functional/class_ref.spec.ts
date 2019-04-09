@@ -14,7 +14,7 @@ class Class_refSpec {
     let classRef = ClassRef.get(Abc);
     expect(classRef.className).to.be.eq('Abc');
 
-    let fn = SchemaUtils.clazz('Def')
+    let fn = SchemaUtils.clazz('Def');
     classRef = ClassRef.get(fn);
     expect(classRef.className).to.be.eq('Def');
 

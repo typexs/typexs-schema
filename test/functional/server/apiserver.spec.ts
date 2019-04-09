@@ -50,7 +50,7 @@ const settingsTemplate: any = {
     }
   }
 
-}
+};
 
 let bootstrap: Bootstrap = null;
 let server: Server = null;
@@ -91,7 +91,7 @@ class ApiserverSpec {
     let data = {
       label: 'Prinz',
       content: 'Der kleine Prinz'
-    }
+    };
 
     const url = server.url();
 
@@ -149,7 +149,7 @@ class ApiserverSpec {
     let person = {
       firstName: 'Prinz',
       lastName: 'Heinz'
-    }
+    };
     let res = await request.post(url + '/api/entity/personnn', {json: person});
     expect(res).to.deep.include({id: 1});
 
@@ -157,7 +157,7 @@ class ApiserverSpec {
     let data = {
       title: 'Prinz',
       author: {id: 1}
-    }
+    };
 
     res = await request.post(url + '/api/entity/bookkk', {json: data});
     expect(res).to.deep.include({id: 1});

@@ -1,3 +1,5 @@
+import {inspect} from "util";
+
 //process.env['SQL_LOG'] = 'X';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
@@ -6,7 +8,8 @@ import * as _ from 'lodash';
 import {TestHelper} from "./TestHelper";
 
 import {TEST_STORAGE_OPTIONS} from "./config";
-import {Permission} from "./schemas/role_permissions/Permission";
+//import {Permission} from "./schemas/role_permissions/Permission";
+//import {ContentHolder} from "./schemas/join/ContentHolder";
 
 
 @suite('functional/sql_schema_predefined_join_bidirect')
@@ -73,7 +76,7 @@ class Sql_schema_predefined_join_bidirectSpec {
     let roles = await xsem.find(Role);
     expect(roles).to.have.length(1);
 
-    let permissions: Permission[] = await xsem.find<Permission>(Permission);
+    let permissions: any[] = await xsem.find<any>(Permission);
     expect(permissions).to.have.length(2);
     expect(permissions[0].roles).to.have.length(1);
     expect(permissions[0].roles[0].rolename).to.be.eq('admin');
@@ -176,6 +179,66 @@ class Sql_schema_predefined_join_bidirectSpec {
     results = await c.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(0);
 
+
+    await c.close();
+
+  }
+
+
+  @test
+  async 'create E-P-O[] over predefined join tables'() {
+    const ContentHolder = require('./schemas/join/ContentHolder').ContentHolder;
+    const Content = require('./schemas/join/Content').Content;
+    const CotnentRef = require('./schemas/join/ContentRef').ContentRef;
+
+    let options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'join';
+    let connect = await TestHelper.connect(options);
+    let xsem = connect.controller;
+    let ref = connect.ref;
+    let c = await ref.connect();
+
+    let tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';');
+    expect(_.map(tables, t => t.name)).to.have.include.members(['r_blobs', 'blobs', 'content_holder']);
+
+    let cols = await c.connection.query('PRAGMA table_info(\'r_blobs\')');
+    expect(_.map(cols, t => t.name)).to.have.members(['rblobid', 'table_name', 'table_id', 'blobid']);
+
+
+    let ch01 = new ContentHolder();
+    ch01.value = 'Hallo';
+
+    let c01 = new Content();
+    c01.text = 'halo';
+    ch01.contents = [c01];
+
+    let s = await xsem.save(ch01);
+
+    expect(s).to.deep.eq({
+      value: 'Hallo',
+      contents: [{text: 'halo', blobid: 1}],
+      '$state': {isValidated: true, isSuccessValidated: true},
+      id: 1
+    });
+
+    let tContentHolder: any[] = await c.connection.query('SELECT * FROM content_holder;');
+
+    expect(tContentHolder).to.deep.eq([{id: 1, value: 'Hallo'}]);
+    let tBlobs: any[] = await c.connection.query('SELECT * FROM blobs;');
+
+    expect(tBlobs).to.deep.eq([{blobid: 1, text: 'halo'}]);
+    let tRBlobs: any[] = await c.connection.query('SELECT * FROM r_blobs;');
+    expect(tRBlobs).to.deep.eq([{rblobid: 1, table_name: 'content_holder', table_id: 1, blobid: 1}]);
+
+
+    let f = await xsem.find(ContentHolder, {id: 1});
+    let f01 = f[0]
+    expect(f01).to.deep.eq({
+      value: 'Hallo',
+      contents: [{text: 'halo', blobid: 1}],
+      id: 1
+    });
+    console.log(inspect(f, false, 10));
 
     await c.close();
 

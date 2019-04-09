@@ -110,7 +110,7 @@ class Entities_from_jsonSpec {
 
   @test
   async   'register entity with references by json'() {
-    require('./schemas/default/Author')
+    require('./schemas/default/Author');
 
 
     let d: any = {

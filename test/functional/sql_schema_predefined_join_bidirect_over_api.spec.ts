@@ -64,7 +64,7 @@ const settingsTemplate: any = {
     }
   }
 
-}
+};
 
 let bootstrap: Bootstrap = null;
 let server: Server = null;
