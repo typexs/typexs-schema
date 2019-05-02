@@ -95,6 +95,11 @@ export interface IProperty {
   /**
    * Enum for retrieving values for form selection
    */
-  enum?:any;
+  enum?: any;
 
+
+  /**
+   * Version property
+   */
+  version?: boolean;
 }
