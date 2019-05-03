@@ -100,7 +100,7 @@ class ApiserverSpec {
 
     expect(res).to.deep.include({id: 1});
 
-    res = await http.get(url + `/api/entity/book3/${res.id}`, { json: true, passBody: true});
+    res = await http.get(url + `/api/entity/book3/${res.id}`, {json: true, passBody: true});
     expect(res).to.deep.include({id: 1});
     expect(res).to.deep.include({$url: 'api/entity/book_3/1'});
     expect(res).to.deep.include(data);
@@ -127,11 +127,17 @@ class ApiserverSpec {
     expect(res['$count']).to.eq(1);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([1]);
 
-    res = await http.get(url + `/api/entity/book_3?query=${JSON.stringify({label: {$like: 'Odyssee'}})}`,{json: true, passBody: true});
+    res = await http.get(url + `/api/entity/book_3?query=${JSON.stringify({label: {$like: 'Odyssee'}})}`, {
+      json: true,
+      passBody: true
+    });
     expect(res['$count']).to.eq(1);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([3]);
 
-    res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2`, {json: true, passBody: true});
+    res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2`, {
+      json: true,
+      passBody: true
+    });
     expect(res['$count']).to.eq(3);
     expect(res['$limit']).to.eq(2);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([3, 2]);
@@ -155,7 +161,7 @@ class ApiserverSpec {
       firstName: 'Prinz',
       lastName: 'Heinz'
     };
-    let res = await http.post(url + '/api/entity/personnn', {body: person, json: true,passBody: true});
+    let res = await http.post(url + '/api/entity/personnn', {body: person, json: true, passBody: true});
     expect(res).to.deep.include({id: 1});
 
 
@@ -164,7 +170,7 @@ class ApiserverSpec {
       author: {id: 1}
     };
 
-    res = await http.post(url + '/api/entity/bookkk', {body: data, json: true});
+    res = await http.post(url + '/api/entity/bookkk', {body: data, json: true, passBody: true});
     expect(res).to.deep.include({id: 1});
   }
 }
