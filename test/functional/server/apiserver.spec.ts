@@ -96,11 +96,11 @@ class ApiserverSpec {
 
     const url = server.url();
 
-    let res:any = await http.post(url + '/api/entity/book3', <any>{body: data, responseType: 'json'});
+    let res: any = await http.post(url + '/api/entity/book3', {body: data, json: true, passBody: true});
 
     expect(res).to.deep.include({id: 1});
 
-    res = await http.get(url + `/api/entity/book3/${res.id}`, <any>{responseType: 'json'});
+    res = await http.get(url + `/api/entity/book3/${res.id}`, { json: true, passBody: true});
     expect(res).to.deep.include({id: 1});
     expect(res).to.deep.include({$url: 'api/entity/book_3/1'});
     expect(res).to.deep.include(data);
@@ -116,27 +116,30 @@ class ApiserverSpec {
       }
     ];
 
-    res = await http.post(url + '/api/entity/book3', <any>{body: arrData,responseType:'json'});
+    res = await http.post(url + '/api/entity/book3', {body: arrData, json: true, passBody: true});
     expect(_.map(res, r => r.id)).to.deep.eq([2, 3]);
 
-    res = await http.get(url + `/api/entity/book3/1,2,3`, <any>{responseType:'json'});
+    res = await http.get(url + `/api/entity/book3/1,2,3`, {json: true, passBody: true});
     expect(res['$count']).to.eq(3);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([1, 2, 3]);
 
-    res = await http.get(url + `/api/entity/book3?query=${JSON.stringify({id: 1})}`, <any>{responseType:'json'});
+    res = await http.get(url + `/api/entity/book3?query=${JSON.stringify({id: 1})}`, {json: true, passBody: true});
     expect(res['$count']).to.eq(1);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([1]);
 
-    res = await http.get(url + `/api/entity/book_3?query=${JSON.stringify({label: {$like: 'Odyssee'}})}`, <any>{responseType:'json'});
+    res = await http.get(url + `/api/entity/book_3?query=${JSON.stringify({label: {$like: 'Odyssee'}})}`,{json: true, passBody: true});
     expect(res['$count']).to.eq(1);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([3]);
 
-    res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2`, <any>{responseType:'json'});
+    res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2`, {json: true, passBody: true});
     expect(res['$count']).to.eq(3);
     expect(res['$limit']).to.eq(2);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([3, 2]);
 
-    res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2&offset=1`, <any>{responseType:'json'});
+    res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2&offset=1`, {
+      json: true,
+      passBody: true
+    });
     expect(res['$count']).to.eq(3);
     expect(res['$limit']).to.eq(2);
     expect(res['$offset']).to.eq(1);
@@ -152,7 +155,7 @@ class ApiserverSpec {
       firstName: 'Prinz',
       lastName: 'Heinz'
     };
-    let res = await http.post(url + '/api/entity/personnn', <any>{body: person});
+    let res = await http.post(url + '/api/entity/personnn', {body: person, json: true,passBody: true});
     expect(res).to.deep.include({id: 1});
 
 
@@ -161,7 +164,7 @@ class ApiserverSpec {
       author: {id: 1}
     };
 
-    res = await http.post(url + '/api/entity/bookkk', <any>{body: data});
+    res = await http.post(url + '/api/entity/bookkk', {body: data, json: true});
     expect(res).to.deep.include({id: 1});
   }
 }
