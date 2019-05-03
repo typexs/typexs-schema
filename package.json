@@ -52,7 +52,7 @@
     "mocha": "^5.2.0",
     "mocha-typescript": "^1.1.17",
     "nyc": "^13.0.1",
-    "commons-http": "^1.0.0",
+    "commons-http": "^1.0.1",
     "got": "^9.6.0",
     "sqlite3": "^4.0.2",
     "ts-node": "^6.2.0",
