@@ -13,16 +13,25 @@ export interface IConditionJoin {
 }
 
 
+export interface ISqlBuilderOptions {
+  skipNull?: boolean;
+}
+
 export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
 
+  options: ISqlBuilderOptions = {};
 
   private nameResolver: NameResolver = new NameResolver();
 
   constructor(entityDef: EntityRef, alias: string = null) {
-    super(entityDef,alias);
+    super(entityDef, alias);
     this.inc = 1;
+    this.options.skipNull = false;
   }
 
+  skipNull() {
+    this.options.skipNull = true;
+  }
 
 
   lookupKeys(key: string) {
@@ -157,6 +166,11 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
         let value = condition[k];
         if (_.isString(value) || _.isNumber(value) || _.isDate(value)) {
           return `${key} = '${value}'`
+        } else if (_.isNull(value)) {
+          if (this.options.skipNull) {
+            return null;
+          }
+          return `${key} is NULL`
         } else {
           throw new Error(`SQL.build not a plain type ${key} = ${JSON.stringify(value)} (${typeof value})`);
           //return null;
@@ -166,51 +180,61 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
     }
   }
 
-  escape(str:any){
-    if(_.isString(str)){
-      str = str.replace(/'/g,"\\'");
+  escape(str: any) {
+    if (_.isString(str)) {
+      str = str.replace(/'/g, "\\'");
     }
     return str;
   }
 
-  $eq(condition: any, key: string = null, value:any = null) {
+  $eq(condition: any, key: string = null, value: any = null) {
     let _key = this.lookupKeys(key);
     return `${_key} = '${this.escape(value)}'`
   }
 
-  $ne(condition: any, key: string = null, value:any = null) {
+  $ne(condition: any, key: string = null, value: any = null) {
     let _key = this.lookupKeys(key);
     return `${_key} <> '${this.escape(value)}'`
   }
 
-  $lt(condition: any, key: string = null, value:any = null) {
+  $lt(condition: any, key: string = null, value: any = null) {
     let _key = this.lookupKeys(key);
     return `${_key} < ${this.escape(value)}`
   }
 
-  $le(condition: any, key: string = null, value:any = null) {
+  $le(condition: any, key: string = null, value: any = null) {
     let _key = this.lookupKeys(key);
     return `${_key} <= ${this.escape(value)}`
   }
 
-  $gt(condition: any, key: string = null, value:any = null) {
+  $gt(condition: any, key: string = null, value: any = null) {
     let _key = this.lookupKeys(key);
     return `${_key} > ${this.escape(value)}`
   }
 
-  $ge(condition: any, key: string = null, value:any = null) {
+  $ge(condition: any, key: string = null, value: any = null) {
     let _key = this.lookupKeys(key);
     return `${_key} >= ${this.escape(value)}`
   }
 
-  $like(condition: any, key: string = null, value:any = null) {
+  $like(condition: any, key: string = null, value: any = null) {
     let _key = this.lookupKeys(key);
-    return `${_key} LIKE '${this.escape(value).replace(/%/g,'%%').replace(/\*/g,'%')}'`
+    return `${_key} LIKE '${this.escape(value).replace(/%/g, '%%').replace(/\*/g, '%')}'`
   }
 
-  $in(condition: any, key: string = null, value:any = null) {
+  $in(condition: any, key: string = null, value: any = null) {
     let _key = this.lookupKeys(key);
-    return `${_key} IN (${value.map((x:any) => this.escape(x)).join(',')})`
+    return `${_key} IN (${value.map((x: any) => this.escape(x)).join(',')})`
+  }
+
+  $isNull(condition: any, key: string = null, value: any = null) {
+    let _key = this.lookupKeys(key);
+    return `${_key} IS NULL`
+  }
+
+  $isNotNull(condition: any, key: string = null, value: any = null) {
+    let _key = this.lookupKeys(key);
+    return `${_key} IS NOT NULL`
   }
 
   $and(condition: any, key: string = null): string {

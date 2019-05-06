@@ -38,9 +38,11 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
   private c: ConnectionWrapper;
 
-  private hookAbortCondition: (entityDef: EntityRef, propertyDef: PropertyRef, results: any[], op: any) => boolean =
-    (entityDef: EntityRef, propertyDef: PropertyRef, results: any[], op: any) => {
-      return op.entityDepth > 1
+  private options: IFindOptions;
+
+  private hookAbortCondition: (entityDef: EntityRef, propertyDef: PropertyRef, results: any[], op: SqlFindOp<T>) => boolean =
+    (entityDef: EntityRef, propertyDef: PropertyRef, results: any[], op: SqlFindOp<T>) => {
+      return op.entityDepth > 0
     };
 
   private hookAfterEntity: (entityDef: EntityRef, entities: any[]) => void = () => {
@@ -60,7 +62,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
    */
   async visitEntity(entityDef: EntityRef, propertyDef: PropertyRef, sources: IFindData): Promise<IFindData> {
     // TODO default limit configurable
-    const limit = _.get(sources, 'options.limit', 50);
+    const limit = _.get(sources, 'options.limit', propertyDef ? this.options.subLimit : this.options.limit);
     const offset = _.get(sources, 'options.offset', null);
     const sortBy = _.get(sources, 'options.sort', null);
 
@@ -68,6 +70,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
     if (sources.condition) {
       let builder = new SqlConditionsBuilder(entityDef, qb.alias);
+      builder.skipNull();
       const where = builder.build(sources.condition);
       builder.getJoins().forEach(join => {
         qb.leftJoin(join.table, join.alias, join.condition);
@@ -89,6 +92,11 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     if (_.isNull(sortBy)) {
       entityDef.getPropertyRefIdentifier().forEach(x => {
         qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
+      });
+    } else if (propertyDef && propertyDef.hasOrder()) {
+      const mapping = SqlFindOp.getTargetKeyMap(entityDef);
+      propertyDef.getOrder().forEach((o: OrderDesc) => {
+        qb.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
       });
     } else {
       _.keys(sortBy).forEach(sortKey => {
@@ -130,7 +138,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     let results: any[] = [];
 
     const joinDef: JoinDesc = propertyDef.getJoin();
-    const joinProps = EntityRegistry.getPropertyRefsFor(joinDef.joinRef);
+    //const joinProps = EntityRegistry.getPropertyRefsFor(joinDef.joinRef);
 
     const mapping = SqlFindOp.getTargetKeyMap(joinDef.joinRef);
 
@@ -208,6 +216,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     let conditions: any[] = [];
     let lookups: any[] = [];
     let results: any[] = [];
+    let orderBy: any[] = null;
 
     if (propertyDef.hasConditions()) {
       const mapping = SqlFindOp.getTargetKeyMap(targetDef);
@@ -217,6 +226,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         lookups.push(conditionDef.lookup(source));
         conditions.push(conditionDef.for(source, mapping));
       }
+
     } else if (propertyDef.hasJoin()) {
       [conditions, lookups, results] = await this.handleJoinDefintionVisit(sourceDef, propertyDef, targetDef, sources);
     } else if (propertyDef.hasJoinRef()) {
@@ -582,9 +592,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         targetIdProps.forEach(prop => {
           let name = refProps[idx++];
 
-          [targetId, targetName] = SqlHelper.resolveNameForEmbeddedIds(
-            this.em.nameResolver(), name, propertyDef, prop);
-
+          [targetId, targetName] = SqlHelper.resolveNameForEmbeddedIds(this.em.nameResolver(), name, propertyDef, prop);
           condition[prop.storingName] = extJoinObj[targetId];
           lookup[prop.name] = extJoinObj[targetId];
         });
@@ -606,6 +614,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       let conditionDef = propertyDef.getCondition();
       for (let source of sources.next) {
         lookups.push(conditionDef.lookup(source));
+
         conditions.push(conditionDef.for(source, mapping));
       }
 
@@ -653,7 +662,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         let attachObjs = _.filter(sources.next, lookup);
         if (propertyDef.isCollection()) {
           target[propertyDef.name] = attachObjs;
-        }else{
+        } else {
           target[propertyDef.name] = attachObjs.shift();
         }
       }
@@ -754,8 +763,9 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         let target = sources.target[i];
         let lookup = sources.lookup[i];
         let results = _.filter(sources.next, s => lookup(s));
+
         if (propertyDef.isCollection()) {
-          target[propertyDef.name] = results
+          target[propertyDef.name] = results;
         } else {
           target[propertyDef.name] = results.shift();
         }
@@ -807,9 +817,10 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
   }
 
 
-  async run(entityType: Function | string, findConditions: any = null, options: IFindOptions = {limit: 100}):
+  async run(entityType: Function | string, findConditions: any = null, options?: IFindOptions):
     Promise<T[]> {
     this.c = await this.em.storageRef.connect();
+    this.options = _.defaults(options || {}, {limit: 100, subLimit: 100});
     this.hookAbortCondition = _.get(options, 'hooks.abortCondition', this.hookAbortCondition);
     this.hookAfterEntity = _.get(options, 'hooks.afterEntity', this.hookAfterEntity);
     let entityDef = <EntityRef>ClassRef.get(entityType).getEntityRef();
