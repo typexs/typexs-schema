@@ -6,6 +6,16 @@ import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";
 
 
+
+const FINDOPT = {
+  hooks: {
+    abortCondition: (entityRef: any, propertyDef: any, results: any, op: any) => {
+      return op.entityDepth > 1
+    }
+  }
+}
+
+
 @suite('functional/sql_schema_entity_ref_entity')
 class Sql_schema_entity_ref_entitySpec {
 
@@ -73,7 +83,7 @@ class Sql_schema_entity_ref_entitySpec {
     trai_save_03 = await xsem.save(trai_save_03, {validate: false});
     // console.log(inspect(trai_save_03, false, 10));
 
-    let trai_find_01 = await xsem.find(Training, {id: trai_save_03.id});
+    let trai_find_01 = await xsem.find(Training, {id: trai_save_03.id},FINDOPT);
     expect(trai_find_01).to.have.length(1);
 
     let find_str_01 = JSON.parse(JSON.stringify(trai_find_01.shift()));

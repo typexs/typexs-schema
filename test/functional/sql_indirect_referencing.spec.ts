@@ -5,6 +5,15 @@ import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";
 
 
+const FINDOPT = {
+  hooks: {
+    abortCondition: (entityRef: any, propertyDef: any, results: any, op: any) => {
+      return op.entityDepth > 1
+    }
+  }
+}
+
+
 @suite('functional/sql_indirect_referencing')
 class Sql_indirect_referencingSpec {
 
@@ -76,7 +85,7 @@ class Sql_indirect_referencingSpec {
     expect(data[0].source_seq_nr).to.eq(0);
 
 
-    let books_found = await xsem.find(Book, {id: 1});
+    let books_found = await xsem.find(Book, {id: 1},FINDOPT);
     expect(books_found).to.have.length(1);
     let book_find_1 = books_found.shift();
     //console.log(book_find_1);
