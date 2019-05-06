@@ -1,11 +1,12 @@
 import {suite, test, timeout} from "mocha-typescript";
-import {Bootstrap, Container} from "@typexs/base";
+import {Bootstrap, Container, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from "@typexs/base";
 import {K_ROUTE_CONTROLLER, Server} from "@typexs/server";
 import * as _ from "lodash";
 import {expect} from 'chai';
 import {TestHelper} from "../TestHelper";
 import {TEST_STORAGE_OPTIONS} from "../config";
 import {HttpFactory, IHttp} from "commons-http";
+import {XS_P_$ABORTED, XS_P_URL} from "../../../src";
 
 const settingsTemplate: any = {
   storage: {
@@ -102,7 +103,9 @@ class ApiserverSpec {
 
     res = await http.get(url + `/api/entity/book3/${res.id}`, {json: true, passBody: true});
     expect(res).to.deep.include({id: 1});
-    expect(res).to.deep.include({$url: 'api/entity/book_3/1'});
+    let x = {};
+    x[XS_P_URL] = 'api/entity/book_3/1';
+    expect(res).to.deep.include(x);
     expect(res).to.deep.include(data);
 
     let arrData = [
@@ -120,35 +123,36 @@ class ApiserverSpec {
     expect(_.map(res, r => r.id)).to.deep.eq([2, 3]);
 
     res = await http.get(url + `/api/entity/book3/1,2,3`, {json: true, passBody: true});
-    expect(res['$count']).to.eq(3);
+    expect(res[XS_P_$COUNT]).to.eq(3);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([1, 2, 3]);
 
     res = await http.get(url + `/api/entity/book3?query=${JSON.stringify({id: 1})}`, {json: true, passBody: true});
-    expect(res['$count']).to.eq(1);
+    expect(res[XS_P_$COUNT]).to.eq(1);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([1]);
 
     res = await http.get(url + `/api/entity/book_3?query=${JSON.stringify({label: {$like: 'Odyssee'}})}`, {
       json: true,
       passBody: true
     });
-    expect(res['$count']).to.eq(1);
+    expect(res[XS_P_$COUNT]).to.eq(1);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([3]);
 
     res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2`, {
       json: true,
       passBody: true
     });
-    expect(res['$count']).to.eq(3);
-    expect(res['$limit']).to.eq(2);
+    expect(res[XS_P_$COUNT]).to.eq(3);
+    expect(res[XS_P_$LIMIT]).to.eq(2);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([3, 2]);
 
     res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2&offset=1`, {
       json: true,
       passBody: true
     });
-    expect(res['$count']).to.eq(3);
-    expect(res['$limit']).to.eq(2);
-    expect(res['$offset']).to.eq(1);
+    
+    expect(res[XS_P_$COUNT]).to.eq(3);
+    expect(res[XS_P_$LIMIT]).to.eq(2);
+    expect(res[XS_P_$OFFSET]).to.eq(1);
     expect(res.entities).to.have.length(2);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([2, 1]);
   }

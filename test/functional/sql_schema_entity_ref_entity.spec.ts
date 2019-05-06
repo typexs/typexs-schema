@@ -4,6 +4,7 @@ import {inspect} from "util";
 import * as _ from "lodash";
 import {TestHelper} from "./TestHelper";
 import {TEST_STORAGE_OPTIONS} from "./config";
+import {XS_P_$ABORTED} from "../../src";
 
 
 
@@ -87,7 +88,7 @@ class Sql_schema_entity_ref_entitySpec {
     expect(trai_find_01).to.have.length(1);
 
     let find_str_01 = JSON.parse(JSON.stringify(trai_find_01.shift()));
-    delete find_str_01.trainer.address['$aborted'];
+    delete find_str_01.trainer.address[XS_P_$ABORTED];
     expect(find_str_01).to.deep.eq(saved_str_01);
 
 
