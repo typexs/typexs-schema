@@ -62,7 +62,7 @@
   },
   "dependencies": {
     "@typexs/base": "^0.9.0",
-    "@typexs/server": "^0.4.3",
+    "@typexs/server": "^0.4.4",
     "commons-schema-api": "^1.1.2",
     "commons-expressions": "^1.0.3"
   },
