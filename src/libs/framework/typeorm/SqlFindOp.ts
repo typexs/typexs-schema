@@ -252,7 +252,11 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
           let [sourceId, sourceName] = this.em.nameResolver().forSource(prop);
           condition[sourceName] = prop.get(source);
         });
-        qb.orWhere(SqlFindOp.conditionToQuery(condition));
+
+        const query = SqlFindOp.conditionToQuery(condition);
+        if(!_.isEmpty(query)){
+          qb.orWhere(query);
+        }
 
         if (!_.has(source, propertyDef.name)) {
           if (propertyDef.isCollection()) {
@@ -488,7 +492,10 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         let repo = this.c.manager.getRepository(classRef.getClass());
         let queryBuilder = repo.createQueryBuilder();
         for (let cond of conditions) {
-          queryBuilder.orWhere(SqlFindOp.conditionToQuery(cond));
+          const query = SqlFindOp.conditionToQuery(cond);
+          if (!_.isEmpty(query)) {
+            queryBuilder.orWhere(query);
+          }
         }
         results = await queryBuilder.getMany();
       }
@@ -528,7 +535,11 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
             lookup[sourceId] = x.get(object);
           });
           lookups.push(lookup);
-          queryBuilder.orWhere(SqlFindOp.conditionToQuery(condition));
+          const query = SqlFindOp.conditionToQuery(condition);
+          if (!_.isEmpty(query)) {
+            queryBuilder.orWhere(query);
+          }
+
         }
 
         // TODO if revision support beachte dies an der stellle
@@ -566,7 +577,10 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
           condition[name] = object.id;
 
           lookups.push(lookup);
-          queryBuilder.orWhere(SqlFindOp.conditionToQuery(condition));
+          const query = SqlFindOp.conditionToQuery(condition);
+          if (!_.isEmpty(query)) {
+            queryBuilder.orWhere(query);
+          }
         }
 
         // TODO if revision support beachte dies an der stellle
@@ -598,7 +612,12 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         });
 
         lookups.push(lookup);
-        queryBuilder.orWhere(SqlFindOp.conditionToQuery(condition));
+
+        const query = SqlFindOp.conditionToQuery(condition);
+        if (!_.isEmpty(query)) {
+          queryBuilder.orWhere(query);
+        }
+
         let _results = await queryBuilder.getMany();
         if (_results.length == 0) {
           return {next: [], target: sources.next, lookup: [], abort: true}
@@ -813,7 +832,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
 
   private static conditionToQuery(condition: any): string {
-    return Object.keys(condition).map(k => `${k} = '${condition[k]}'`).join(' AND ')
+    return _.keys(condition).map(k => `${k} = '${condition[k]}'`).join(' AND ')
   }
 
 
