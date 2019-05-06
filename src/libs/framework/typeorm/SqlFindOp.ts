@@ -820,7 +820,8 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
   async run(entityType: Function | string, findConditions: any = null, options?: IFindOptions):
     Promise<T[]> {
     this.c = await this.em.storageRef.connect();
-    this.options = _.defaults(options || {}, {limit: 100, subLimit: 100});
+    let opts = _.clone(options) || {};
+    this.options = _.defaults(opts, {limit: 100, subLimit: 100});
     this.hookAbortCondition = _.get(options, 'hooks.abortCondition', this.hookAbortCondition);
     this.hookAfterEntity = _.get(options, 'hooks.afterEntity', this.hookAfterEntity);
     let entityDef = <EntityRef>ClassRef.get(entityType).getEntityRef();

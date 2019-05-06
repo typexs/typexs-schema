@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import {SchemaRef} from './registry/SchemaRef';
 import {EntityRef} from './registry/EntityRef';
 import {ISchemaMapper} from "./framework/ISchemaMapper";
@@ -59,11 +60,11 @@ export class EntityController {
 
 
   async findOne<T>(fn: Function | string, conditions: any = null, options: IFindOptions = {limit: 1}): Promise<T> {
-    return this.find<T>(fn, conditions, options).then(r => r.shift());
+    return this.find<T>(fn, conditions, _.assign(options,{limit:1})).then(r => r.shift());
   }
 
 
-  async find<T>(fn: Function | string, conditions: any = null, options: IFindOptions = {limit: 100}): Promise<T[]> {
+  async find<T>(fn: Function | string, conditions: any = null, options?: IFindOptions): Promise<T[]> {
     if (!this.framework) throw new NotSupportedError('no framework support');
     return this.framework.getFindOp<T>(this).run(fn, conditions, options);
   }

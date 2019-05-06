@@ -1,4 +1,4 @@
-import {EntityRef} from "../..";
+import {EntityRef, IFindOp, PropertyRef} from "../..";
 
 export interface IFindOptions {
 
@@ -14,7 +14,7 @@ export interface IFindOptions {
   subLimit?: number;
 
   hooks?: {
-    afterEntity?: (entityDef: EntityRef, entities: any[]) => void
-    abortCondition?: (entity: any[]) => boolean
+    afterEntity?: (entityRef: EntityRef, entities: any[]) => void
+    abortCondition?: (entityRef: EntityRef, propertyDef: PropertyRef, results: any[], op: any) => boolean
   };
 }
