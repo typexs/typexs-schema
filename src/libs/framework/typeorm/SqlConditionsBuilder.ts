@@ -238,11 +238,21 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
   }
 
   $and(condition: any, key: string = null): string {
-    return '(' + _.map(condition['$and'], c => this.build(c, null)).filter(x => !_.isEmpty(x)).join(') AND (') + ')';
+    let x = _.map(condition['$and'], c => this.build(c, null)).filter(x => !_.isEmpty(x));
+    if(_.isEmpty(x)){
+      return ''
+    }else{
+      return '(' + x.join(') AND (') + ')';
+    }
   }
 
   $or(condition: any, key: string = null): string {
-    return '(' + _.map(condition['$or'], c => this.build(c, null)).filter(x => !_.isEmpty(x)).join(') OR (') + ')';
+    let x = _.map(condition['$or'], c => this.build(c, null)).filter(x => !_.isEmpty(x));
+    if(_.isEmpty(x)){
+      return ''
+    }else{
+      return '(' + x.join(') OR (') + ')';
+    }
   }
 
 }

@@ -72,10 +72,13 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       let builder = new SqlConditionsBuilder(entityDef, qb.alias);
       builder.skipNull();
       const where = builder.build(sources.condition);
+      if (_.isEmpty(where)) {
+        return {next: [], abort: true};
+      }
+
       builder.getJoins().forEach(join => {
         qb.leftJoin(join.table, join.alias, join.condition);
       });
-      //const whereCond = this.handleCondition(sources.condition, entityDef);
       qb.where(where);
     }
 
@@ -254,7 +257,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         });
 
         const query = SqlFindOp.conditionToQuery(condition);
-        if(!_.isEmpty(query)){
+        if (!_.isEmpty(query)) {
           qb.orWhere(query);
         }
 
