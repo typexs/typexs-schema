@@ -450,7 +450,7 @@ class Sql_direct_referencingSpec {
 
     let booksToSave = [book, book2];
     let books = await xsem.save(booksToSave, {validate: false});
-    let booksFound = await xsem.find(Book, [],FINDOPT);
+    let booksFound = await xsem.find(Book, null,FINDOPT);
 
     expect(books).to.be.deep.eq(booksFound);
 
