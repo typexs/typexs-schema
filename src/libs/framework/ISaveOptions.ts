@@ -1,3 +1,3 @@
 export interface ISaveOptions {
-  validate?: boolean
+  validate?: boolean;
 }

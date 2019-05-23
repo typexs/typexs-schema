@@ -1,5 +1,5 @@
-import {PropertyRef} from "../../registry/PropertyRef";
-import {INameResolver} from "../INameResolver";
+import {PropertyRef} from '../../registry/PropertyRef';
+import {INameResolver} from '../INameResolver';
 
 export class SqlHelper {
 
@@ -20,7 +20,7 @@ export class SqlHelper {
     } else {
       [targetId, targetName] = n.for(name, prop);
     }
-    return [targetId, targetName]
+    return [targetId, targetName];
   }
 
 }

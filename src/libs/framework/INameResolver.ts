@@ -1,4 +1,4 @@
-import {PropertyRef} from "../registry/PropertyRef";
+import {PropertyRef} from '../registry/PropertyRef';
 
 export interface INameResolver {
 

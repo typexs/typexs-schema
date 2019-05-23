@@ -1,10 +1,10 @@
-import {StorageRef} from "@typexs/base/libs/storage/StorageRef";
-import {ISchemaMapper} from "./ISchemaMapper";
-import {IFindOp} from "./IFindOp";
-import {ISaveOp} from "./ISaveOp";
-import {IDeleteOp} from "./IDeleteOp";
-import {EntityController} from "../EntityController";
-import {SchemaRef} from "../registry/SchemaRef";
+import {StorageRef} from '@typexs/base/libs/storage/StorageRef';
+import {ISchemaMapper} from './ISchemaMapper';
+import {IFindOp} from './IFindOp';
+import {ISaveOp} from './ISaveOp';
+import {IDeleteOp} from './IDeleteOp';
+import {EntityController} from '../EntityController';
+import {SchemaRef} from '../registry/SchemaRef';
 
 export interface IFramework {
 

@@ -1,15 +1,15 @@
-import {IFramework} from "../IFramework";
-import {EntityController} from "../../EntityController";
-import {IDeleteOp} from "../IDeleteOp";
-import {IFindOp} from "../IFindOp";
-import {ISaveOp} from "../ISaveOp";
-import {ISchemaMapper} from "../ISchemaMapper";
-import {StorageRef} from "@typexs/base";
-import {SchemaRef} from "../../registry/SchemaRef";
-import {SqlSchemaMapper} from "./SqlSchemaMapper";
-import {SqlFindOp} from "./SqlFindOp";
-import {SqlSaveOp} from "./SqlSaveOp";
-import {SqlDeleteOp} from "./SqlDeleteOp";
+import {IFramework} from '../IFramework';
+import {EntityController} from '../../EntityController';
+import {IDeleteOp} from '../IDeleteOp';
+import {IFindOp} from '../IFindOp';
+import {ISaveOp} from '../ISaveOp';
+import {ISchemaMapper} from '../ISchemaMapper';
+import {StorageRef} from '@typexs/base';
+import {SchemaRef} from '../../registry/SchemaRef';
+import {SqlSchemaMapper} from './SqlSchemaMapper';
+import {SqlFindOp} from './SqlFindOp';
+import {SqlSaveOp} from './SqlSaveOp';
+import {SqlDeleteOp} from './SqlDeleteOp';
 
 
 export class SqlFramework implements IFramework {
@@ -32,9 +32,9 @@ export class SqlFramework implements IFramework {
 
   on(storageRef: StorageRef): boolean {
   // ignore| "cordova" | "react-native" | "sqljs"
-    if(["mysql","postgres", "mariadb", "sqlite", "oracle", "mssql"].indexOf(storageRef.dbType)!==-1){
+    if (['mysql', 'postgres', 'mariadb', 'sqlite', 'oracle', 'mssql'].indexOf(storageRef.dbType) !== -1) {
       return true;
-    }else if(storageRef.dbType == 'aios'){
+    } else if (storageRef.dbType == 'aios') {
       return true;
     }
     return false;

@@ -1,14 +1,14 @@
-import {EntityDefTreeWorker} from "../EntityDefTreeWorker";
-import {IDeleteOp} from "../IDeleteOp";
-import {EntityRef} from "../../registry/EntityRef";
-import {PropertyRef} from "../../registry/PropertyRef";
+import {EntityDefTreeWorker} from '../EntityDefTreeWorker';
+import {IDeleteOp} from '../IDeleteOp';
+import {EntityRef} from '../../registry/EntityRef';
+import {PropertyRef} from '../../registry/PropertyRef';
 
-import {IDataExchange} from "../IDataExchange";
-import {EntityController} from "../../EntityController";
-import {ConnectionWrapper} from "@typexs/base";
-import * as _ from "../../LoDash";
-import {XS_P_PREV_ID} from "../../Constants";
-import {ClassRef} from "commons-schema-api";
+import {IDataExchange} from '../IDataExchange';
+import {EntityController} from '../../EntityController';
+import {ConnectionWrapper} from '@typexs/base';
+import * as _ from '../../LoDash';
+import {XS_P_PREV_ID} from '../../Constants';
+import {ClassRef} from 'commons-schema-api';
 
 
 export interface IDeleteData extends IDataExchange<any[]> {
@@ -23,7 +23,7 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
 
   private objects: any[] = [];
 
-  private entityDepth: number = 0;
+  private entityDepth = 0;
 
 
   constructor(em: EntityController) {
@@ -36,10 +36,10 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
 
   async visitEntity(entityDef: EntityRef, propertyDef: PropertyRef, sources: IDeleteData): Promise<IDeleteData> {
     if (this.entityDepth === 0) {
-      let ids = entityDef.resolveIds(sources.next);
+      const ids = entityDef.resolveIds(sources.next);
       await this.c.manager.remove(entityDef.getClass(), sources.next);
       sources.next.map((v: any, i: number) => {
-        v[XS_P_PREV_ID] = ids[i]
+        v[XS_P_PREV_ID] = ids[i];
       });
     }
     return sources;
@@ -92,25 +92,25 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
 
 
   private async deleteByEntityDef<T>(entityName: string | EntityRef, objects: T[]): Promise<T[]> {
-    let entityDef = _.isString(entityName) ? this.em.schema().getEntity(entityName) : entityName;
+    const entityDef = _.isString(entityName) ? this.em.schema().getEntity(entityName) : entityName;
     return await this.walk(entityDef, objects);
   }
 
 
   async run(object: T | T[]): Promise<T | T[]> {
-    let isArray = _.isArray(object);
+    const isArray = _.isArray(object);
 
     this.objects = this.prepare(object);
 
-    let resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
-    let entityNames = Object.keys(resolveByEntityDef);
+    const resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
+    const entityNames = Object.keys(resolveByEntityDef);
     this.c = await this.em.storageRef.connect();
 
     // start transaction, got to leafs and save
     await this.c.manager.transaction(async em => {
-      let promises = [];
-      for (let entityName of entityNames) {
-        let p = this.deleteByEntityDef(entityName, resolveByEntityDef[entityName]);
+      const promises = [];
+      for (const entityName of entityNames) {
+        const p = this.deleteByEntityDef(entityName, resolveByEntityDef[entityName]);
         promises.push(p);
       }
       return Promise.all(promises);

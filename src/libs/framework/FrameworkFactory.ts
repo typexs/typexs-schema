@@ -1,6 +1,6 @@
-import {NotSupportedError, StorageRef} from "@typexs/base";
-import {IFramework} from "./IFramework";
-import {SqlFramework} from "./typeorm/SqlFramework";
+import {NotSupportedError, StorageRef} from '@typexs/base';
+import {IFramework} from './IFramework';
+import {SqlFramework} from './typeorm/SqlFramework';
 
 
 export class FrameworkFactory {
@@ -21,8 +21,8 @@ export class FrameworkFactory {
   }
 
   get(storageRef: StorageRef) {
-    for(let fwk of this.frameworks){
-      if(fwk.on(storageRef)){
+    for (const fwk of this.frameworks) {
+      if (fwk.on(storageRef)) {
         return fwk;
       }
     }

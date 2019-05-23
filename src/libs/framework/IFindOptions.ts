@@ -1,4 +1,5 @@
-import {EntityRef, IFindOp, PropertyRef} from "../..";
+import {EntityRef} from '../registry/EntityRef';
+import {PropertyRef} from '../registry/PropertyRef';
 
 export interface IFindOptions {
 
@@ -6,7 +7,7 @@ export interface IFindOptions {
 
   offset?: number;
 
-  sort?: { [key: string]: 'asc' | 'desc' }
+  sort?: { [key: string]: 'asc' | 'desc' };
 
   /**
    * limit for queries for subelements, default will be 50

@@ -1,5 +1,5 @@
-import * as _ from "lodash";
-import {Log, NotYetImplementedError} from "@typexs/base";
+import * as _ from 'lodash';
+import {Log, NotYetImplementedError} from '@typexs/base';
 
 
 export class Sql {
@@ -14,7 +14,7 @@ export class Sql {
       if (this[control]) {
         return this[control](condition, k, map);
       } else {
-        throw new NotYetImplementedError()
+        throw new NotYetImplementedError();
       }
     } else if (_.isArray(condition)) {
       return this.$or({'$or': condition}, k, map);
@@ -23,11 +23,11 @@ export class Sql {
         if (_.isPlainObject(condition[k])) {
           return this.conditionsToString(condition[k], k, map);
         }
-        let key = _.get(map, k, k);
-        let value = condition[k];
-        if(_.isString(value) || _.isNumber(value) || _.isDate(value)){
-          return `${key} = '${value}'`
-        }else{
+        const key = _.get(map, k, k);
+        const value = condition[k];
+        if (_.isString(value) || _.isNumber(value) || _.isDate(value)) {
+          return `${key} = '${value}'`;
+        } else {
           Log.warn(`SQL.conditionToString not a plain type ${key} = ${JSON.stringify(value)} (${typeof value})`);
           return null;
         }
@@ -37,13 +37,13 @@ export class Sql {
   }
 
   static $like(condition: any, key: string = null, map: any) {
-    let _key = _.get(map, key, key);
-    return `${_key} LIKE '${condition['$like']}'`
+    const _key = _.get(map, key, key);
+    return `${_key} LIKE '${condition['$like']}'`;
   }
 
   static $in(condition: any, key: string = null, map: any) {
-    let _key = _.get(map, key, key);
-    return `${_key} IN (${condition['$in'].join(',')})`
+    const _key = _.get(map, key, key);
+    return `${_key} IN (${condition['$in'].join(',')})`;
   }
 
   static $and(condition: any, key: string = null, map: any) {

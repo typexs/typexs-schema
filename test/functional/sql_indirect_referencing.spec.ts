@@ -1,17 +1,17 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import * as _ from "lodash";
-import {TestHelper} from "./TestHelper";
-import {TEST_STORAGE_OPTIONS} from "./config";
+import * as _ from 'lodash';
+import {TestHelper} from './TestHelper';
+import {TEST_STORAGE_OPTIONS} from './config';
 
 
 const FINDOPT = {
   hooks: {
     abortCondition: (entityRef: any, propertyDef: any, results: any, op: any) => {
-      return op.entityDepth > 1
+      return op.entityDepth > 1;
     }
   }
-}
+};
 
 
 @suite('functional/sql_indirect_referencing')
@@ -22,7 +22,7 @@ class Sql_indirect_referencingSpec {
     TestHelper.resetTypeorm();
   }
 
-  after(){
+  after() {
 
   }
 
@@ -30,7 +30,7 @@ class Sql_indirect_referencingSpec {
   @test
   async 'entity lifecycle for integrated property'() {
 
-    let options = _.clone(TEST_STORAGE_OPTIONS);
+    const options = _.clone(TEST_STORAGE_OPTIONS);
 //    (<any>options).name = 'direct_property';
 
 
@@ -38,14 +38,14 @@ class Sql_indirect_referencingSpec {
     const Book = require('./schemas/default/Book').Book;
     const Summary = require('./schemas/default/Summary').Summary;
 
-    let connect = await TestHelper.connect(options);
-    let xsem = connect.controller;
-    let ref = connect.ref;
-    let c = await ref.connect();
+    const connect = await TestHelper.connect(options);
+    const xsem = connect.controller;
+    const ref = connect.ref;
+    const c = await ref.connect();
 
 
 
-    let a = new Author();
+    const a = new Author();
     a.firstName = 'Robert';
     a.lastName = 'Kania';
 
@@ -53,14 +53,14 @@ class Sql_indirect_referencingSpec {
     book_save_1.content = 'This is a good book';
     book_save_1.author = a;
 
-    let summary = new Summary();
+    const summary = new Summary();
     summary.size = 1000;
     summary.content = 'This is a good summary';
     book_save_1.summary = summary;
 
     book_save_1 = await xsem.save(book_save_1, {validate: false});
 
-    //console.log(book_save_1)
+    // console.log(book_save_1)
 
     // let data2 = await c.connection.query('SELECT name FROM sqlite_master WHERE type=\'table\';');
     // expect(data2).to.have.length(5);
@@ -85,10 +85,10 @@ class Sql_indirect_referencingSpec {
     expect(data[0].source_seq_nr).to.eq(0);
 
 
-    let books_found = await xsem.find(Book, {id: 1},FINDOPT);
+    const books_found = await xsem.find(Book, {id: 1}, FINDOPT);
     expect(books_found).to.have.length(1);
-    let book_find_1 = books_found.shift();
-    //console.log(book_find_1);
+    const book_find_1 = books_found.shift();
+    // console.log(book_find_1);
     expect((book_find_1 as any).summary.size).to.be.eq(summary.size);
     expect(book_save_1).to.deep.eq(book_find_1);
 
@@ -101,17 +101,17 @@ class Sql_indirect_referencingSpec {
   async 'entity lifecycle for integrated property with multiple references'() {
 
 
-    let options = _.clone(TEST_STORAGE_OPTIONS);
+    const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'integrated_property';
 
 
     const Room = require('./schemas/integrated_property/Room').Room;
     const Equipment = require('./schemas/integrated_property/Equipment').Equipment;
 
-    let connect = await TestHelper.connect(options);
-    let xsem = connect.controller;
-    let ref = connect.ref;
-    let c = await ref.connect();
+    const connect = await TestHelper.connect(options);
+    const xsem = connect.controller;
+    const ref = connect.ref;
+    const c = await ref.connect();
 
     let room_save_1 = new Room();
     room_save_1.number = 123;
@@ -128,15 +128,15 @@ class Sql_indirect_referencingSpec {
     room_save_1.equipment.push(s);
 
     room_save_1 = await xsem.save(room_save_1, {validate: false});
-    //console.log(room_save_1);
-    let data = await c.connection.query('select * from p_equipment');
+    // console.log(room_save_1);
+    const data = await c.connection.query('select * from p_equipment');
     expect(data).to.have.length(2);
 
-    let room_found = await xsem.find(Room, {id: 1});
+    const room_found = await xsem.find(Room, {id: 1});
     expect(room_found).to.have.length(1);
 
-    let room_find_1 = room_found.shift();
-    //console.log(room_find_1);
+    const room_find_1 = room_found.shift();
+    // console.log(room_find_1);
     expect(room_find_1).to.deep.eq(room_save_1);
 
     await c.close();

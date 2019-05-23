@@ -1,4 +1,4 @@
-import {INameResolver} from "./INameResolver";
+import {INameResolver} from './INameResolver';
 
 export interface ISchemaMapper {
 
