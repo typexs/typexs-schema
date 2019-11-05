@@ -7,6 +7,10 @@ import {PlatformTools} from 'typeorm/platform/PlatformTools';
 
 export class TestHelper {
 
+  static suiteName(filename: string) {
+    return filename.split('/test/').pop();
+  }
+
   static async connect(options: any): Promise<{ ref: StorageRef, controller: EntityController }> {
     let invoker = new Invoker();
     Container.set(Invoker.NAME, invoker);
