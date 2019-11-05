@@ -1,9 +1,9 @@
 import {PropertyRef} from './PropertyRef';
 import {IEntity} from './IEntity';
-import * as _ from 'lodash'
-import {getFromContainer} from "class-validator/container";
-import {MetadataStorage} from "class-validator/metadata/MetadataStorage";
-import {ValidationMetadataArgs} from "class-validator/metadata/ValidationMetadataArgs";
+import * as _ from 'lodash';
+import {getFromContainer} from 'class-validator/container';
+import {MetadataStorage} from 'class-validator/metadata/MetadataStorage';
+import {ValidationMetadataArgs} from 'class-validator/metadata/ValidationMetadataArgs';
 
 import {
   AbstractRef,
@@ -14,10 +14,10 @@ import {
   SchemaUtils,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
-} from "commons-schema-api/browser";
-import {ClassUtils} from "commons-base/browser"
-import {XS_P_LABEL} from "../Constants";
-import {Expressions} from "commons-expressions/browser"
+} from 'commons-schema-api/browser';
+import {ClassUtils} from 'commons-base/browser';
+import {XS_P_LABEL} from '../Constants';
+import {Expressions} from 'commons-expressions/browser';
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true
@@ -34,10 +34,44 @@ export class EntityRef extends AbstractRef implements IEntityRef {
 
   constructor(fn: ClassRef | Function, options: IEntity = {}) {
     super('entity', fn instanceof ClassRef ? fn.className : fn.name, fn);
-    //OptionsHelper.merge(this.object, options);
+    // OptionsHelper.merge(this.object, options);
     this.object.isEntity = true;
     options = _.defaults(options, DEFAULT_OPTIONS);
     this.setOptions(options);
+  }
+
+
+  static resolveId(instance: any) {
+    if (_.has(instance, 'xs:entity_id')) {
+      return _.get(instance, 'xs:entity_id');
+    }
+    return null;
+  }
+
+  static resolveName(instance: any): string {
+    if (_.has(instance, 'xs:entity_name')) {
+      return _.get(instance, 'xs:entity_name');
+    } else {
+
+      const className = ClassUtils.getClassName(instance);
+      const xsdef: EntityRef = LookupRegistry.$().find(XS_TYPE_ENTITY, (x: EntityRef) => {
+        return x.name === className;
+      });
+
+      if (xsdef) {
+        return xsdef.name;
+      } else {
+        throw new Error('resolveName not found for instance: ' + JSON.stringify(instance));
+      }
+    }
+  }
+
+  static resolve(instance: any) {
+    const id = this.resolveId(instance);
+    if (id) {
+      return LookupRegistry.$().find(XS_TYPE_ENTITY, (e: EntityRef) => e.id() === id);
+    }
+    return null;
   }
 
 
@@ -56,7 +90,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
   }
 
   getPropertyRef(name: string): PropertyRef {
-    return this.getPropertyRefs().find(p => p.name == name);
+    return this.getPropertyRefs().find(p => p.name === name);
   }
 
   /**
@@ -65,26 +99,19 @@ export class EntityRef extends AbstractRef implements IEntityRef {
    * @returns {any[]}
    */
   getPropertyRefIdentifier(): PropertyRef[] {
-    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyRef) => e.getSourceRef().getClass() === this.getClass() && e.isIdentifier());
-    //return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.entityName == this.name && e.identifier);
+    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyRef) =>
+      e.getSourceRef().getClass() === this.getClass() && e.isIdentifier());
+    // return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.entityName === this.name && e.identifier);
   }
 
   id() {
-    return this.getSourceRef().id().toLowerCase(); //_.snakeCase(_.isString(this.metadata.target) ? this.metadata.target : this.metadata.target.name)
+    return this.getSourceRef().id().toLowerCase();
   }
-  /*
-  id() {
-    let ids = this.object.schemas.map(s => [s, this.object.className].join('--').toLowerCase());
-    if (ids.length === 1) {
-      return ids.shift();
-    }
-    return ids;
-  }*/
 
   resolveId(instance: any) {
-    let id: any = {};
-    let propIds = this.getPropertyRefIdentifier();
-    for (let prop of propIds) {
+    const id: any = {};
+    const propIds = this.getPropertyRefIdentifier();
+    for (const prop of propIds) {
       id[prop.name] = prop.get(instance);
     }
     return id;
@@ -102,8 +129,8 @@ export class EntityRef extends AbstractRef implements IEntityRef {
   }
 
   new<T>(): T {
-    let instance = <T>this.object.new();
-    let id = this.id();
+    const instance = <T>this.object.new();
+    const id = this.id();
     // TODO make constant of xs:entity_id
     Reflect.defineProperty(<any>instance, 'xs:entity_id', {
       value: id,
@@ -116,12 +143,12 @@ export class EntityRef extends AbstractRef implements IEntityRef {
   }
 
   buildLookupConditions(data: any | any[]) {
-    return Expressions.buildLookupConditions(this,data);
+    return Expressions.buildLookupConditions(this, data);
   }
 
 
   createLookupConditions(id: string): any | any[] {
-    return Expressions.parseLookupConditions(this,id);
+    return Expressions.parseLookupConditions(this, id);
   }
 
   getClass() {
@@ -132,8 +159,8 @@ export class EntityRef extends AbstractRef implements IEntityRef {
     return this.object;
   }
 
-  build<T>(data: any, options: IBuildOptions = {}):T {
-    return <T>SchemaUtils.transform(this,data,options);
+  build<T>(data: any, options: IBuildOptions = {}): T {
+    return <T>SchemaUtils.transform(this, data, options);
   }
 
 
@@ -148,14 +175,14 @@ export class EntityRef extends AbstractRef implements IEntityRef {
       return entity.$label;
     } else {
       // create label from data
-      let label: string[] = [];
+      const label: string[] = [];
       this.getPropertyRefs().forEach(p => {
         if (!p.isReference()) {
           label.push(p.get(entity));
         }
       });
 
-      let str = label.join(sep);
+      const str = label.join(sep);
       if (str.length > max) {
         return str.substring(0, max);
       }
@@ -164,42 +191,8 @@ export class EntityRef extends AbstractRef implements IEntityRef {
   }
 
 
-  static resolveId(instance: any) {
-    if (_.has(instance, 'xs:entity_id')) {
-      return _.get(instance, 'xs:entity_id');
-    }
-    return null;
-  }
-
-  static resolveName(instance: any): string {
-    if (_.has(instance, 'xs:entity_name')) {
-      return _.get(instance, 'xs:entity_name');
-    } else {
-
-      let className = ClassUtils.getClassName(instance);
-      let xsdef: EntityRef = LookupRegistry.$().find(XS_TYPE_ENTITY, (x: EntityRef) => {
-        return x.name == className;
-      });
-
-      if (xsdef) {
-        return xsdef.name;
-      } else {
-        throw new Error('resolveName not found for instance: ' + JSON.stringify(instance));
-      }
-    }
-  }
-
-  static resolve(instance: any) {
-    let id = this.resolveId(instance);
-    if (id) {
-      return LookupRegistry.$().find(XS_TYPE_ENTITY, (e: EntityRef) => e.id() === id);
-    }
-    return null;
-  }
-
-
   getKeyMap() {
-    let map = {};
+    const map = {};
     this.getPropertyRefs().map(p => {
       !p.isReference() ? map[p.name] = p.storingName : null;
     });
@@ -208,23 +201,23 @@ export class EntityRef extends AbstractRef implements IEntityRef {
 
 
   toJson(withProperties: boolean = true) {
-    let o = super.toJson();
+    const o = super.toJson();
     o.schema = this.object.getSchema();
     if (withProperties) {
       o.properties = this.getPropertyRefs().map(p => p.toJson());
     }
 
-    let storage = getFromContainer(MetadataStorage);
-    let metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null);
+    const storage = getFromContainer(MetadataStorage);
+    const metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null);
 
     metadata.forEach(m => {
-      let prop = _.find(o.properties, p => p.name === m.propertyName);
+      const prop = _.find(o.properties, p => p.name === m.propertyName);
       if (prop) {
         if (!prop.validator) {
           prop.validator = [];
         }
 
-        let args: ValidationMetadataArgs = {
+        const args: ValidationMetadataArgs = {
           type: m.type,
           target: this.object.className,
           propertyName: m.propertyName,
