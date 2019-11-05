@@ -59,7 +59,7 @@
     "tslint": "~5.20.0",
     "typescript": "^3.6.4",
     "typescript-require": "^0.2.10",
-    "@typexs/server": "^0.4.18"
+    "@typexs/server": "^0.4.19"
   },
   "dependencies": {
     "@typexs/base": "^0.10.0",
@@ -67,7 +67,7 @@
     "commons-expressions": "^1.0.7"
   },
   "peerDependencies": {
-    "@typexs/server": "^0.4.18"
+    "@typexs/server": "^0.4.19"
   },
   "private": true,
   "nyc": {
