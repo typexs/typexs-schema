@@ -1,6 +1,6 @@
-import {Container, IActivator, IPermissions, Log} from "@typexs/base";
-import {EntityRegistry} from "./libs/EntityRegistry";
-import {EntityControllerFactory} from "./libs/EntityControllerFactory";
+import {Container, IActivator, IPermissions, Log} from '@typexs/base';
+import {EntityRegistry} from './libs/EntityRegistry';
+import {EntityControllerFactory} from './libs/EntityControllerFactory';
 import {
   PERMISSION_ALLOW_ACCESS_ENTITY,
   PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN,
@@ -11,8 +11,8 @@ import {
   PERMISSION_ALLOW_DELETE_ENTITY_PATTERN,
   PERMISSION_ALLOW_UPDATE_ENTITY,
   PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN
-} from "./libs/Constants";
-import {EntityRef} from "./libs/registry/EntityRef";
+} from './libs/Constants';
+import {EntityRef} from './libs/registry/EntityRef';
 
 
 export class Activator implements IActivator, IPermissions {
@@ -23,7 +23,7 @@ export class Activator implements IActivator, IPermissions {
     Container.set(EntityRegistry, registry);
     Container.set(EntityRegistry.NAME, registry);
 
-    let factory = Container.get(EntityControllerFactory);
+    const factory = Container.get(EntityControllerFactory);
     Container.set(EntityControllerFactory.NAME, factory);
 
     Log.info('booting schema ...');
@@ -32,7 +32,7 @@ export class Activator implements IActivator, IPermissions {
 
 
   permissions(): Promise<string[]> | string[] {
-    let permissions = [
+    const permissions = [
       PERMISSION_ALLOW_ACCESS_METADATA,
       PERMISSION_ALLOW_ACCESS_ENTITY,
       PERMISSION_ALLOW_CREATE_ENTITY,
@@ -41,8 +41,8 @@ export class Activator implements IActivator, IPermissions {
     ];
 
     const registry = EntityRegistry.$();
-    registry.listEntities().map((e:EntityRef) => {
-      if(e.isStoreable()){
+    registry.listEntities().map((e: EntityRef) => {
+      if (e.isStoreable()) {
         permissions.push(PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN.replace(':name', e.machineName));
         permissions.push(PERMISSION_ALLOW_CREATE_ENTITY_PATTERN.replace(':name', e.machineName));
         permissions.push(PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN.replace(':name', e.machineName));
