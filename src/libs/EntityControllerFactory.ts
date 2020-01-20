@@ -1,13 +1,13 @@
 import {Container, Inject, Log, Storage} from '@typexs/base';
 
-import {EntityController} from "./EntityController";
-import {EntityRegistry} from "./EntityRegistry";
-import {IFramework} from "./framework/IFramework";
-import {FrameworkFactory} from "./framework/FrameworkFactory";
+import {EntityController} from './EntityController';
+import {EntityRegistry} from './EntityRegistry';
+import {IFramework} from './framework/IFramework';
+import {FrameworkFactory} from './framework/FrameworkFactory';
 
 export class EntityControllerFactory {
 
-  static NAME: string = 'EntityControllerFactory';
+  static NAME = 'EntityControllerFactory';
 
   @Inject(Storage.NAME)
   storage: Storage;
@@ -20,10 +20,10 @@ export class EntityControllerFactory {
   async initialize() {
 
     const storages = this.storage.getNames();
-    for (let storageName of storages) {
-      let schemaDef = this.registry.getSchemaRefByName(storageName);
+    for (const storageName of storages) {
+      const schemaDef = this.registry.getSchemaRefByName(storageName);
       if (schemaDef) {
-        let storageRef = this.storage.get(storageName);
+        const storageRef = this.storage.get(storageName);
         let framework: IFramework = null;
         try {
           framework = FrameworkFactory.$().get(storageRef);
@@ -33,7 +33,7 @@ export class EntityControllerFactory {
         }
 
         Log.debug('generating schema for ' + storageName);
-        let xsem = new EntityController(storageName, schemaDef, storageRef, framework);
+        const xsem = new EntityController(storageName, schemaDef, storageRef, framework);
         await xsem.initialize();
         Container.set('EntityController.' + storageName, xsem);
         this.controller.push(xsem);
@@ -42,7 +42,7 @@ export class EntityControllerFactory {
   }
 
   get(name: string) {
-    return this.controller.find(x => x.name.toLowerCase() == name.toLowerCase());
+    return this.controller.find(x => x.name.toLowerCase() === name.toLowerCase());
   }
 
 
