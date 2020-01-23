@@ -1,6 +1,6 @@
 {
   "name": "@typexs/schema",
-  "version": "0.6.18",
+  "version": "0.6.19",
   "description": "Schema for typexs",
   "main": "index.js",
   "directories": {
@@ -65,9 +65,6 @@
     "@typexs/base": "0.x",
     "commons-schema-api": "^1.1.4",
     "commons-expressions": "^1.0.7"
-  },
-  "peerDependencies": {
-    "@typexs/server": "0.x"
   },
   "private": true,
   "nyc": {
