@@ -1,18 +1,18 @@
-import {Body, CurrentUser, Delete, Get, JsonController, Param, Post, QueryParam} from "routing-controllers";
+import {Body, CurrentUser, Delete, Get, JsonController, Param, Post, QueryParam} from 'routing-controllers';
 
-import {Inject} from "typedi";
+import {Inject} from 'typedi';
 import {
   Invoker, NotYetImplementedError, XS_P_$COUNT,
   XS_P_$LIMIT,
   XS_P_$OFFSET
-} from "@typexs/base/browser";
+} from '@typexs/base/browser';
 
-import {Access, ContextGroup} from "@typexs/server";
-import {EntityRegistry} from "../libs/EntityRegistry";
-import {EntityRef} from "../libs/registry/EntityRef";
-import {EntityControllerFactory} from "../libs/EntityControllerFactory";
-import {EntityController} from "../libs/EntityController";
-import * as _ from "lodash";
+import {Access, ContextGroup} from '@typexs/server';
+import {EntityRegistry} from '../libs/EntityRegistry';
+import {EntityRef} from '../libs/registry/EntityRef';
+import {EntityControllerFactory} from '../libs/EntityControllerFactory';
+import {EntityController} from '../libs/EntityController';
+import * as _ from 'lodash';
 import {
   PERMISSION_ALLOW_ACCESS_ENTITY,
   PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN,
@@ -26,9 +26,9 @@ import {
 
   XS_P_LABEL,
   XS_P_URL
-} from "../libs/Constants";
-import {ObjectsNotValidError} from "./../libs/exceptions/ObjectsNotValidError";
-import {EntityControllerApi} from "../api/entity.controller.api";
+} from '../libs/Constants';
+import {ObjectsNotValidError} from './../libs/exceptions/ObjectsNotValidError';
+import {EntityControllerApi} from '../api/entity.controller.api';
 
 
 @ContextGroup('api')
@@ -43,6 +43,23 @@ export class EntityAPIController {
 
   @Inject(Invoker.NAME)
   invoker: Invoker;
+
+
+  static _afterEntity(entityDef: EntityRef, entity: any[]): void {
+    entity.forEach(e => {
+      const idStr = entityDef.buildLookupConditions(e);
+      const url = `api/entity/${entityDef.machineName}/${idStr}`;
+      e[XS_P_URL] = url;
+      e[XS_P_LABEL] = entityDef.label(e);
+    });
+  }
+
+
+  static _beforeBuild(entityDef: EntityRef, from: any, to: any) {
+    _.keys(from).filter(k => k.startsWith('$')).map(k => {
+      to[k] = from[k];
+    });
+  }
 
 
   /**
@@ -62,7 +79,7 @@ export class EntityAPIController {
   @Access(PERMISSION_ALLOW_ACCESS_METADATA)
   @Get('/metadata/schema/:schemaName')
   async schema(@Param('schemaName') schemaName: string, @CurrentUser() user: any) {
-    let schema = this.registry.getSchemaRefByName(schemaName);
+    const schema = this.registry.getSchemaRefByName(schemaName);
     if (schema) {
       return schema.toJson();
     } else {
@@ -87,9 +104,9 @@ export class EntityAPIController {
   @Access(PERMISSION_ALLOW_ACCESS_METADATA)
   @Get('/metadata/entity/:entityName')
   async entity(@Param('entityName') entityName: string, @CurrentUser() user: any) {
-    let entity = this.registry.getEntityRefByName(entityName);
+    const entity = this.registry.getEntityRefByName(entityName);
     if (entity) {
-      let json = entity.toJson();
+      const json = entity.toJson();
       json.properties = entity.getPropertyRefs().map(x => x.toJson());
       return json;
     } else {
@@ -104,7 +121,7 @@ export class EntityAPIController {
   @Access(PERMISSION_ALLOW_ACCESS_METADATA)
   @Post('/metadata/entity')
   async entityCreate(@Body() data: any, @CurrentUser() user: any) {
-    throw new NotYetImplementedError()
+    throw new NotYetImplementedError();
   }
 
 
@@ -146,7 +163,7 @@ export class EntityAPIController {
       offset = 0;
     }
 
-    let result = await controller.find(entityDef.getClass(), conditions, {
+    const result = await controller.find(entityDef.getClass(), conditions, {
       limit: limit,
       offset: offset,
       sort: sortBy,
@@ -158,7 +175,7 @@ export class EntityAPIController {
       $count: result[XS_P_$COUNT],
       $limit: result[XS_P_$LIMIT],
       $offset: result[XS_P_$OFFSET]
-    }
+    };
   }
 
 
@@ -175,7 +192,7 @@ export class EntityAPIController {
       result = await controller.find(entityDef.getClass(), conditions, {
         hooks: {afterEntity: EntityAPIController._afterEntity}
       });
-      let results = {
+      const results = {
         entities: result,
         $count: result[XS_P_$COUNT],
         $limit: result[XS_P_$LIMIT],
@@ -249,7 +266,7 @@ export class EntityAPIController {
   async delete(@Param('name') name: string, @Param('id') id: string, @Body() data: any, @CurrentUser() user: any) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
     const conditions = entityDef.createLookupConditions(id);
-    let results = await controller.find(entityDef.getClass(), conditions);
+    const results = await controller.find(entityDef.getClass(), conditions);
     if (results.length > 0) {
       return controller.remove(results);
     }
@@ -263,7 +280,7 @@ export class EntityAPIController {
     if (!_.isArray(schema)) {
       return [entityDef, this.getController(schema)];
     } else {
-      throw new Error('multiple schemas for this entity, select one')
+      throw new Error('multiple schemas for this entity, select one');
     }
   }
 
@@ -283,23 +300,6 @@ export class EntityAPIController {
       return entityDef;
     }
     throw new Error('no entity definition found  for ' + entityName);
-  }
-
-
-  static _afterEntity(entityDef: EntityRef, entity: any[]): void {
-    entity.forEach(e => {
-      let idStr = entityDef.buildLookupConditions(e);
-      let url = `api/entity/${entityDef.machineName}/${idStr}`;
-      e[XS_P_URL] = url;
-      e[XS_P_LABEL] = entityDef.label(e);
-    });
-  }
-
-
-  static _beforeBuild(entityDef: EntityRef, from: any, to: any) {
-    _.keys(from).filter(k => k.startsWith('$')).map(k => {
-      to[k] = from[k];
-    })
   }
 }
 

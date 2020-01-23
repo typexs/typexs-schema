@@ -1,7 +1,7 @@
 import {EntityRegistry} from '../EntityRegistry';
 import {IProperty} from '../registry/IProperty';
-import * as _ from "lodash";
-import {JS_DATA_TYPES} from "commons-schema-api/browser";
+import * as _ from 'lodash';
+import {JS_DATA_TYPES} from 'commons-schema-api/browser';
 
 
 export function Property(typeOrOptions: IProperty | string = null) {
@@ -18,7 +18,7 @@ export function Property(typeOrOptions: IProperty | string = null) {
     options.propertyName = property;
 
 
-    let xsDef = EntityRegistry.createProperty(options);
+    const xsDef = EntityRegistry.createProperty(options);
     EntityRegistry.register(xsDef);
   };
 }

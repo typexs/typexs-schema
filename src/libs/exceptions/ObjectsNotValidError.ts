@@ -1,20 +1,20 @@
-import {HttpObjectsNotValidError} from "./HttpObjectsNotValidError";
+import {HttpObjectsNotValidError} from './HttpObjectsNotValidError';
 
 
 export class ObjectsNotValidError extends Error {
 
-  isArray:boolean = false;
+  isArray: boolean = false;
 
-  objects:any[];
+  objects: any[];
 
-  constructor(objects:any[], isArray:boolean = false){
+  constructor(objects: any[], isArray: boolean = false) {
     super('Object(s) are not valid');
     Object.setPrototypeOf(this, ObjectsNotValidError.prototype);
     this.objects = objects;
     this.isArray = isArray;
   }
 
-  toHttpError(){
-    return new HttpObjectsNotValidError(this.objects,this.isArray);
+  toHttpError() {
+    return new HttpObjectsNotValidError(this.objects, this.isArray);
   }
 }
