@@ -1,4 +1,5 @@
-import {Container, IActivator, IPermissions, Log} from '@typexs/base';
+import {BasicPermission, IPermissionDef, IPermissions} from '@typexs/roles-api';
+import {Container, IActivator, Log} from '@typexs/base';
 import {EntityRegistry} from './libs/EntityRegistry';
 import {EntityControllerFactory} from './libs/EntityControllerFactory';
 import {
@@ -31,22 +32,22 @@ export class Activator implements IActivator, IPermissions {
   }
 
 
-  permissions(): Promise<string[]> | string[] {
-    const permissions = [
-      PERMISSION_ALLOW_ACCESS_METADATA,
-      PERMISSION_ALLOW_ACCESS_ENTITY,
-      PERMISSION_ALLOW_CREATE_ENTITY,
-      PERMISSION_ALLOW_UPDATE_ENTITY,
-      PERMISSION_ALLOW_DELETE_ENTITY
+  permissions(): IPermissionDef[] {
+    const permissions: IPermissionDef[] = [
+      new BasicPermission(PERMISSION_ALLOW_ACCESS_METADATA),
+      new BasicPermission(PERMISSION_ALLOW_ACCESS_ENTITY),
+      new BasicPermission(PERMISSION_ALLOW_CREATE_ENTITY),
+      new BasicPermission(PERMISSION_ALLOW_UPDATE_ENTITY),
+      new BasicPermission(PERMISSION_ALLOW_DELETE_ENTITY)
     ];
 
     const registry = EntityRegistry.$();
     registry.listEntities().map((e: EntityRef) => {
       if (e.isStoreable()) {
-        permissions.push(PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN.replace(':name', e.machineName));
-        permissions.push(PERMISSION_ALLOW_CREATE_ENTITY_PATTERN.replace(':name', e.machineName));
-        permissions.push(PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN.replace(':name', e.machineName));
-        permissions.push(PERMISSION_ALLOW_DELETE_ENTITY_PATTERN.replace(':name', e.machineName));
+        permissions.push(new BasicPermission(PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN.replace(':name', e.machineName)));
+        permissions.push(new BasicPermission(PERMISSION_ALLOW_CREATE_ENTITY_PATTERN.replace(':name', e.machineName)));
+        permissions.push(new BasicPermission(PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN.replace(':name', e.machineName)));
+        permissions.push(new BasicPermission(PERMISSION_ALLOW_DELETE_ENTITY_PATTERN.replace(':name', e.machineName)));
       }
     });
     return permissions;
