@@ -63,8 +63,9 @@
   },
   "dependencies": {
     "@typexs/base": "0.x",
-    "commons-schema-api": "^1.1.4",
-    "commons-expressions": "^1.0.7"
+    "@typexs/roles-api": "^1.0.3",
+    "commons-expressions": "^1.0.7",
+    "commons-schema-api": "^1.1.4"
   },
   "private": true,
   "nyc": {
