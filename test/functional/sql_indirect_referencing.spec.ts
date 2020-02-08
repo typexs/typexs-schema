@@ -1,3 +1,5 @@
+// process.env.SQL_LOG = '1';
+
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
@@ -15,7 +17,7 @@ const FINDOPT = {
 
 
 @suite('functional/sql_indirect_referencing')
-class Sql_indirect_referencingSpec {
+class SqlIndirectReferencingSpec {
 
 
   before() {
@@ -42,7 +44,6 @@ class Sql_indirect_referencingSpec {
     const xsem = connect.controller;
     const ref = connect.ref;
     const c = await ref.connect();
-
 
 
     const a = new Author();

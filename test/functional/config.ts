@@ -1,5 +1,5 @@
 
-import {IStorageOptions, StorageRef} from "@typexs/base";
+import {IStorageOptions, StorageRef} from '@typexs/base';
 import {SqliteConnectionOptions} from 'typeorm/driver/sqlite/SqliteConnectionOptions';
 
 export const TEST_STORAGE_OPTIONS: IStorageOptions = process.env.SQL_LOG ? <SqliteConnectionOptions & IStorageOptions>{
@@ -9,16 +9,16 @@ export const TEST_STORAGE_OPTIONS: IStorageOptions = process.env.SQL_LOG ? <Sqli
   synchronize: true,
   logger: 'simple-console',
   logging: 'all',
-  connectOnStartup:true
+  connectOnStartup: true
 
   // tablesPrefix: ""
 
-}: <SqliteConnectionOptions & IStorageOptions>{
+} : <SqliteConnectionOptions & IStorageOptions>{
   name: 'default',
   type: 'sqlite',
   database: ':memory:',
   synchronize: true
   ,
-  connectOnStartup:true
+  connectOnStartup: true
 
 };

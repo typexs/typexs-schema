@@ -1,14 +1,14 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {Entity, EntityRef, EntityRegistry, Property, XS_ANNOTATION_OPTIONS_CACHE,} from "../../src";
-import * as _ from "lodash";
+import {Entity, EntityRef, EntityRegistry, Property, XS_ANNOTATION_OPTIONS_CACHE, } from '../../src';
+import * as _ from 'lodash';
 
-import {MetaArgs} from "@typexs/base";
-import {AnnotationsHelper, ClassRef, XS_DEFAULT_SCHEMA} from "commons-schema-api";
+import {MetaArgs} from '@typexs/base';
+import {AnnotationsHelper, ClassRef, XS_DEFAULT_SCHEMA} from 'commons-schema-api';
 
 
 @suite('functional/entity_registry')
-class Entity_registrySpec {
+class EntityRegistrySpec {
 
 
   @test
@@ -17,22 +17,22 @@ class Entity_registrySpec {
     require('./schemas/default/Author');
     require('./schemas/default/Book');
 
-    let registry = EntityRegistry.$();
-    let entityNames = registry.listEntities().map(p => p.id());
+    const registry = EntityRegistry.$();
+    const entityNames = registry.listEntities().map(p => p.id());
     expect(entityNames).to.be.include.members([
       'default--author',
       'default--book'
     ]);
 
-    let propNames = registry.listProperties().map(p => p.id());
+    const propNames = registry.listProperties().map(p => p.id());
     expect(propNames).to.include.members([
-      "default--author--id",
-      "default--author--firstname",
-      "default--author--lastname",
-      "default--book--id",
-      "default--book--label",
-      "default--book--content",
-      "default--book--author"
+      'default--author--id',
+      'default--author--firstname',
+      'default--author--lastname',
+      'default--book--id',
+      'default--book--label',
+      'default--book--content',
+      'default--book--author'
     ]);
 
     let entity = EntityRegistry.getEntityRefFor('Author');
@@ -44,7 +44,7 @@ class Entity_registrySpec {
     entity = registry.getEntityRefByName('author');
     expect(entity).to.not.be.empty;
 
-    let eJson = entity.toJson();
+    const eJson = entity.toJson();
     expect(eJson).to.deep.include({
       id: 'default--author',
       name: 'Author',
@@ -62,7 +62,7 @@ class Entity_registrySpec {
     props = entity.getPropertyRefs();
     expect(props).to.have.length(3);
 
-    let pJsons = _.map(props, p => p.toJson());
+    const pJsons = _.map(props, p => p.toJson());
     expect(pJsons).to.have.length(3);
   }
 
@@ -74,24 +74,24 @@ class Entity_registrySpec {
     require('./schemas/default/Author');
 
 
-    let registry = EntityRegistry.$();
-    let propNames = registry.listProperties().map(p => p.id());
-    let entityNames = registry.listEntities().map(p => p.id());
+    const registry = EntityRegistry.$();
+    const propNames = registry.listProperties().map(p => p.id());
+    const entityNames = registry.listEntities().map(p => p.id());
     expect(entityNames).to.include.members(['default--author', 'default--book']);
     expect(propNames).to.include.members([
-      "default--author--id",
-      "default--author--firstname",
-      "default--author--lastname",
-      "default--book--id",
-      "default--book--label",
-      "default--book--content",
-      "default--book--author"
+      'default--author--id',
+      'default--author--firstname',
+      'default--author--lastname',
+      'default--book--id',
+      'default--book--label',
+      'default--book--content',
+      'default--book--author'
 
     ]); // 5 before and 2 from summary and summary as new prop of book
 
-    let entity = EntityRegistry.getEntityRefFor('Author');
+    const entity = EntityRegistry.getEntityRefFor('Author');
     expect(entity).to.not.be.null;
-    let props = entity.getPropertyRefs();
+    const props = entity.getPropertyRefs();
     expect(props).to.have.length(3);
 
   }
@@ -103,34 +103,34 @@ class Entity_registrySpec {
     require('./schemas/default/Book'); // Book imports Author
     require('./schemas/default/Summary');
 
-    let registry = EntityRegistry.$();
-    let propNames = registry.listProperties().map(p => p.id());
-    let entityNames = registry.listEntities().map(p => p.id());
+    const registry = EntityRegistry.$();
+    const propNames = registry.listProperties().map(p => p.id());
+    const entityNames = registry.listEntities().map(p => p.id());
 
     expect(entityNames).to.include.members(['default--author', 'default--book']);
     expect(propNames).to.include.members([
-      "default--book--id",
-      "default--book--label",
-      "default--book--content",
-      "default--book--author",
-      "default--summary--size",
-      "default--summary--content",
-      "default--book--summary",
+      'default--book--id',
+      'default--book--label',
+      'default--book--content',
+      'default--book--author',
+      'default--summary--size',
+      'default--summary--content',
+      'default--book--summary',
 
     ]); // 5 before and 2 from summary and summary as new prop of book
 
-    let entity = EntityRegistry.getEntityRefFor('Book');
+    const entity = EntityRegistry.getEntityRefFor('Book');
     expect(entity).to.not.be.null;
 
-    let props = entity.getPropertyRefs().map(p => p.id());
+    const props = entity.getPropertyRefs().map(p => p.id());
 
 
     expect(props).to.include.members([
-      "default--book--id",
-      "default--book--label",
-      "default--book--content",
-      "default--book--author",
-      "default--book--summary"
+      'default--book--id',
+      'default--book--label',
+      'default--book--content',
+      'default--book--author',
+      'default--book--summary'
     ]); // 5 before and 2 from summary and summary as new prop of book
 
   }
@@ -140,16 +140,16 @@ class Entity_registrySpec {
 
     require('./schemas/default/Author'); // Book imports Author
     // require('./schemas/default/Summary');
-    let entity = EntityRegistry.getEntityRefFor('Author');
-    let instance = entity.new<any>();
-    let def = EntityRef.resolve(instance);
+    const entity = EntityRegistry.getEntityRefFor('Author');
+    const instance = entity.new<any>();
+    const def = EntityRef.resolve(instance);
     expect(def).to.eq(entity);
 
-    let registry = EntityRegistry.$();
+    const registry = EntityRegistry.$();
 
     // check if exists in schema
-    let defaultSchema = EntityRegistry.getSchema(XS_DEFAULT_SCHEMA);
-    let entities = defaultSchema.getEntities();
+    const defaultSchema = EntityRegistry.getSchema(XS_DEFAULT_SCHEMA);
+    const entities = defaultSchema.getEntities();
     expect(entities).to.have.length.greaterThan(0);
 
   }
@@ -160,7 +160,7 @@ class Entity_registrySpec {
     const classRef = ClassRef.get(require('./schemas/direct_property/Driver').Driver); // Book imports Author
     // require('./schemas/default/Summary');
     const registry = EntityRegistry.$();
-    let props = registry.getPropertyRefsFor(classRef);
+    const props = registry.getPropertyRefsFor(classRef);
     expect(props.length).to.be.eq(3);
   }
 
@@ -171,7 +171,7 @@ class Entity_registrySpec {
     function PropAddOn(opts: any = {}) {
       return function (object: any, property: string, _options: any = {}) {
         AnnotationsHelper.forPropertyOn(ClassRef.get(object), property, opts);
-      }
+      };
     }
 
 
@@ -189,13 +189,13 @@ class Entity_registrySpec {
     }
 
     const registry = EntityRegistry.$();
-    let entityDef = registry.getEntityRefByName('TestAnno');
-    let props = entityDef.getPropertyRefs();
+    const entityDef = registry.getEntityRefByName('TestAnno');
+    const props = entityDef.getPropertyRefs();
     expect(props).to.have.length(2);
-    let test1 = props.find(p => p.name == 'test1');
-    expect(test1.getOptions()).to.deep.include({hallo:'welt'});
-    let test2 = props.find(p => p.name == 'test2');
-    expect(test2.getOptions()).to.deep.include({hallo:'welt2'});
+    const test1 = props.find(p => p.name === 'test1');
+    expect(test1.getOptions()).to.deep.include({hallo: 'welt'});
+    const test2 = props.find(p => p.name === 'test2');
+    expect(test2.getOptions()).to.deep.include({hallo: 'welt2'});
 
     expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);
   }
@@ -206,27 +206,27 @@ class Entity_registrySpec {
     function EntityPropAddOn(opts: any = {}) {
       return function (object: any) {
         AnnotationsHelper.forEntityOn(ClassRef.get(object), opts);
-      }
+      };
     }
 
 
-    @EntityPropAddOn({hallo:'welt'})
+    @EntityPropAddOn({hallo: 'welt'})
     @Entity({storeable: false})
     class TestAnno2 {
 
     }
 
     @Entity({storeable: false})
-    @EntityPropAddOn({hallo:'welt2'})
+    @EntityPropAddOn({hallo: 'welt2'})
     class TestAnno3 {
 
     }
 
     const registry = EntityRegistry.$();
-    let entityDef1 = registry.getEntityRefByName('TestAnno2');
-    expect(entityDef1.getOptions()).to.deep.include({hallo:'welt'});
-    let entityDef2 = registry.getEntityRefByName('TestAnno3');
-    expect(entityDef2.getOptions()).to.deep.include({hallo:'welt2'});
+    const entityDef1 = registry.getEntityRefByName('TestAnno2');
+    expect(entityDef1.getOptions()).to.deep.include({hallo: 'welt'});
+    const entityDef2 = registry.getEntityRefByName('TestAnno3');
+    expect(entityDef2.getOptions()).to.deep.include({hallo: 'welt2'});
 
     expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);
 

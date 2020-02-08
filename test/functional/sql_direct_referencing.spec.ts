@@ -18,7 +18,7 @@ const FINDOPT = {
 };
 
 @suite('functional/sql_direct_referencing')
-class Sql_direct_referencingSpec {
+class SqlDirectReferencingSpec {
 
   before() {
     TestHelper.resetTypeorm();
