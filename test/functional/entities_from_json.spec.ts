@@ -1,9 +1,9 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityRegistry} from "../../src";
-import * as _ from "lodash";
-import {TestHelper} from "./TestHelper";
-import {inspect} from "util";
+import {EntityRegistry} from '../../src';
+import * as _ from 'lodash';
+import {TestHelper} from './TestHelper';
+import {inspect} from 'util';
 
 
 @suite('functional/entity_from_json')
@@ -12,98 +12,97 @@ class Entities_from_jsonSpec {
 
   @test
   async 'register entity by json'() {
-    let d: any =
-      {
-        "id": "default--personal",
-        "name": "Personal",
-        "type": "entity",
-        "machineName": "personal",
-        "options": {
-          "storeable": true
+    const d: any = {
+        'id': 'default--personal',
+        'name': 'Personal',
+        'type': 'entity',
+        'machineName': 'personal',
+        'options': {
+          'storeable': true
         },
-        "schema": "default",
-        "properties": [
+        'schema': 'default',
+        'properties': [
           {
-            "cardinality": 1,
-            "id": "default--personal--id",
-            "name": "id",
-            "type": "property",
-            "label": "Id",
-            "machineName": "id",
-            "options": {
-              "type": "number",
-              "form": "hidden",
-              "auto": true,
-              "propertyName": "id"
+            'cardinality': 1,
+            'id': 'default--personal--id',
+            'name': 'id',
+            'type': 'property',
+            'label': 'Id',
+            'machineName': 'id',
+            'options': {
+              'type': 'number',
+              'form': 'hidden',
+              'auto': true,
+              'propertyName': 'id'
             },
-            "schema": "default",
-            "entityName": "Personal",
-            "dataType": "number",
-            "generated": true,
-            "identifier": true,
+            'schema': 'default',
+            'entityName': 'Personal',
+            'dataType': 'number',
+            'generated': true,
+            'identifier': true,
 
           },
           {
-            "cardinality": 1,
-            "id": "default--personal--firstname",
-            "name": "firstName",
-            "type": "property",
-            "label": "Firstname",
-            "machineName": "first_name",
-            "options": {
-              "type": "string",
-              "form": "text",
+            'cardinality': 1,
+            'id': 'default--personal--firstname',
+            'name': 'firstName',
+            'type': 'property',
+            'label': 'Firstname',
+            'machineName': 'first_name',
+            'options': {
+              'type': 'string',
+              'form': 'text',
 
-              "propertyName": "firstName"
+              'propertyName': 'firstName'
             },
-            "schema": "default",
-            "entityName": "Personal",
+            'schema': 'default',
+            'entityName': 'Personal',
 
-            "dataType": "string",
-            "generated": false,
-            "identifier": false,
+            'dataType': 'string',
+            'generated': false,
+            'identifier': false,
             validator: [
               {
-                "type": "isDefined",
-                "target": "Personal",
-                "propertyName": "firstName",
-                "validationOptions": {
-                  "groups": [],
-                  "always": false,
-                  "each": false
+                'type': 'isDefined',
+                'target': 'Personal',
+                'propertyName': 'firstName',
+                'validationOptions': {
+                  'groups': [],
+                  'always': false,
+                  'each': false
                 },
               }
             ]
           },
           {
-            "cardinality": 1,
-            "id": "default--personal--lastname",
-            "name": "lastName",
-            "type": "property",
-            "label": "Lastname",
-            "machineName": "last_name",
-            "options": {
-              "type": "string",
-              "form": "text",
+            'cardinality': 1,
+            'id': 'default--personal--lastname',
+            'name': 'lastName',
+            'type': 'property',
+            'label': 'Lastname',
+            'machineName': 'last_name',
+            'options': {
+              'type': 'string',
+              'form': 'text',
 
-              "propertyName": "lastName"
+              'propertyName': 'lastName'
             },
-            "schema": "default",
-            "entityName": "Personal",
+            'schema': 'default',
+            'entityName': 'Personal',
 
-            "dataType": "string",
-            "generated": false,
-            "identifier": false
+            'dataType': 'string',
+            'generated': false,
+            'identifier': false
           }
         ]
       };
 
 
-    let entityDef = EntityRegistry.fromJson(d);
-    let regEntityDef = EntityRegistry.getEntityRefFor("Personal");
+    const entityDef = EntityRegistry.fromJson(d);
+    const regEntityDef = EntityRegistry.getEntityRefFor('Personal');
     expect(entityDef).to.be.eq(regEntityDef);
 
-    let output = JSON.parse(JSON.stringify(entityDef.toJson()));
+    const output = JSON.parse(JSON.stringify(entityDef.toJson()));
     expect(output).to.deep.eq(d);
   }
 
@@ -113,7 +112,7 @@ class Entities_from_jsonSpec {
     require('./schemas/default/Author');
 
 
-    let d: any = {
+    const d: any = {
       id: 'default--bookk',
       name: 'Bookk',
       type: 'entity',
@@ -210,11 +209,11 @@ class Entities_from_jsonSpec {
     };
 
 
-    let entityDef = EntityRegistry.fromJson(d);
-    let regEntityDef = EntityRegistry.getEntityRefFor("Bookk");
+    const entityDef = EntityRegistry.fromJson(d);
+    const regEntityDef = EntityRegistry.getEntityRefFor('Bookk');
     expect(entityDef).to.be.eq(regEntityDef);
 
-    let authorProp = entityDef.getPropertyRefs().find((p) => p.name == 'author');
+    const authorProp = entityDef.getPropertyRefs().find((p) => p.name == 'author');
     expect(authorProp.isReference()).to.be.true;
 
 
