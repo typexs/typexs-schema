@@ -1,25 +1,22 @@
 import {IProperty} from './IProperty';
 import * as _ from 'lodash';
-import {EntityRef} from "./EntityRef";
-import * as moment from "moment";
+import {EntityRef} from './EntityRef';
+import * as moment from 'moment';
 
 import {
   AbstractRef,
   ClassRef,
+  IBuildOptions,
   IPropertyRef,
-  JS_DATA_TYPES,
+  JS_PRIMATIVE_TYPES,
   LookupRegistry,
   XS_TYPE_PROPERTY
-} from "commons-schema-api/browser";
-import {NotSupportedError, NotYetImplementedError} from "@typexs/base/browser";
-import {ExprDesc} from "commons-expressions/browser";
-import {OrderDesc} from "../../libs/descriptors/OrderDesc";
+} from 'commons-schema-api/browser';
+import {NotSupportedError, NotYetImplementedError} from '@typexs/base/browser';
+import {ExprDesc} from 'commons-expressions/browser';
+import {OrderDesc} from '../../libs/descriptors/OrderDesc';
 import {ClassUtils} from 'commons-base/browser';
 
-export const KNOW_PRIMATIVE_TYPES: JS_DATA_TYPES[] = [
-  'string', 'text', 'number', 'boolean', 'double',
-  'json', 'date', 'time', 'datetime', 'timestamp', 'byte'
-];
 
 export class PropertyRef extends AbstractRef implements IPropertyRef {
 
@@ -48,18 +45,9 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     this.entityName = this.object.className;
 
     if (!options.type) {
-      // TODO find a better way to detect the type
-      if (_.isFunction(options.sourceClass)) {
-        let reflectMetadataType = Reflect && Reflect.getMetadata ? Reflect.getMetadata('design:dataType', options.sourceClass, this.name) : undefined;
-        if (reflectMetadataType) {
-          this.dataType = reflectMetadataType;
-        } else {
-          // default
-          this.dataType = 'string';
-        }
-      }
+      throw new NotSupportedError(`property ${this.name} has no defined type`);
     } else if (_.isString(options.type)) {
-      let found_primative = _.find(KNOW_PRIMATIVE_TYPES, t => (new RegExp("^" + t + ":?")).test((<string>options.type).toLowerCase()));
+      const found_primative = _.find(JS_PRIMATIVE_TYPES, t => (new RegExp('^' + t + ':?')).test((<string>options.type).toLowerCase()));
       if (found_primative) {
         this.dataType = options.type;
       } else {
@@ -78,7 +66,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     }
 
     if (!this.targetRef && !this.dataType) {
-      throw new NotSupportedError('No primative or complex data type given: ' + JSON.stringify(options))
+      throw new NotSupportedError('No primative or complex data type given: ' + JSON.stringify(options));
     }
 
     if (_.isFunction(options.propertyClass)) {
@@ -88,7 +76,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     if ((_.isBoolean(options.embed) && options.embed) || this.getOptions('idKey')) {
       this.embed = true;
       if (this.isCollection()) {
-        throw new NotSupportedError('embedded property can not be a selection')
+        throw new NotSupportedError('embedded property can not be a selection');
       }
     } else {
       this.embed = false;
@@ -125,12 +113,12 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   isInternal(): boolean {
-    return this.propertyRef == null;
+    return this.propertyRef === null;
   }
 
   isEntityReference(): boolean {
     if (this.isReference()) {
-      let entityDef = this.targetRef.getEntityRef();
+      const entityDef = this.targetRef.getEntityRef();
       return !(_.isNull(entityDef) || _.isUndefined(entityDef));
     }
     return false;
@@ -141,7 +129,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   hasIdKeys() {
-    return this.embed && this.getOptions('idKey', false) !== false
+    return this.embed && this.getOptions('idKey', false) !== false;
   }
 
   hasConditions() {
@@ -167,7 +155,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   getOrder(): OrderDesc[] {
     let arr = this.getOptions('order', null);
     if (!_.isArray(arr)) {
-      arr = [arr]
+      arr = [arr];
     }
     return arr;
   }
@@ -177,7 +165,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   getIdKeys(): string[] {
-    let keys = this.getOptions('idKey');
+    const keys = this.getOptions('idKey');
     if (!_.isArray(keys)) {
       return [keys.key];
     } else {
@@ -189,7 +177,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     if (this.isEntityReference()) {
       return this.getEntityRef();
     }
-    throw new NotSupportedError('no entity')
+    throw new NotSupportedError('no entity');
   }
 
   getTargetClass() {
@@ -197,7 +185,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     if (this.isReference()) {
       return this.targetRef.getClass();
     }
-    throw new NotSupportedError('no  target class')
+    throw new NotSupportedError('no  target class');
   }
 
   getSubPropertyRef(): PropertyRef[] {
@@ -209,7 +197,9 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
 
 
   isOutOfSize(x: number): boolean {
-    if (this.cardinality == 0) return false;
+    if (this.cardinality === 0) {
+      return false;
+    }
     if (this.cardinality < x) {
       return true;
     }
@@ -218,12 +208,12 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
 
 
   isCollection(): boolean {
-    return this.cardinality == 0 || this.cardinality > 1;
+    return this.cardinality === 0 || this.cardinality > 1;
   }
 
 
-  convert(data: any): any {
-    let [baseType, variant] = this.dataType.split(':');
+  convert(data: any, options?: IBuildOptions): any {
+    const [baseType, variant] = this.dataType.split(':');
 
     switch (baseType) {
       case 'text':
@@ -243,7 +233,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
         } else if (_.isNumber(data)) {
           return data > 0;
         } else if (_.isString(data)) {
-          if (data.toLowerCase() === "true" || data.toLowerCase() === "1") {
+          if (data.toLowerCase() === 'true' || data.toLowerCase() === '1') {
             return true;
           }
           return false;
@@ -253,9 +243,9 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
       case 'double':
         if (_.isString(data)) {
           if (/^\d+\.|\,\d+$/.test(data)) {
-            return parseFloat(data.replace(',', '.'))
+            return parseFloat(data.replace(',', '.'));
           } else if (/^\d+$/.test(data)) {
-            return parseInt(data);
+            return parseInt(data, 0);
           } else {
             throw new NotYetImplementedError('value ' + data);
           }
@@ -285,7 +275,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   get storingName() {
     let name = this.getOptions('name', null);
     if (!name) {
-      const prefix = this.object.isEntity ? 'p' : 'i';// + _.snakeCase(this.object.className);
+      const prefix = this.object.isEntity ? 'p' : 'i'; // + _.snakeCase(this.object.className);
 
       if (this.isReference() && !this.isEmbedded()) {
         name = [prefix, this.getSourceRef().machineName, this.machineName].join('_');
@@ -337,7 +327,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
 
   label() {
     let label = null;
-    let options = this.getOptions();
+    const options = this.getOptions();
     if (options.label) {
       label = options.label;
     }
@@ -349,10 +339,10 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     return label;
   }
 
-  getType(){
-    if(this.dataType){
+  getType() {
+    if (this.dataType) {
       return this.dataType;
-    }else if(this.targetRef){
+    } else if (this.targetRef) {
       return ClassUtils.getClassName(this.targetRef.getClass());
     }
     return null;
@@ -360,7 +350,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   toJson(withSubProperties: boolean = true) {
-    let o = super.toJson();
+    const o = super.toJson();
     o.schema = this.object.getSchema();
     o.entityName = this.entityName;
     o.label = this.label();
