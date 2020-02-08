@@ -21,6 +21,11 @@ export function Property(typeOrOptions: IProperty | Function | string = null) {
       options = <IProperty>typeOrOptions;
     }
 
+    // deprecated
+    if (options.targetClass && !options.type) {
+      options.type = options.targetClass;
+    }
+
     options.sourceClass = source;
     options.propertyName = propertyName;
 

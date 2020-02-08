@@ -44,8 +44,8 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     this.setOptions(options);
     this.entityName = this.object.className;
 
-    if (!options.type) {
-      throw new NotSupportedError(`property ${this.name} has no defined type`);
+    if (!options.type && !options.propertyClass) {
+      throw new NotSupportedError(`property ${this.name} has no defined type nor property class`);
     } else if (_.isString(options.type)) {
       const found_primative = _.find(JS_PRIMATIVE_TYPES, t => (new RegExp('^' + t + ':?')).test((<string>options.type).toLowerCase()));
       if (found_primative) {
@@ -63,15 +63,14 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     if (_.isFunction(options.type) || _.isFunction(options.targetClass)) {
       const targetClass = options.type || options.targetClass;
       this.targetRef = ClassRef.get(targetClass);
+    } else if (_.isFunction(options.propertyClass)) {
+      this.propertyRef = ClassRef.get(options.propertyClass);
     }
 
-    if (!this.targetRef && !this.dataType) {
+    if (!this.targetRef && !this.dataType && !this.propertyRef) {
       throw new NotSupportedError('No primative or complex data type given: ' + JSON.stringify(options));
     }
 
-    if (_.isFunction(options.propertyClass)) {
-      this.propertyRef = ClassRef.get(options.propertyClass);
-    }
 
     if ((_.isBoolean(options.embed) && options.embed) || this.getOptions('idKey')) {
       this.embed = true;
