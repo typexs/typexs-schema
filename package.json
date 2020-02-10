@@ -40,6 +40,7 @@
     "codecov": "^3.6.5",
     "codelyzer": "^5.2.1",
     "commons-http": "^1.0.7",
+    "commons-base": "^1.2.1",
     "del": "^5.1.0",
     "express": "^4.17.1",
     "got": "^9.6.0",

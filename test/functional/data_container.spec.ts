@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import {ValidPerson} from './schemas/validation/ValidPerson';
 import {EntityRegistry} from '../../src';
 import {DataContainer} from '@typexs/base';
-import {TreeUtils, WalkValues} from 'commons-base';
+import {TreeUtils, WalkValues} from 'commons-base/browser';
 
 
 const registry = EntityRegistry.$();
