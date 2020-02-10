@@ -8,6 +8,7 @@ import {EntityRegistry} from '../../src';
 import {DataContainer} from '@typexs/base';
 import {TreeUtils, WalkValues} from 'commons-base';
 
+
 const registry = EntityRegistry.$();
 
 @suite('functional/data_container')
