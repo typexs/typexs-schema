@@ -1,6 +1,6 @@
 {
   "name": "@typexs/schema",
-  "version": "0.6.21",
+  "version": "0.6.23",
   "description": "Schema for typexs",
   "main": "index.js",
   "directories": {
@@ -57,7 +57,7 @@
     "sqlite3": "^4.1.1",
     "ts-node": "^6.2.0",
     "tslint": "~6.0.0",
-    "typescript": "^3.7.5",
+    "typescript": "3.5.3",
     "typescript-require": "^0.2.10",
     "@typexs/server": "0.x"
   },
@@ -65,7 +65,7 @@
     "@typexs/base": "0.x",
     "@typexs/roles-api": "^1.0.10",
     "commons-expressions": "^1.0.7",
-    "commons-schema-api": "^1.1.6"
+    "commons-schema-api": "^1.1.8"
   },
   "private": true,
   "nyc": {
