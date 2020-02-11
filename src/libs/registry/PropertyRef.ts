@@ -48,7 +48,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
       throw new NotSupportedError(`property ${this.name} has no defined type nor property class`);
     } else if (_.isString(options.type)) {
       const found_primative = _.find(JS_PRIMATIVE_TYPES, t => (new RegExp('^' + t + ':?')).test((<string>options.type).toLowerCase()));
-      if (found_primative) {
+      if (found_primative || options.type.toLowerCase() === options.type) {
         this.dataType = options.type;
       } else {
         this.targetRef = ClassRef.get(options.type);
