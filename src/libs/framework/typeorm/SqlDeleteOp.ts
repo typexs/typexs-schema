@@ -66,16 +66,19 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
     return null;
   }
 
-  leaveExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+  leaveExternalReference(sourceDef: EntityRef | ClassRef,
+                         propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return null;
   }
 
 
-  visitObjectReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+  visitObjectReference(sourceDef: EntityRef | ClassRef,
+                       propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return undefined;
   }
 
-  leaveObjectReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+  leaveObjectReference(sourceDef: EntityRef | ClassRef,
+                       propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return undefined;
   }
 
@@ -105,17 +108,23 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
     const resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
     const entityNames = Object.keys(resolveByEntityDef);
     this.c = await this.em.storageRef.connect();
+    try {
 
-    // start transaction, got to leafs and save
-    await this.c.manager.transaction(async em => {
-      const promises = [];
-      for (const entityName of entityNames) {
-        const p = this.deleteByEntityDef(entityName, resolveByEntityDef[entityName]);
-        promises.push(p);
-      }
-      return Promise.all(promises);
-    });
+      // start transaction, got to leafs and save
+      await this.c.manager.transaction(async em => {
+        const promises = [];
+        for (const entityName of entityNames) {
+          const p = this.deleteByEntityDef(entityName, resolveByEntityDef[entityName]);
+          promises.push(p);
+        }
+        return Promise.all(promises);
+      });
 
+    } catch (e) {
+      throw e;
+    } finally {
+      await this.c.close();
+    }
 
     if (!isArray) {
       return this.objects.shift();

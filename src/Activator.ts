@@ -5,7 +5,7 @@ import {EntityControllerFactory} from './libs/EntityControllerFactory';
 import {
   PERMISSION_ALLOW_ACCESS_ENTITY,
   PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN,
-  PERMISSION_ALLOW_ACCESS_METADATA,
+  PERMISSION_ALLOW_ACCESS_ENTITY_METADATA,
   PERMISSION_ALLOW_CREATE_ENTITY,
   PERMISSION_ALLOW_CREATE_ENTITY_PATTERN,
   PERMISSION_ALLOW_DELETE_ENTITY,
@@ -34,7 +34,7 @@ export class Activator implements IActivator, IPermissions {
 
   permissions(): IPermissionDef[] {
     const permissions: IPermissionDef[] = [
-      new BasicPermission(PERMISSION_ALLOW_ACCESS_METADATA),
+      new BasicPermission(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA),
       new BasicPermission(PERMISSION_ALLOW_ACCESS_ENTITY),
       new BasicPermission(PERMISSION_ALLOW_CREATE_ENTITY),
       new BasicPermission(PERMISSION_ALLOW_UPDATE_ENTITY),

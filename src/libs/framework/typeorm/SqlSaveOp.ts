@@ -181,7 +181,8 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   }
 
 
-  private handleJoinDefintionVisit(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, targetDef: EntityRef | ClassRef, sources: ISaveData) {
+  private handleJoinDefintionVisit(sourceDef: EntityRef | ClassRef,
+                                   propertyDef: PropertyRef, targetDef: EntityRef | ClassRef, sources: ISaveData) {
     const joinObjs: any[] = [];
 
     const joinDef: JoinDesc = propertyDef.getJoin();
@@ -191,7 +192,9 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       const source = sources.next[x];
       let seqNr = 0;
       let joinTargets = propertyDef.get(source);
-      if (!joinTargets) { continue; }
+      if (!joinTargets) {
+        continue;
+      }
       if (!_.isArray(joinTargets)) {
         joinTargets = [joinTargets];
       }
@@ -270,7 +273,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       const joinObj = join[x];
       const target = propertyDef.get(joinObj);
       targetIdProps.forEach(prop => {
-        const [targetId, ] = this.em.nameResolver().forTarget(prop);
+        const [targetId,] = this.em.nameResolver().forTarget(prop);
         joinObj[targetId] = prop.get(target);
       });
     }
@@ -282,7 +285,9 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
   async leaveEntityReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, targetDef: EntityRef, sources: ISaveData, visitResult: ISaveData): Promise<ISaveData> {
     if (propertyDef.hasJoinRef()) {
-      if (_.isEmpty(visitResult.join)) { return sources; }
+      if (_.isEmpty(visitResult.join)) {
+        return sources;
+      }
       await this.saveEntityReference(propertyDef, targetDef, visitResult.join);
     } else if (propertyDef.isEmbedded()) {
       // set saved referrer id to base entity
@@ -311,7 +316,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           const joinObj = visitResult.join[x];
           const target = propertyDef.get(joinObj);
           refIdProps.forEach(prop => {
-            const [propId, ] = this.em.nameResolver().for(propertyDef.machineName, prop);
+            const [propId,] = this.em.nameResolver().for(propertyDef.machineName, prop);
             joinObj[propId] = prop.get(target);
           });
         }
@@ -321,22 +326,26 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   }
 
 
-  async visitExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
+  async visitExternalReference(sourceDef: EntityRef | ClassRef,
+                               propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
     return this._visitReference(sourceDef, propertyDef, classRef, sources);
   }
 
 
-  async leaveExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<any> {
+  async leaveExternalReference(sourceDef: EntityRef | ClassRef,
+                               propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<any> {
     return this._leaveReference(sourceDef, propertyDef, classRef, sources);
   }
 
 
-  async visitObjectReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
+  async visitObjectReference(sourceDef: EntityRef | ClassRef,
+                             propertyDef: PropertyRef, classRef: ClassRef, sources: ISaveData): Promise<ISaveData> {
     return this._visitReference(sourceDef, propertyDef, classRef, sources);
   }
 
 
-  async leaveObjectReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
+  async leaveObjectReference(sourceDef: EntityRef | ClassRef,
+                             propertyDef: PropertyRef, classRef: ClassRef, sources?: ISaveData): Promise<ISaveData> {
     return this._leaveReference(sourceDef, propertyDef, classRef, sources);
   }
 
@@ -351,7 +360,9 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       const condition = propertyDef.getCondition();
       for (const source of sources.next) {
         const targets = propertyDef.get(source);
-        if (_.isEmpty(targets)) { continue; }
+        if (_.isEmpty(targets)) {
+          continue;
+        }
         for (const target of targets) {
           condition.applyOn(target, source);
 
@@ -408,7 +419,9 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           let seqNr = 0;
 
           let _targetObjects = propertyDef.get(source);
-          if (!_targetObjects) { continue; }
+          if (!_targetObjects) {
+            continue;
+          }
           if (!_.isArray(_targetObjects)) {
             _targetObjects = [_targetObjects];
           }
@@ -430,13 +443,13 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
             const nullable = _.clone(notNullProps);
             embedProps.forEach(prop => {
-              _.remove(nullable, x => x == prop.name);
+              _.remove(nullable, x => x === prop.name);
               joinObj[prop.name] = prop.get(target);
             });
 
             // if target because of reference to an object
             targetIdProps.forEach(prop => {
-              const [targetId, ] = this.em.nameResolver().forTarget(prop);
+              const [targetId,] = this.em.nameResolver().forTarget(prop);
               joinObj[targetId] = prop.get(target);
             });
 
@@ -667,14 +680,22 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       this.c = await this.em.storageRef.connect();
 
       // start transaction, got to leafs and save
-      const results = await this.c.manager.transaction(async em => {
-        const promises = [];
-        for (const entityName of entityNames) {
-          const p = this.saveByEntityDef(entityName, resolveByEntityDef[entityName]);
-          promises.push(p);
-        }
-        return Promise.all(promises);
-      });
+      try {
+        const results = await this.c.manager.transaction(async em => {
+          const promises = [];
+          for (const entityName of entityNames) {
+            const p = this.saveByEntityDef(entityName, resolveByEntityDef[entityName]);
+            promises.push(p);
+          }
+          return Promise.all(promises);
+        });
+      } catch (e) {
+        throw e;
+      } finally {
+        await this.c.close();
+      }
+
+
     } else {
       throw new ObjectsNotValidError(this.objects, isArray);
     }
@@ -699,7 +720,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   private getNotNullablePropertiesForEmbedded(propertyDef: PropertyRef, embedProps: PropertyRef[]) {
     const notNullProps = this.getNotNullablePropertyNames(propertyDef.joinRef.getClass());
     embedProps.forEach(prop => {
-      _.remove(notNullProps, x => x == prop.name);
+      _.remove(notNullProps, x => x === prop.name);
     });
     return notNullProps;
   }

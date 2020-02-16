@@ -22,6 +22,8 @@ export const XS_ID_SEPARATOR = '--';
 export const XS_DEFAULT_SCHEMA = 'default';
 */
 
+export const REGISTRY_TXS_SCHEMA = 'txs-entities';
+
 export const XS_LINK_VARIANT = 'linkVariant';
 export const XS_RELATION_TYPE_GLOBAL = 'global';
 
@@ -42,7 +44,28 @@ export const XS_P_LABEL = '_label_';
 export const XS_P_$ABORTED = '_aborted_';
 
 
-export const PERMISSION_ALLOW_ACCESS_METADATA = 'allow access metadata';
+
+export const API_ENTITY_PREFIX = '/entity';
+
+
+/**
+ * Metadata
+ */
+
+export const API_ENTITY_FIND_ENTITY = `:name`;
+export const API_ENTITY_GET_ENTITY = `/:name/:id`;
+export const API_ENTITY_SAVE_ENTITY = `/:name`;
+export const API_ENTITY_UPDATE_ENTITY = `/:name/:id`;
+export const API_ENTITY_DELETE_ENTITY = `/:name/:id`;
+
+export const API_ENTITY_METADATA = '/metadata';
+export const API_ENTITY_METADATA_ALL_STORES = API_ENTITY_METADATA + '/schemas';
+export const API_ENTITY_METADATA_GET_STORE = API_ENTITY_METADATA + '/schema/:name';
+export const API_ENTITY_METADATA_ALL_ENTITIES = API_ENTITY_METADATA + '/entities';
+export const API_ENTITY_METADATA_CREATE_ENTITY = API_ENTITY_METADATA + '/entity';
+export const API_ENTITY_METADATA_GET_ENTITY = API_ENTITY_METADATA + '/entity/:name';
+
+export const PERMISSION_ALLOW_ACCESS_ENTITY_METADATA = 'allow access entity metadata';
 export const PERMISSION_ALLOW_ACCESS_ENTITY = 'allow access entity';
 export const PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN = 'allow access entity :name';
 export const PERMISSION_ALLOW_CREATE_ENTITY = 'allow create entity';

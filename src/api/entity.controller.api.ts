@@ -1,5 +1,6 @@
-import {EntityController, EntityRef} from "..";
-import {IEntityControllerApi} from "./IEntityControllerApi";
+import {EntityController} from '../libs/EntityController';
+import {IEntityControllerApi} from './IEntityControllerApi';
+import {EntityRef} from '../libs/registry/EntityRef';
 
 export class EntityControllerApi implements IEntityControllerApi {
 

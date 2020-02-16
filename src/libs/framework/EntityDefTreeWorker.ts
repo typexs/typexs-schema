@@ -31,7 +31,7 @@ export abstract class EntityDefTreeWorker {
   }
 
   isDone(o: any) {
-    return this.cache.indexOf(o) != -1;
+    return this.cache.indexOf(o) !== -1;
   }
 
   done(o: any) {

@@ -26,13 +26,14 @@ import {
 } from 'commons-schema-api/browser';
 import {NotYetImplementedError} from '@typexs/base/browser';
 import {ClassUtils} from 'commons-base/browser';
+import {REGISTRY_TXS_SCHEMA} from './Constants';
 
 
 export class EntityRegistry implements ILookupRegistry {
 
 
   private constructor() {
-    this._lookup = LookupRegistry.$();
+    this._lookup = LookupRegistry.$(REGISTRY_TXS_SCHEMA);
     const defaultSchema = new SchemaRef({name: 'default'});
     this._lookup.add(XS_TYPE_SCHEMA, defaultSchema);
   }

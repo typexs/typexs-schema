@@ -57,14 +57,14 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
   hasColumn(fn: Function, propertyName: string) {
-    return !!this.getMetadata().columns.find(c => c.target == fn && c.propertyName == propertyName);
+    return !!this.getMetadata().columns.find(c => c.target === fn && c.propertyName === propertyName);
   }
 
   hasEntity(fn: Function, name: string = null) {
     if (name) {
-      return !!this.getMetadata().tables.find(c => c.target == fn && c.name == name);
+      return !!this.getMetadata().tables.find(c => c.target === fn && c.name === name);
     }
-    return !!this.getMetadata().tables.find(c => c.target == fn);
+    return !!this.getMetadata().tables.find(c => c.target === fn);
   }
 
   async initialize() {
@@ -307,10 +307,10 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     this.addType(entityClass);
     if (targetRef) {
       const sourceClass = targetRef.getClass();
-      getMetadataArgsStorage().entitySubscribers.filter(s => s.target == sourceClass).map(s => {
+      getMetadataArgsStorage().entitySubscribers.filter(s => s.target === sourceClass).map(s => {
         (<any>s['target']) = entityClass;
       });
-      getMetadataArgsStorage().entityListeners.filter(s => s.target == sourceClass).map(s => {
+      getMetadataArgsStorage().entityListeners.filter(s => s.target === sourceClass).map(s => {
         (<any>s['target']) = entityClass;
       });
     }
@@ -388,9 +388,9 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
         } else {
           return PrimaryColumn(def);
         }
-      } else if (dbType.sourceType == 'date' && dbType.variant == 'updated') {
+      } else if (dbType.sourceType === 'date' && dbType.variant === 'updated') {
         return UpdateDateColumn(def);
-      } else if (dbType.sourceType == 'date' && dbType.variant == 'created') {
+      } else if (dbType.sourceType === 'date' && dbType.variant === 'created') {
         return CreateDateColumn(def);
       }
       return Column(def);
@@ -518,7 +518,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     // Column({name: sourceName, type: 'varchar', length: 64})(refTargetClassDescr, sourceId);
     const uniqueIndex = [sourceId];
 
-    if (propDef.propertyRef && propDef.propertyRef.getClass() == refTargetClass) {
+    if (propDef.propertyRef && propDef.propertyRef.getClass() === refTargetClass) {
       [sourceId, sourceName] = this.nameResolver.forSource(XS_P_PROPERTY);
       this.createColumnIfNotExists('regular', refTargetClass, sourceId, {
         name: sourceName,
@@ -611,8 +611,8 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   /*
     isClassDefinedInStorage(fn: Function) {
       for (let definedEntity of this.getStorageOptions().entities) {
-        if (_.isString(definedEntity) && fn.name == definedEntity) return true;
-        if (_.isFunction(definedEntity) && fn == definedEntity) return true;
+        if (_.isString(definedEntity) && fn.name === definedEntity) return true;
+        if (_.isFunction(definedEntity) && fn === definedEntity) return true;
 
       }
       return false;
