@@ -18,6 +18,7 @@ import {
 import {ClassUtils} from 'commons-base/browser';
 import {REGISTRY_TXS_SCHEMA, XS_P_LABEL} from '../Constants';
 import {Expressions} from 'commons-expressions/browser';
+import {lookupRegistry} from '../Helper';
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true
@@ -48,17 +49,13 @@ export class EntityRef extends AbstractRef implements IEntityRef {
     return null;
   }
 
-  static getLookupRegistry(): LookupRegistry {
-    return LookupRegistry.$(REGISTRY_TXS_SCHEMA);
-  }
-
   static resolveName(instance: any): string {
     if (_.has(instance, 'xs:entity_name')) {
       return _.get(instance, 'xs:entity_name');
     } else {
 
       const className = ClassUtils.getClassName(instance);
-      const xsdef: EntityRef = this.getLookupRegistry().find(XS_TYPE_ENTITY, (x: EntityRef) => {
+      const xsdef: EntityRef = lookupRegistry().find(XS_TYPE_ENTITY, (x: EntityRef) => {
         return x.name === className;
       });
 
@@ -73,7 +70,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
   static resolve(instance: any) {
     const id = this.resolveId(instance);
     if (id) {
-      return this.getLookupRegistry().find(XS_TYPE_ENTITY, (e: EntityRef) => e.id() === id);
+      return lookupRegistry().find(XS_TYPE_ENTITY, (e: EntityRef) => e.id() === id);
     }
     return null;
   }

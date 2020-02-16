@@ -27,6 +27,7 @@ import {
 import {NotYetImplementedError} from '@typexs/base/browser';
 import {ClassUtils} from 'commons-base/browser';
 import {REGISTRY_TXS_SCHEMA} from './Constants';
+import {classRefGet} from './Helper';
 
 
 export class EntityRegistry implements ILookupRegistry {
@@ -53,8 +54,13 @@ export class EntityRegistry implements ILookupRegistry {
   }
 
 
+  static getLookupRegistry() {
+    return LookupRegistry.$(REGISTRY_TXS_SCHEMA);
+  }
+
+
   static getSchema(name: string): SchemaRef {
-    return LookupRegistry.$().find(XS_TYPE_SCHEMA, {name: name});
+    return this.getLookupRegistry().find(XS_TYPE_SCHEMA, {name: name});
   }
 
 
@@ -79,11 +85,12 @@ export class EntityRegistry implements ILookupRegistry {
       schema = new SchemaRef(options);
       schema = this.$()._lookup.add(XS_TYPE_SCHEMA, schema);
     }
-    const classRef = ClassRef.get(fn, REGISTRY_TXS_SCHEMA);
-    const binding = Binding.create(XS_TYPE_SCHEMA, schema.name, XS_TYPE_CLASS_REF, classRef);
-    this.$()._lookup.remove(binding.bindingType, (b: Binding) => b.source === XS_DEFAULT_SCHEMA && b.target.id() === classRef.id());
+    const cRef = classRefGet(fn);
+    const binding = Binding.create(XS_TYPE_SCHEMA, schema.name, XS_TYPE_CLASS_REF, cRef);
+    this.$()._lookup.remove(binding.bindingType,
+      (b: Binding) => b.source === XS_DEFAULT_SCHEMA && b.target.id() === cRef.id());
     this.register(binding);
-    classRef.setSchema(schema.name);
+    cRef.setSchema(schema.name);
     return schema;
   }
 
@@ -93,9 +100,9 @@ export class EntityRegistry implements ILookupRegistry {
   }
 
 
-  private static _fromJsonProperty(property: IPropertyRefMetadata, classRef: ClassRef) {
+  private static _fromJsonProperty(property: IPropertyRefMetadata, clsRef: ClassRef) {
     const options = _.clone(property.options);
-    options.sourceClass = classRef;
+    options.sourceClass = clsRef;
 
     if (property.targetRef) {
       const _classRef = this._fromJsonClassRef(property.targetRef);
@@ -110,7 +117,7 @@ export class EntityRegistry implements ILookupRegistry {
     if (property.validator) {
       property.validator.forEach(m => {
         const _m = _.clone(m);
-        _m.target = classRef.getClass(true);
+        _m.target = clsRef.getClass(true);
         const vma = new ValidationMetadata(_m);
         getFromContainer(MetadataStorage).addValidationMetadata(vma);
       });
@@ -122,16 +129,17 @@ export class EntityRegistry implements ILookupRegistry {
 
 
   private static _fromJsonClassRef(classRefMetadata: IClassRefMetadata) {
-    const classRef = ClassRef.get(classRefMetadata.className, REGISTRY_TXS_SCHEMA);
-    classRef.setSchemas(_.isArray(classRefMetadata.schema) ? classRefMetadata.schema : [classRefMetadata.schema]);
+    const clsRef = classRefGet(classRefMetadata.className);
+    clsRef.setSchemas(_.isArray(classRefMetadata.schema) ?
+      classRefMetadata.schema : [classRefMetadata.schema]);
 
     if (classRefMetadata.properties) {
       classRefMetadata.properties.forEach(property => {
-        this._fromJsonProperty(property, classRef);
+        this._fromJsonProperty(property, clsRef);
       });
     }
 
-    return classRef;
+    return clsRef;
   }
 
 
@@ -187,19 +195,19 @@ export class EntityRegistry implements ILookupRegistry {
 
 
   fromJson(json: IEntityRefMetadata): EntityRef {
-    let classRef = ClassRef.find(json.name);
-    if (!classRef) {
-      classRef = ClassRef.get(SchemaUtils.clazz(json.name), REGISTRY_TXS_SCHEMA);
+    let clsRef = ClassRef.find(json.name, REGISTRY_TXS_SCHEMA);
+    if (!clsRef) {
+      clsRef = classRefGet(SchemaUtils.clazz(json.name));
     }
-    classRef.setSchema(json.schema);
+    clsRef.setSchema(json.schema);
 
     let entity = EntityRegistry.$().getEntityRefByName(json.name);
     if (!entity) {
-      entity = EntityRegistry.createEntity(classRef, json.options);
+      entity = EntityRegistry.createEntity(clsRef, json.options);
       EntityRegistry.register(entity);
 
       json.properties.forEach(property => {
-        EntityRegistry._fromJsonProperty(property, classRef);
+        EntityRegistry._fromJsonProperty(property, clsRef);
       });
     }
     return entity;

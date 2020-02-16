@@ -1,6 +1,6 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {Entity, EntityRef, EntityRegistry, Property, XS_ANNOTATION_OPTIONS_CACHE, } from '../../src';
+import {Entity, EntityRef, EntityRegistry, Property, REGISTRY_TXS_SCHEMA, XS_ANNOTATION_OPTIONS_CACHE, } from '../../src';
 import * as _ from 'lodash';
 
 import {MetaArgs} from '@typexs/base';
@@ -157,7 +157,7 @@ class EntityRegistrySpec {
 
   @test
   async 'EntityRegistry get properties for class ref'() {
-    const classRef = ClassRef.get(require('./schemas/direct_property/Driver').Driver); // Book imports Author
+    const classRef = ClassRef.get(require('./schemas/direct_property/Driver').Driver, REGISTRY_TXS_SCHEMA); // Book imports Author
     // require('./schemas/default/Summary');
     const registry = EntityRegistry.$();
     const props = registry.getPropertyRefsFor(classRef);
@@ -170,7 +170,7 @@ class EntityRegistrySpec {
 
     function PropAddOn(opts: any = {}) {
       return function (object: any, property: string, _options: any = {}) {
-        AnnotationsHelper.forPropertyOn(ClassRef.get(object), property, opts);
+        AnnotationsHelper.forPropertyOn(ClassRef.get(object, REGISTRY_TXS_SCHEMA), property, opts);
       };
     }
 
@@ -205,7 +205,7 @@ class EntityRegistrySpec {
 
     function EntityPropAddOn(opts: any = {}) {
       return function (object: any) {
-        AnnotationsHelper.forEntityOn(ClassRef.get(object), opts);
+        AnnotationsHelper.forEntityOn(ClassRef.get(object, REGISTRY_TXS_SCHEMA), opts);
       };
     }
 

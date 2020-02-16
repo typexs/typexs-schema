@@ -9,6 +9,7 @@ import {ExprDesc} from 'commons-expressions/browser';
 import {OrderDesc} from '../../libs/descriptors/OrderDesc';
 import {ClassUtils} from 'commons-base/browser';
 import {REGISTRY_TXS_SCHEMA} from '../Constants';
+import {classRefGet} from '../Helper';
 
 
 export class PropertyRef extends AbstractRef implements IPropertyRef {
@@ -44,7 +45,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
       if (found_primative || options.type.toLowerCase() === options.type) {
         this.dataType = options.type;
       } else {
-        this.targetRef = ClassRef.get(options.type, REGISTRY_TXS_SCHEMA);
+        this.targetRef = classRefGet(options.type);
       }
 
     }
@@ -55,9 +56,9 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
 
     if (_.isFunction(options.type) || _.isFunction(options.targetClass)) {
       const targetClass = options.type || options.targetClass;
-      this.targetRef = ClassRef.get(targetClass, REGISTRY_TXS_SCHEMA);
+      this.targetRef = classRefGet(targetClass);
     } else if (_.isFunction(options.propertyClass)) {
-      this.propertyRef = ClassRef.get(options.propertyClass, REGISTRY_TXS_SCHEMA);
+      this.propertyRef = classRefGet(options.propertyClass);
     }
 
     if (!this.targetRef && !this.dataType && !this.propertyRef) {

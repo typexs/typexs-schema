@@ -16,6 +16,7 @@ import {IFindOptions} from '../IFindOptions';
 import {OrderDesc} from '../../..';
 import {SqlConditionsBuilder} from './SqlConditionsBuilder';
 import {ClassRef} from 'commons-schema-api';
+import {classRefGet} from '../../Helper';
 
 
 interface IFindData extends IDataExchange<any[]> {
@@ -474,8 +475,8 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
   }
 
 
-  visitExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IFindData): Promise<IFindData> {
-    return this._visitReference(sourceDef, propertyDef, classRef, sources);
+  visitExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, clsRef: ClassRef, sources: IFindData): Promise<IFindData> {
+    return this._visitReference(sourceDef, propertyDef, clsRef, sources);
   }
 
   leaveExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IFindData): Promise<any> {
@@ -697,7 +698,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         }
       }
 
-//      await this.handleJoinDefintionLeave(sourceDef, propertyDef, classRef, sources, {next: sources.target,lookup:sources.});
+//      await this.handleJoinDefintionLeave(sourceDef, propertyDef, classRefGet, sources, {next: sources.target,lookup:sources.});
       return;
     } else if (propertyDef.hasJoinRef()) {
       if (_.isEmpty(sources.target)) {
@@ -736,7 +737,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         return;
 
       } else if (sourceDef instanceof ClassRef) {
-        // let classProp = this.em.schema().getPropertiesFor(classRef.getClass());
+        // let classProp = this.em.schema().getPropertiesFor(classRefGet.getClass());
 //        let [sourceSeqNrId, sourceSeqNrName] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
 
         for (let x = 0; x < sources.lookup.length; x++) {
@@ -849,7 +850,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     this.options = _.defaults(opts, {limit: 100, subLimit: 100});
     this.hookAbortCondition = _.get(options, 'hooks.abortCondition', this.hookAbortCondition);
     this.hookAfterEntity = _.get(options, 'hooks.afterEntity', this.hookAfterEntity);
-    const entityDef = <EntityRef>ClassRef.get(entityType, REGISTRY_TXS_SCHEMA).getEntityRef();
+    const entityDef = <EntityRef>classRefGet(entityType).getEntityRef();
     const result = await this.onEntity(entityDef, null, <IFindData>{
       next: null,
       condition: findConditions,

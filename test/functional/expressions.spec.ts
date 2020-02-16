@@ -2,11 +2,11 @@ import {suite, test} from 'mocha-typescript';
 
 import {expect} from 'chai';
 
-import {TestHelper} from "./TestHelper";
-import {inspect} from "util";
-import {And, Eq, Expressions, ExpressionValidationError, Key, Value} from "commons-expressions";
-import {ClassRef} from "commons-schema-api";
-import {EntityRegistry} from "../../src";
+import {TestHelper} from './TestHelper';
+import {And, Eq, Expressions, ExpressionValidationError, Key, Value} from 'commons-expressions';
+import {ClassRef} from 'commons-schema-api';
+import {EntityRegistry} from '../../src';
+import {classRefGet} from '../../src/libs/Helper';
 
 
 @suite('functional/expressions')
@@ -21,10 +21,10 @@ class ExpressionsSpec {
   async 'source and target keys'() {
 
     const cond_01 = And(Eq('tableName', Value('condition_keeper')), Eq('tableId', Key('id')));
-    let source_keys = cond_01.getSourceKeys();
+    const source_keys = cond_01.getSourceKeys();
     expect(source_keys).to.deep.eq(['tableName', 'tableId']);
 
-    let target_keys = cond_01.getTargetKeys();
+    const target_keys = cond_01.getTargetKeys();
     expect(target_keys).to.deep.eq(['id']);
 
 
@@ -32,36 +32,36 @@ class ExpressionsSpec {
 
   @test
   async 'validate against source and target class'() {
-  let registry = EntityRegistry.$();
+    const registry = EntityRegistry.$();
     const cond_01 = And(Eq('tableName', Value('condition_keeper')), Eq('tableId', Key('id')));
 
     const ConditionHolder = require('./schemas/default/ConditionHolder').ConditionHolder;
     const ConditionKeeper = require('./schemas/default/ConditionKeeper').ConditionKeeper;
 
-    let referred = ClassRef.get(ConditionHolder);
-    let referrer = ClassRef.get(ConditionKeeper);
+    const referred = classRefGet(ConditionHolder);
+    const referrer = classRefGet(ConditionKeeper);
 
-    const isValid_01 = cond_01.validate(registry,referred, referrer);
+    const isValid_01 = cond_01.validate(registry, referred, referrer);
     expect(isValid_01).to.be.true;
 
     const cond_02 = And(Eq('tableNameWrong', Value('condition_keeper')), Eq('tableId', Key('id')));
-    const isValid_02 = cond_02.validate(registry,referred, referrer, false);
+    const isValid_02 = cond_02.validate(registry, referred, referrer, false);
     expect(isValid_02).to.be.false;
     expect(function () {
-      cond_02.validate(registry,referred, referrer)
+      cond_02.validate(registry, referred, referrer);
     }).to.throw(ExpressionValidationError);
     expect(function () {
-      cond_02.validate(registry,referred, referrer) // TODO fix this message
+      cond_02.validate(registry, referred, referrer); // TODO fix this message
     }).to.throw('referred key(s) tableNameWrong not in sourceRef');
 
     const cond_03 = Eq('tableId', Key('ids'));
-    const isValid_03 = cond_03.validate(registry,referred, referrer, false);
+    const isValid_03 = cond_03.validate(registry, referred, referrer, false);
     expect(isValid_03).to.be.false;
     expect(function () {
-      cond_03.validate(registry,referred, referrer)
+      cond_03.validate(registry, referred, referrer);
     }).to.throw(ExpressionValidationError);
     expect(function () {
-      cond_03.validate(registry,referred, referrer)
+      cond_03.validate(registry, referred, referrer);
     }).to.throw('referrer key(s) ids not in targetRef');
   }
 
@@ -69,21 +69,21 @@ class ExpressionsSpec {
   @test
   async 'test on class reference'() {
     const cond_01 = And(Eq('holders.tableName', Value('condition_keeper')), Eq('holders.tableId', Value(23)));
-    let log: string[] = [];
+    const log: string[] = [];
     const ConditionHolder = require('./schemas/default/ConditionHolder').ConditionHolder;
     const ConditionKeeper = require('./schemas/default/ConditionKeeper').ConditionKeeper;
 
-    let referrer = ClassRef.get(ConditionKeeper);
+    let referrer = classRefGet(ConditionKeeper);
     let test = cond_01.test(referrer);
     expect(test).to.be.true;
 
     const cond_02 = Eq('tableName', Value('condition_keeper'));
-    referrer = ClassRef.get(ConditionKeeper);
+    referrer = classRefGet(ConditionKeeper);
     test = cond_02.test(referrer, log);
     expect(test).to.be.false;
     expect(log.shift()).to.be.eq('key tableName is no property of ConditionKeeper');
 
-    referrer = ClassRef.get(ConditionHolder);
+    referrer = classRefGet(ConditionHolder);
     test = cond_02.test(referrer, log);
     expect(test).to.be.true;
   }
@@ -91,7 +91,7 @@ class ExpressionsSpec {
   @test
   async 'get map'() {
     const cond_02 = And(Eq('tableNameWrong', Value('condition_keeper')), Eq('tableId', Key('id')));
-    let map = cond_02.getMap();
+    const map = cond_02.getMap();
     expect(map).to.be.deep.eq({tableNameWrong: '\'condition_keeper\'', tableId: 'id'});
   }
 
@@ -99,9 +99,9 @@ class ExpressionsSpec {
   @test
   async 'to and from json for "and" expression'() {
     const cond_02 = And(Eq('tableNameWrong', Value('condition_keeper')), Eq('tableId', Key('id')));
-    let json = cond_02.toJson();
-    let cond_parsed = Expressions.fromJson(json);
-    let json2 = cond_parsed.toJson();
+    const json = cond_02.toJson();
+    const cond_parsed = Expressions.fromJson(json);
+    const json2 = cond_parsed.toJson();
     expect(json).to.deep.eq(json2);
 
   }
@@ -199,8 +199,8 @@ class ExpressionsSpec {
     };
 
 
-    let cond_parsed = Expressions.fromJson(json_src_full2);
-    let json2 = cond_parsed.toJson();
+    const cond_parsed = Expressions.fromJson(json_src_full2);
+    const json2 = cond_parsed.toJson();
     expect(json2).to.deep.eq(json_src_full2);
   }
 }

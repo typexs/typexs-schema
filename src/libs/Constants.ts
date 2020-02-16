@@ -52,7 +52,7 @@ export const API_ENTITY_PREFIX = '/entity';
  * Metadata
  */
 
-export const API_ENTITY_FIND_ENTITY = `:name`;
+export const API_ENTITY_FIND_ENTITY = `/:name`;
 export const API_ENTITY_GET_ENTITY = `/:name/:id`;
 export const API_ENTITY_SAVE_ENTITY = `/:name`;
 export const API_ENTITY_UPDATE_ENTITY = `/:name/:id`;
