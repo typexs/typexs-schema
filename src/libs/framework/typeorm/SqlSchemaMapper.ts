@@ -15,7 +15,7 @@ import {SchemaRef} from '../../registry/SchemaRef';
 import {EntityRef} from '../../registry/EntityRef';
 import * as _ from 'lodash';
 import {PropertyRef} from '../../registry/PropertyRef';
-import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
+import {REGISTRY_TXS_SCHEMA, XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
 
 import {SchemaUtils} from '../../SchemaUtils';
 import {ISchemaMapper} from './../ISchemaMapper';
@@ -318,7 +318,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
   private handleCreatePropertyClass(propertyDef: PropertyRef, className: string) {
-    propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(className));
+    propertyDef.joinRef = ClassRef.get(SchemaUtils.clazz(className), REGISTRY_TXS_SCHEMA);
     const storeClass = propertyDef.joinRef.getClass();
     const storingName = propertyDef.storingName;
     this.createEntityIfNotExists(storeClass, storingName);

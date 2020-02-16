@@ -6,7 +6,7 @@ import {ConnectionWrapper, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_
 import {PropertyRef} from '../../registry/PropertyRef';
 import {EntityRef} from '../../registry/EntityRef';
 
-import {XS_P_$ABORTED, XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
+import {REGISTRY_TXS_SCHEMA, XS_P_$ABORTED, XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
 import {IDataExchange} from '../IDataExchange';
 import {SqlHelper} from './SqlHelper';
 import {Sql} from './Sql';
@@ -63,10 +63,10 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
   private hookAbortCondition: (entityDef: EntityRef, propertyDef: PropertyRef, results: any[], op: SqlFindOp<T>) => boolean =
     (entityDef: EntityRef, propertyDef: PropertyRef, results: any[], op: SqlFindOp<T>) => {
       return op.entityDepth > 0;
-    }
+    };
 
   private hookAfterEntity: (entityDef: EntityRef, entities: any[]) => void = () => {
-  }
+  };
 
 
   visitDataProperty(propertyDef: PropertyRef, sourceDef: PropertyRef | EntityRef | ClassRef, sources: IFindData, targets: IFindData): void {
@@ -300,7 +300,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         });
 
         targetIdProps.forEach(prop => {
-          const [targetId, ] = this.em.nameResolver().forTarget(prop);
+          const [targetId,] = this.em.nameResolver().forTarget(prop);
           condition[prop.storingName] = result[targetId];
           lookup.target[prop.name] = prop.get(result);
         });
@@ -343,7 +343,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
           const lookup = {};
 
           targetIdProps.forEach(prop => {
-            const [targetId, ] = this.em.nameResolver().for(propertyDef.machineName, prop);
+            const [targetId,] = this.em.nameResolver().for(propertyDef.machineName, prop);
             condition[prop.storingName] = extJoinObj[targetId];
             lookup[prop.name] = extJoinObj[targetId];
           });
@@ -402,7 +402,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         let lookup: any = {};
         lookup[sourceTypeId] = sourceDef.machineName;
         sourcePropsIds.forEach(prop => {
-          const [sourceId, ] = this.em.nameResolver().forSource(prop);
+          const [sourceId,] = this.em.nameResolver().forSource(prop);
           lookup[sourceId] = prop.get(target);
         });
 
@@ -413,7 +413,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         for (const joinObj of joinObjs) {
           lookup = {};
           targetIdProps.forEach(prop => {
-            const [targetId, ] = this.em.nameResolver().forTarget(prop);
+            const [targetId,] = this.em.nameResolver().forTarget(prop);
             lookup[prop.name] = joinObj[targetId];
           });
           const res = _.find(sources.next, lookup);
@@ -849,7 +849,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     this.options = _.defaults(opts, {limit: 100, subLimit: 100});
     this.hookAbortCondition = _.get(options, 'hooks.abortCondition', this.hookAbortCondition);
     this.hookAfterEntity = _.get(options, 'hooks.afterEntity', this.hookAfterEntity);
-    const entityDef = <EntityRef>ClassRef.get(entityType).getEntityRef();
+    const entityDef = <EntityRef>ClassRef.get(entityType, REGISTRY_TXS_SCHEMA).getEntityRef();
     const result = await this.onEntity(entityDef, null, <IFindData>{
       next: null,
       condition: findConditions,

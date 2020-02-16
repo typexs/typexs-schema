@@ -3,19 +3,12 @@ import * as _ from 'lodash';
 import {EntityRef} from './EntityRef';
 import * as moment from 'moment';
 
-import {
-  AbstractRef,
-  ClassRef,
-  IBuildOptions,
-  IPropertyRef,
-  JS_PRIMATIVE_TYPES,
-  LookupRegistry,
-  XS_TYPE_PROPERTY
-} from 'commons-schema-api/browser';
+import {AbstractRef, ClassRef, IBuildOptions, IPropertyRef, JS_PRIMATIVE_TYPES, XS_TYPE_PROPERTY} from 'commons-schema-api/browser';
 import {NotSupportedError, NotYetImplementedError} from '@typexs/base/browser';
 import {ExprDesc} from 'commons-expressions/browser';
 import {OrderDesc} from '../../libs/descriptors/OrderDesc';
 import {ClassUtils} from 'commons-base/browser';
+import {REGISTRY_TXS_SCHEMA} from '../Constants';
 
 
 export class PropertyRef extends AbstractRef implements IPropertyRef {
@@ -40,7 +33,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
 
 
   constructor(options: IProperty) {
-    super('property', options.propertyName, options.sourceClass);
+    super('property', options.propertyName, options.sourceClass, REGISTRY_TXS_SCHEMA);
     this.setOptions(options);
     this.entityName = this.object.className;
 
@@ -51,7 +44,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
       if (found_primative || options.type.toLowerCase() === options.type) {
         this.dataType = options.type;
       } else {
-        this.targetRef = ClassRef.get(options.type);
+        this.targetRef = ClassRef.get(options.type, REGISTRY_TXS_SCHEMA);
       }
 
     }
@@ -62,9 +55,9 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
 
     if (_.isFunction(options.type) || _.isFunction(options.targetClass)) {
       const targetClass = options.type || options.targetClass;
-      this.targetRef = ClassRef.get(targetClass);
+      this.targetRef = ClassRef.get(targetClass, REGISTRY_TXS_SCHEMA);
     } else if (_.isFunction(options.propertyClass)) {
-      this.propertyRef = ClassRef.get(options.propertyClass);
+      this.propertyRef = ClassRef.get(options.propertyClass, REGISTRY_TXS_SCHEMA);
     }
 
     if (!this.targetRef && !this.dataType && !this.propertyRef) {
@@ -191,7 +184,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     if (!this.propertyRef) {
       return [];
     }
-    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, {entityName: this.propertyRef.className});
+    return this.getLookupRegistry().filter(XS_TYPE_PROPERTY, {entityName: this.propertyRef.className});
   }
 
 

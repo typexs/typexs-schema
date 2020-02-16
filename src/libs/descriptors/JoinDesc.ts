@@ -6,6 +6,7 @@ import {OrderDesc} from "./OrderDesc";
 import {ConditionValidationError} from "../exceptions/ConditionValidationError";
 import {IExpr, ExprDesc, And} from "commons-expressions/browser";
 import {ClassRef} from "commons-schema-api/browser";
+import {REGISTRY_TXS_SCHEMA} from '../Constants';
 
 export type KeyMapType = 'from' | 'to';
 
@@ -33,7 +34,7 @@ export class JoinDesc implements IExpr {
     if (_.isString(base)) {
       throw new NotYetImplementedError()
     }
-    this.joinRef = ClassRef.get(base);
+    this.joinRef = ClassRef.get(base, REGISTRY_TXS_SCHEMA);
     this.keyMaps = keyMaps;
     this.condition = conditions;
     if (order) {

@@ -79,7 +79,7 @@ export class EntityRegistry implements ILookupRegistry {
       schema = new SchemaRef(options);
       schema = this.$()._lookup.add(XS_TYPE_SCHEMA, schema);
     }
-    const classRef = ClassRef.get(fn);
+    const classRef = ClassRef.get(fn, REGISTRY_TXS_SCHEMA);
     const binding = Binding.create(XS_TYPE_SCHEMA, schema.name, XS_TYPE_CLASS_REF, classRef);
     this.$()._lookup.remove(binding.bindingType, (b: Binding) => b.source === XS_DEFAULT_SCHEMA && b.target.id() === classRef.id());
     this.register(binding);
@@ -122,7 +122,7 @@ export class EntityRegistry implements ILookupRegistry {
 
 
   private static _fromJsonClassRef(classRefMetadata: IClassRefMetadata) {
-    const classRef = ClassRef.get(classRefMetadata.className);
+    const classRef = ClassRef.get(classRefMetadata.className, REGISTRY_TXS_SCHEMA);
     classRef.setSchemas(_.isArray(classRefMetadata.schema) ? classRefMetadata.schema : [classRefMetadata.schema]);
 
     if (classRefMetadata.properties) {
@@ -167,29 +167,29 @@ export class EntityRegistry implements ILookupRegistry {
 
 
   listProperties() {
-    return LookupRegistry.$().list(XS_TYPE_PROPERTY);
+    return this._lookup.list(XS_TYPE_PROPERTY);
   }
 
 
   listEntities() {
-    return LookupRegistry.$().list(XS_TYPE_ENTITY);
+    return this._lookup.list(XS_TYPE_ENTITY);
   }
 
 
   listClassRefs() {
-    return LookupRegistry.$().list(XS_TYPE_CLASS_REF);
+    return this._lookup.list(XS_TYPE_CLASS_REF);
   }
 
 
   listSchemas() {
-    return LookupRegistry.$().list(XS_TYPE_SCHEMA);
+    return this._lookup.list(XS_TYPE_SCHEMA);
   }
 
 
   fromJson(json: IEntityRefMetadata): EntityRef {
     let classRef = ClassRef.find(json.name);
     if (!classRef) {
-      classRef = ClassRef.get(SchemaUtils.clazz(json.name));
+      classRef = ClassRef.get(SchemaUtils.clazz(json.name), REGISTRY_TXS_SCHEMA);
     }
     classRef.setSchema(json.schema);
 
@@ -218,18 +218,19 @@ export class EntityRegistry implements ILookupRegistry {
       return e.machineName === _.snakeCase(name);
     });
   }
-/*
 
-  getPropertyDefsFor(entity: EntityRef | ClassRef): PropertyRef[] {
-    if (entity instanceof EntityRef) {
-      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => x.object.id() === entity.getClassRef().id());
-    } else {
-      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => {
-        return x.object.id() === entity.id()
-      });
+  /*
+
+    getPropertyDefsFor(entity: EntityRef | ClassRef): PropertyRef[] {
+      if (entity instanceof EntityRef) {
+        return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => x.object.id() === entity.getClassRef().id());
+      } else {
+        return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => {
+          return x.object.id() === entity.id()
+        });
+      }
     }
-  }
-*/
+  */
   private find(instance: any): EntityRef {
     const cName = ClassUtils.getClassName(instance);
     return this._lookup.find(XS_TYPE_ENTITY, {name: cName});

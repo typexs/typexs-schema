@@ -16,7 +16,7 @@ import {
   XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
 import {ClassUtils} from 'commons-base/browser';
-import {XS_P_LABEL} from '../Constants';
+import {REGISTRY_TXS_SCHEMA, XS_P_LABEL} from '../Constants';
 import {Expressions} from 'commons-expressions/browser';
 
 const DEFAULT_OPTIONS: IEntity = {
@@ -33,7 +33,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
 
 
   constructor(fn: ClassRef | Function, options: IEntity = {}) {
-    super('entity', fn instanceof ClassRef ? fn.className : fn.name, fn);
+    super('entity', fn instanceof ClassRef ? fn.className : fn.name, fn, REGISTRY_TXS_SCHEMA);
     // OptionsHelper.merge(this.object, options);
     this.object.isEntity = true;
     options = _.defaults(options, DEFAULT_OPTIONS);
@@ -48,13 +48,17 @@ export class EntityRef extends AbstractRef implements IEntityRef {
     return null;
   }
 
+  static getLookupRegistry(): LookupRegistry {
+    return LookupRegistry.$(REGISTRY_TXS_SCHEMA);
+  }
+
   static resolveName(instance: any): string {
     if (_.has(instance, 'xs:entity_name')) {
       return _.get(instance, 'xs:entity_name');
     } else {
 
       const className = ClassUtils.getClassName(instance);
-      const xsdef: EntityRef = LookupRegistry.$().find(XS_TYPE_ENTITY, (x: EntityRef) => {
+      const xsdef: EntityRef = this.getLookupRegistry().find(XS_TYPE_ENTITY, (x: EntityRef) => {
         return x.name === className;
       });
 
@@ -69,7 +73,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
   static resolve(instance: any) {
     const id = this.resolveId(instance);
     if (id) {
-      return LookupRegistry.$().find(XS_TYPE_ENTITY, (e: EntityRef) => e.id() === id);
+      return this.getLookupRegistry().find(XS_TYPE_ENTITY, (e: EntityRef) => e.id() === id);
     }
     return null;
   }
@@ -86,7 +90,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
 
 
   getPropertyRefs(): PropertyRef[] {
-    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyRef) => e.getSourceRef().getClass() === this.getClass());
+    return this.getLookupRegistry().filter(XS_TYPE_PROPERTY, (e: PropertyRef) => e.getSourceRef().getClass() === this.getClass());
   }
 
   getPropertyRef(name: string): PropertyRef {
@@ -99,7 +103,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
    * @returns {any[]}
    */
   getPropertyRefIdentifier(): PropertyRef[] {
-    return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyRef) =>
+    return this.getLookupRegistry().filter(XS_TYPE_PROPERTY, (e: PropertyRef) =>
       e.getSourceRef().getClass() === this.getClass() && e.isIdentifier());
     // return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.entityName === this.name && e.identifier);
   }
