@@ -7,6 +7,7 @@ import {IFramework} from './framework/IFramework';
 import {NotSupportedError, StorageRef} from '@typexs/base';
 import {IFindOptions} from './framework/IFindOptions';
 import {ISaveOptions} from './framework/ISaveOptions';
+import {ClassType} from 'commons-schema-api/browser';
 
 
 export class EntityController {
@@ -73,12 +74,12 @@ export class EntityController {
   }
 
 
-  async findOne<T>(fn: Function | string, conditions: any = null, options: IFindOptions = {limit: 1}): Promise<T> {
+  async findOne<T>(fn: Function | string | ClassType<T>, conditions: any = null, options: IFindOptions = {limit: 1}): Promise<T> {
     return this.find<T>(fn, conditions, _.assign(options, {limit: 1})).then(r => r.shift());
   }
 
 
-  async find<T>(fn: Function | string, conditions: any = null, options?: IFindOptions): Promise<T[]> {
+  async find<T>(fn: Function | string | ClassType<T>, conditions: any = null, options?: IFindOptions): Promise<T[]> {
     if (!this.framework) { throw new NotSupportedError('no framework support'); }
     return this.framework.getFindOp<T>(this).run(fn, conditions, options);
   }
