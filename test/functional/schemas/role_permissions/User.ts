@@ -1,8 +1,8 @@
 import * as _ from 'lodash';
-import {Asc, Entity, From, Join, Property, To} from "../../../../src";
-import {RBelongsTo2} from "./RBelongsTo2";
-import {And, Eq, Key, Value} from "commons-expressions";
-import {Role} from "./Role";
+import {Asc, Entity, From, Join, Property, To} from '../../../../src';
+import {RBelongsTo2} from './RBelongsTo2';
+import {And, Eq, Key, Value} from 'commons-expressions';
+import {Role} from './Role';
 
 
 @Entity()
@@ -50,13 +50,13 @@ export class User {
   isApproved(): boolean {
     if (!_.isBoolean(this.approved)) {
       if (_.isString(this.approved)) {
-        if (this.approved === "0" || this.approved === 'false') {
+        if (this.approved === '0' || this.approved === 'false') {
           this.approved = false;
-        }else if(this.approved === "1" || this.approved === 'true'){
+        } else if (this.approved === '1' || this.approved === 'true') {
           this.approved = true;
         }
-      }else{
-        this.approved = this.approved ? true : false
+      } else {
+        this.approved = this.approved ? true : false;
       }
     }
     return this.approved;
@@ -65,13 +65,13 @@ export class User {
   isDisabled(): boolean {
     if (!_.isBoolean(this.disabled)) {
       if (_.isString(this.disabled)) {
-        if (this.disabled === "0" || this.disabled === 'false') {
+        if (this.disabled === '0' || this.disabled === 'false') {
           this.disabled = false;
-        }else if(this.disabled === "1" || this.disabled === 'true'){
+        } else if (this.disabled === '1' || this.disabled === 'true') {
           this.disabled = true;
         }
-      }else{
-        this.disabled = this.disabled ? true : false
+      } else {
+        this.disabled = this.disabled ? true : false;
       }
     }
     return this.disabled;

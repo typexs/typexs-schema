@@ -1,7 +1,7 @@
-import {RBelongsTo2} from "./RBelongsTo2";
-import {Permission} from "./Permission";
-import {Asc, Entity, From, Join, Property, Schema, To} from "../../../../src";
-import {And, Eq, Key, Value} from "commons-expressions";
+import {RBelongsTo2} from './RBelongsTo2';
+import {Permission} from './Permission';
+import {Asc, Entity, From, Join, Property, Schema, To} from '../../../../src';
+import {And, Eq, Key, Value} from 'commons-expressions';
 
 
 @Schema({name: 'role_permissions'})

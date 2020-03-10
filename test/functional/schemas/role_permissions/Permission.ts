@@ -1,8 +1,8 @@
 
-import {RBelongsTo2} from "./RBelongsTo2";
-import {Role} from "./Role";
-import {Asc, Entity, From, Join, Property, Schema, To} from "../../../../src";
-import {And, Eq, Key, Value} from "commons-expressions";
+import {RBelongsTo2} from './RBelongsTo2';
+import {Role} from './Role';
+import {Asc, Entity, From, Join, Property, Schema, To} from '../../../../src';
+import {And, Eq, Key, Value} from 'commons-expressions';
 
 
 @Schema({name: 'role_permissions'})
@@ -44,7 +44,7 @@ export class Permission {
         Eq('reftab', Value('permission'))),
       [Asc(Key('sort')), Asc(Key('id'))])
   })
-  roles:Role[];
+  roles: Role[];
 
   label() {
     return this.permission;

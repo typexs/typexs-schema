@@ -1,4 +1,4 @@
-import {CObject, Property, Schema} from "../../../../src";
+import {CObject, Property, Schema} from '../../../../src';
 
 @Schema({name: 'role_permissions'})
 @CObject({name: 'r_belongsto2'})
