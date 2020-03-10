@@ -1,9 +1,9 @@
 
-import {Content} from "./Content";
-import {From, Join, To} from "../../../../src/libs/descriptors/JoinDesc";
-import {ContentRef} from "./ContentRef";
-import {Entity, Property, Schema} from "../../../../src";
-import {Eq, Key, Value} from "commons-expressions";
+import {Content} from './Content';
+import {From, Join, To} from '../../../../src/libs/descriptors/JoinDesc';
+import {ContentRef} from './ContentRef';
+import {Entity, Property, Schema} from '../../../../src';
+import {Eq, Key, Value} from 'commons-expressions';
 
 
 @Schema({name: 'join'})

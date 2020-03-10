@@ -1,5 +1,4 @@
 import {inspect} from 'util';
-
 // process.env['SQL_LOG'] = 'X';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
@@ -8,12 +7,11 @@ import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 
 import {TEST_STORAGE_OPTIONS} from './config';
-import {monitorEventLoopDelay} from 'perf_hooks';
 // import {Permission} from "./schemas/role_permissions/Permission";
 // import {ContentHolder} from "./schemas/join/ContentHolder";
 
 
-@suite('functional/sql_schema_predefined_join_bidirect')
+@suite('functional/sql_predefined_join_bidirect')
 class SqlSchemaPredefinedJoinBidirectSpec {
 
 
@@ -23,7 +21,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
 
 
   @test
-  async 'create E-P-E[] over predefined join tables'() {
+  async 'E-P-E[] over predefined join tables'() {
     const Role = require('./schemas/role_permissions/Role').Role;
     const Permission = require('./schemas/role_permissions/Permission').Permission;
 
@@ -89,6 +87,96 @@ class SqlSchemaPredefinedJoinBidirectSpec {
 
     const results = await c.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(2);
+
+    await c.close();
+  }
+
+
+  @test
+  async 'E-P-E[] over predefined join tables - save empty'() {
+    const Role = require('./schemas/role_permissions/Role').Role;
+    const Permission = require('./schemas/role_permissions/Permission').Permission;
+
+    const options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'role_permissions';
+
+    // let schema = EntityRegistry.$().getSchemaDefByName(options.name);
+    // console.log(inspect(schema.toJson(), false, 10));
+
+    const connect = await TestHelper.connect(options);
+    const xsem = connect.controller;
+    const ref = connect.ref;
+    const c = await ref.connect();
+
+
+    // create empty role
+    const emptyRoleBefore = new Role();
+    emptyRoleBefore.displayName = 'emptyRoleBefore';
+    emptyRoleBefore.permissions = [];
+    emptyRoleBefore.rolename = 'emptyRoleBefore';
+    emptyRoleBefore.disabled = false;
+    await xsem.save(emptyRoleBefore);
+
+
+    const roles = await xsem.find(Role) as any[];
+    expect(roles).to.have.length(1);
+    console.log(roles);
+    expect(roles[0].permissions).to.be.empty;
+
+
+    const results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    expect(results).to.have.length(0);
+
+    await c.close();
+  }
+
+
+  @test
+  async 'E-P-E[] over predefined join tables - correct ordered'() {
+    const Role = require('./schemas/role_permissions/Role').Role;
+    const Permission = require('./schemas/role_permissions/Permission').Permission;
+
+    const options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'role_permissions';
+
+    // let schema = EntityRegistry.$().getSchemaDefByName(options.name);
+    // console.log(inspect(schema.toJson(), false, 10));
+
+    const connect = await TestHelper.connect(options);
+    const xsem = connect.controller;
+    const ref = connect.ref;
+    const c = await ref.connect();
+
+
+    // create empty role
+    const emptyRoleBefore = new Role();
+    emptyRoleBefore.displayName = 'emptyRoleBefore';
+    emptyRoleBefore.permissions = [];
+    emptyRoleBefore.rolename = 'emptyRoleBefore';
+    emptyRoleBefore.disabled = false;
+    await xsem.save(emptyRoleBefore);
+
+    const perm01 = new Permission();
+    perm01.type = 'single';
+    perm01.module = 'duo';
+    perm01.disabled = false;
+    perm01.permission = 'allow everything';
+
+    const roleWithPerm = new Role();
+    roleWithPerm.displayName = 'roleWithPerm';
+    roleWithPerm.permissions = [perm01];
+    roleWithPerm.rolename = 'roleWithPerm';
+    roleWithPerm.disabled = false;
+    await xsem.save(roleWithPerm);
+
+    const roles = await xsem.find(Role) as any[];
+    expect(roles).to.have.length(2);
+    console.log(roles);
+    expect(roles[0].permissions).to.be.empty;
+
+
+    const results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    expect(results).to.have.length(1);
 
     await c.close();
   }

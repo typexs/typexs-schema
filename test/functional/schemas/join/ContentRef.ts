@@ -1,4 +1,4 @@
-import {CObject, Property, Schema} from "../../../../src";
+import {CObject, Property, Schema} from '../../../../src';
 
 @Schema({name: 'join'})
 @CObject({name: 'r_blobs'})

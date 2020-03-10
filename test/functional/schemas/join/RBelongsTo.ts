@@ -1,5 +1,5 @@
-import {UpdateDateColumn} from "typeorm";
-import {CObject, Property, Schema} from "../../../../src";
+import {UpdateDateColumn} from 'typeorm';
+import {CObject, Property, Schema} from '../../../../src';
 
 @Schema({name: 'join'})
 @CObject({name: 'r_belongsto'})
