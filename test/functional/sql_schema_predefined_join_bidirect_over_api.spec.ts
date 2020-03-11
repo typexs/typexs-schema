@@ -1,5 +1,5 @@
-import {EntityAPIController} from "../../src/controllers/EntityAPIController";
-//process.env['SQL_LOG'] = 'X';
+import {EntityAPIController} from '../../src/controllers/EntityAPIController';
+// process.env['SQL_LOG'] = 'X';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
@@ -7,13 +7,13 @@ import * as _ from 'lodash';
 import {Container, IRuntimeLoaderOptions, TypeOrmEntityRegistry} from '@typexs/base';
 import {Bootstrap} from '@typexs/base/Bootstrap';
 
-import {TestHelper} from "./TestHelper";
+import {TestHelper} from './TestHelper';
 
-import {K_ROUTE_CONTROLLER, Server} from "@typexs/server";
-import {Permission} from "./schemas/role_permissions/Permission";
-import {Role} from "./schemas/role_permissions/Role";
-import {RBelongsTo2} from "./schemas/role_permissions/RBelongsTo2";
-import {TEST_STORAGE_OPTIONS} from "./config";
+import {K_ROUTE_CONTROLLER, Server} from '@typexs/server';
+import {Permission} from './schemas/role_permissions/Permission';
+import {Role} from './schemas/role_permissions/Role';
+import {RBelongsTo2} from './schemas/role_permissions/RBelongsTo2';
+import {TEST_STORAGE_OPTIONS} from './config';
 
 
 const settingsTemplate: any = {
@@ -23,8 +23,8 @@ const settingsTemplate: any = {
       synchronize: true,
       type: 'sqlite',
       database: ':memory:',
-      logging: 'all',
-      logger: 'simple-console'
+      // logging: 'all',
+      // logger: 'simple-console'
     }
   },
 
@@ -43,7 +43,7 @@ const settingsTemplate: any = {
 
 
   logging: {
-    enable: true,
+    enable: false,
     level: 'debug',
     transports: [{console: {name: 'sql_schema_predefined_join_bidirect_over_api'}}],
   },
@@ -76,7 +76,7 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
 
   static async before() {
     TestHelper.resetTypeorm();
-    let settings = _.clone(settingsTemplate);
+    const settings = _.clone(settingsTemplate);
     Bootstrap.reset();
 
     bootstrap = Bootstrap.setConfigSources([{type: 'system'}])
@@ -108,25 +108,25 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
   async 'update E-P-E[] over predefined join tables with api'() {
 
 
-    let perm01 = new Permission();
+    const perm01 = new Permission();
     perm01.type = 'single';
     perm01.module = 'duo';
     perm01.disabled = false;
     perm01.permission = 'allow everything';
 
-    let perm02 = new Permission();
+    const perm02 = new Permission();
     perm02.type = 'single';
     perm02.module = 'duo';
     perm02.disabled = false;
     perm02.permission = 'allow everything else';
 
-    let perm03 = new Permission();
+    const perm03 = new Permission();
     perm03.type = 'single';
     perm03.module = 'duo';
     perm03.disabled = false;
     perm03.permission = 'allow everything but this';
 
-    let api = Container.get(EntityAPIController);
+    const api = Container.get(EntityAPIController);
     let role = new Role();
     role.displayName = 'User';
     role.permissions = [perm01, perm02];
@@ -162,8 +162,8 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
   @test
   async 'metadata for overlapping entity check'() {
 
-    let entity = TypeOrmEntityRegistry.$().getEntityRefFor("RBelongsTo2");
-    let props = entity.getPropertyRefs();
+    const entity = TypeOrmEntityRegistry.$().getEntityRefFor('RBelongsTo2');
+    const props = entity.getPropertyRefs();
     expect(props).to.have.length(7);
 
   }

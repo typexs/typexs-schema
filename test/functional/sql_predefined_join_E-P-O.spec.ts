@@ -5,7 +5,6 @@ import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
 import {ConnectionWrapper} from '@typexs/base';
 import {EntityController} from '../../src';
-import {inspect} from 'util';
 
 
 let c: ConnectionWrapper;
@@ -15,7 +14,7 @@ let Candidate: any;
 let IdentityRole: any;
 let Identity: any;
 
-@suite('functional/sql_schema_predefined_join E-P-O')
+@suite('functional/sql_predefined_join E-P-O')
 class SqlPredefinedJoinEPOSpec {
 
 
@@ -59,7 +58,6 @@ class SqlPredefinedJoinEPOSpec {
       'anschrkz'
     ]);
 
-    await c.close();
   }
 
 
@@ -75,7 +73,6 @@ class SqlPredefinedJoinEPOSpec {
     await entityController.save(candidate);
 
     const candidates = await entityController.find(Candidate) as any[];
-    console.log(candidates);
     expect(candidates).to.have.length(1);
     expect(candidates[0].identity).to.be.null;
   }
@@ -199,26 +196,30 @@ class SqlPredefinedJoinEPOSpec {
   @test
   async 'save multiple E-P-O entries where some refs are missing'() {
     let candidates = [];
+    let _switch = false;
     for (let i = 0; i < 4; i++) {
       const candidate = new Candidate();
       candidate.bewnr = 1000 + i;
       candidate.nachname = 'Siegfried ' + i;
-      // TODO same behaviour should be on property undefined or null
       let identity = null;
       if (i % 2 === 0) {
         identity = new Identity();
         identity.identnr = 90000 + i;
         identity.name = 'Siegfried ' + i;
         candidate.identity = identity;
+      } else {
+        if (_switch) {
+          _switch = true;
+          candidate.identity = null;
+        } else {
+          // identity is undefined!
+        }
       }
-
       candidates.push(candidate);
-
     }
 
 
     candidates = await entityController.save(candidates);
-    console.log(inspect(candidates, false, 10));
 
     const values: any[] = await c.connection.query('SELECT * FROM identroll;');
     expect(values).to.have.length(2);

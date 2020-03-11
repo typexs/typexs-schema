@@ -7,7 +7,7 @@ export class Teacher {
   @Property({type: 'number', auto: true})
   pid: number;
 
-  @Property({type: 'string'})
+  @Property()
   name: string;
 
 }

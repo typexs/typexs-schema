@@ -30,7 +30,7 @@ const settingsTemplate: any = {
 
 
   logging: {
-    enable: true,
+    enable: false,
     level: 'debug',
     transports: [{console: {}}],
   },
@@ -97,11 +97,8 @@ class ApiserverSpec {
 
     const url = server.url();
 
-    console.log('1');
     let res: any = await http.post(url + '/api/entity/book3', {body: data, json: true, passBody: true});
-    console.log('2');
     expect(res).to.deep.include({id: 1});
-    console.log('3');
     res = await http.get(url + `/api/entity/book3/${res.id}`, {json: true, passBody: true});
     expect(res).to.deep.include({id: 1});
     const x = {};
@@ -122,17 +119,14 @@ class ApiserverSpec {
 
     res = await http.post(url + '/api/entity/book3', {body: arrData, json: true, passBody: true});
     expect(_.map(res, r => r.id)).to.deep.eq([2, 3]);
-    console.log('3');
 
     res = await http.get(url + `/api/entity/book3/1,2,3`, {json: true, passBody: true});
     expect(res[XS_P_$COUNT]).to.eq(3);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([1, 2, 3]);
-    console.log('3');
 
     res = await http.get(url + `/api/entity/book3?query=${JSON.stringify({id: 1})}`, {json: true, passBody: true});
     expect(res[XS_P_$COUNT]).to.eq(1);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([1]);
-    console.log('3');
 
     res = await http.get(url + `/api/entity/book_3?query=${JSON.stringify({label: {$like: 'Odyssee'}})}`, {
       json: true,
@@ -140,7 +134,6 @@ class ApiserverSpec {
     });
     expect(res[XS_P_$COUNT]).to.eq(1);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([3]);
-    console.log('3');
 
     res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2`, {
       json: true,
@@ -149,7 +142,6 @@ class ApiserverSpec {
     expect(res[XS_P_$COUNT]).to.eq(3);
     expect(res[XS_P_$LIMIT]).to.eq(2);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([3, 2]);
-    console.log('3');
 
     res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2&offset=1`, {
       json: true,

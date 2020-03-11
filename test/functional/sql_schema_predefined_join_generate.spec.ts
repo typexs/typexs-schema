@@ -6,16 +6,13 @@ import {TEST_STORAGE_OPTIONS} from './config';
 
 
 @suite('functional/sql_schema_predefined_join_generate')
-class Sql_schema_predefined_join_generateSpec {
+class SqlSchemaPredefinedJoinGenerateSpec {
 
 
   before() {
     TestHelper.resetTypeorm();
   }
 
-  @test.skip()
-  async 'create E-P-E over predefined join tables'() {
-  }
 
   @test
   async 'create E-P-E[] over predefined join tables'() {
@@ -40,37 +37,6 @@ class Sql_schema_predefined_join_generateSpec {
   }
 
 
-  @test
-  async 'create E-P-O schema with predefined join tables'() {
-    require('./schemas/join/Candidate');
-    require('./schemas/join/IdentityRole');
-    require('./schemas/join/Identity');
-
-    const options = _.clone(TEST_STORAGE_OPTIONS);
-    (<any>options).name = 'join';
-    const connect = await TestHelper.connect(options);
-    const xsem = connect.controller;
-    const ref = connect.ref;
-    const c = await ref.connect();
-
-    const tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';');
-    expect(_.map(tables, t => t.name)).to.have.include.members([
-      'bew',
-      'identroll',
-      'ident'
-    ]);
-
-    const cols = await c.connection.query('PRAGMA table_info(\'identroll\')');
-    expect(_.map(cols, t => t.name)).to.have.members([
-      'identnr',
-      'rolle',
-      'verbindung_integer',
-      'verbindung_char',
-      'anschrkz'
-    ]);
-
-    await c.close();
-  }
 
 
   @test

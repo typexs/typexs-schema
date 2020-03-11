@@ -29,7 +29,6 @@ class SqlSchemaPredefinedJoinBidirectSpec {
     (<any>options).name = 'role_permissions';
 
     // let schema = EntityRegistry.$().getSchemaDefByName(options.name);
-    // console.log(inspect(schema.toJson(), false, 10));
 
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
@@ -101,7 +100,6 @@ class SqlSchemaPredefinedJoinBidirectSpec {
     (<any>options).name = 'role_permissions';
 
     // let schema = EntityRegistry.$().getSchemaDefByName(options.name);
-    // console.log(inspect(schema.toJson(), false, 10));
 
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
@@ -120,7 +118,6 @@ class SqlSchemaPredefinedJoinBidirectSpec {
 
     const roles = await xsem.find(Role) as any[];
     expect(roles).to.have.length(1);
-    console.log(roles);
     expect(roles[0].permissions).to.be.empty;
 
 
@@ -140,7 +137,6 @@ class SqlSchemaPredefinedJoinBidirectSpec {
     (<any>options).name = 'role_permissions';
 
     // let schema = EntityRegistry.$().getSchemaDefByName(options.name);
-    // console.log(inspect(schema.toJson(), false, 10));
 
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
@@ -171,7 +167,6 @@ class SqlSchemaPredefinedJoinBidirectSpec {
 
     const roles = await xsem.find(Role) as any[];
     expect(roles).to.have.length(2);
-    console.log(roles);
     expect(roles[0].permissions).to.be.empty;
 
 
@@ -327,7 +322,6 @@ class SqlSchemaPredefinedJoinBidirectSpec {
       contents: [{text: 'halo', blobid: 1}],
       id: 1
     });
-    console.log(inspect(f, false, 10));
 
     await c.close();
 
