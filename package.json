@@ -1,6 +1,6 @@
 {
   "name": "@typexs/schema",
-  "version": "0.7.1",
+  "version": "0.7.0",
   "description": "Schema for typexs",
   "main": "index.js",
   "directories": {
@@ -40,7 +40,7 @@
     "codecov": "^3.6.5",
     "codelyzer": "^5.2.1",
     "commons-http": "^1.0.7",
-    "commons-base": "^1.2.1",
+    "commons-base": "^1.2.2",
     "del": "^5.1.0",
     "express": "^4.17.1",
     "got": "^9.6.0",
@@ -60,13 +60,13 @@
     "tslint": "~6.0.0",
     "typescript": "3.5.3",
     "typescript-require": "^0.2.10",
-    "@typexs/server": "0.x"
+    "@typexs/server": "^0.4.23"
   },
   "dependencies": {
-    "@typexs/base": "0.x",
+    "@typexs/base": "^0.11.0",
     "@typexs/roles-api": "^1.0.10",
     "commons-expressions": "^1.0.7",
-    "commons-schema-api": "^1.1.8"
+    "commons-schema-api": "^1.1.13"
   },
   "private": true,
   "nyc": {
