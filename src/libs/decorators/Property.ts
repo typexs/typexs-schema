@@ -7,6 +7,7 @@ import {ClassUtils} from 'commons-base/browser';
 export function Property(typeOrOptions: IProperty | Function | string = null) {
   return function (source: any, propertyName: string) {
     let options: IProperty = {};
+    // source = ClassUtils.getFunction(source);
 
     if (_.isString(typeOrOptions)) {
       options.type = <JS_DATA_TYPES>typeOrOptions;
@@ -26,7 +27,7 @@ export function Property(typeOrOptions: IProperty | Function | string = null) {
       options.type = options.targetClass;
     }
 
-    options.sourceClass = source;
+    options.sourceClass = source.constructor;
     options.propertyName = propertyName;
 
     if (_.isEmpty(options.type)) {

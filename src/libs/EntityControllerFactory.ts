@@ -1,4 +1,4 @@
-import {Container, Inject, Log, Storage} from '@typexs/base';
+import {Container, Inject, Injector, Log, Storage} from '@typexs/base';
 
 import {EntityController} from './EntityController';
 import {EntityRegistry} from './EntityRegistry';
@@ -33,10 +33,10 @@ export class EntityControllerFactory {
         }
 
         Log.debug('generating schema for ' + storageName);
-        const xsem = new EntityController(storageName, schemaDef, storageRef, framework);
-        await xsem.initialize();
-        Container.set('EntityController.' + storageName, xsem);
-        this.controller.push(xsem);
+        const entityController = new EntityController(storageName, schemaDef, storageRef, framework);
+        await entityController.initialize();
+        Container.set('EntityController.' + storageName, entityController);
+        this.controller.push(entityController);
       }
     }
   }

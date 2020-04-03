@@ -47,7 +47,6 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
       } else {
         this.targetRef = classRefGet(options.type);
       }
-
     }
 
     if (_.isNumber(options.cardinality)) {
@@ -64,7 +63,6 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     if (!this.targetRef && !this.dataType && !this.propertyRef) {
       throw new NotSupportedError('No primative or complex data type given: ' + JSON.stringify(options));
     }
-
 
     if ((_.isBoolean(options.embed) && options.embed) || this.getOptions('idKey')) {
       this.embed = true;
