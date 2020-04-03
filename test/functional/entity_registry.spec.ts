@@ -170,7 +170,7 @@ class EntityRegistrySpec {
 
     function PropAddOn(opts: any = {}) {
       return function (object: any, property: string, _options: any = {}) {
-        AnnotationsHelper.forPropertyOn(ClassRef.get(object, REGISTRY_TXS_SCHEMA), property, opts);
+        AnnotationsHelper.forPropertyOn(object, property, opts);
       };
     }
 
@@ -205,7 +205,7 @@ class EntityRegistrySpec {
 
     function EntityPropAddOn(opts: any = {}) {
       return function (object: any) {
-        AnnotationsHelper.forEntityOn(ClassRef.get(object, REGISTRY_TXS_SCHEMA), opts);
+        AnnotationsHelper.forEntityOn(object, opts);
       };
     }
 
