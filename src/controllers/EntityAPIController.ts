@@ -1,4 +1,4 @@
-import {Body, CurrentUser, Delete, Get, JsonController, Param, Post, QueryParam} from 'routing-controllers';
+import {Body, ContentType, CurrentUser, Delete, Get, JsonController, Param, Post, QueryParam} from 'routing-controllers';
 
 import {Inject} from 'typedi';
 import {Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base/browser';
@@ -19,7 +19,8 @@ import {
   API_ENTITY_METADATA_GET_ENTITY,
   API_ENTITY_METADATA_GET_STORE,
   API_ENTITY_PREFIX,
-  API_ENTITY_SAVE_ENTITY, API_ENTITY_UPDATE_ENTITY,
+  API_ENTITY_SAVE_ENTITY,
+  API_ENTITY_UPDATE_ENTITY,
   PERMISSION_ALLOW_ACCESS_ENTITY,
   PERMISSION_ALLOW_ACCESS_ENTITY_METADATA,
   PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN,
@@ -74,6 +75,7 @@ export class EntityAPIController {
   // - Check if user has an explicit credential to access the method
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
   @Get(API_ENTITY_METADATA_ALL_STORES)
+  @ContentType('application/json')
   async schemas(@CurrentUser() user: any): Promise<any> {
     return this.registry.listSchemas().map(x => x.toJson(true, false));
   }
@@ -83,6 +85,7 @@ export class EntityAPIController {
    */
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
   @Get(API_ENTITY_METADATA_GET_STORE)
+  @ContentType('application/json')
   async schema(@Param('name') schemaName: string, @CurrentUser() user: any) {
     const schema = this.registry.getSchemaRefByName(schemaName);
     if (schema) {
@@ -98,6 +101,7 @@ export class EntityAPIController {
    */
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
   @Get(API_ENTITY_METADATA_ALL_ENTITIES)
+  @ContentType('application/json')
   async entities(@CurrentUser() user: any) {
     return this.registry.listEntities().map(x => x.toJson());
   }
@@ -108,6 +112,7 @@ export class EntityAPIController {
    */
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
   @Get(API_ENTITY_METADATA_GET_ENTITY)
+  @ContentType('application/json')
   async entity(@Param('name') entityName: string, @CurrentUser() user: any) {
     const entity = this.registry.getEntityRefByName(entityName);
     if (entity) {
@@ -125,6 +130,7 @@ export class EntityAPIController {
    */
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
   @Post(API_ENTITY_METADATA_CREATE_ENTITY)
+  @ContentType('application/json')
   async entityCreate(@Body() data: any, @CurrentUser() user: any) {
     throw new NotYetImplementedError();
   }
@@ -135,6 +141,7 @@ export class EntityAPIController {
    */
   @Access([PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN, PERMISSION_ALLOW_ACCESS_ENTITY])
   @Get(API_ENTITY_FIND_ENTITY)
+  @ContentType('application/json')
   async query(
     @Param('name') name: string,
     @QueryParam('query') query: string,
@@ -189,6 +196,7 @@ export class EntityAPIController {
    */
   @Access([PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN, PERMISSION_ALLOW_ACCESS_ENTITY])
   @Get(API_ENTITY_GET_ENTITY)
+  @ContentType('application/json')
   async get(@Param('name') name: string, @Param('id') id: string, @CurrentUser() user: any) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
     const conditions = entityDef.createLookupConditions(id);
@@ -219,6 +227,7 @@ export class EntityAPIController {
    */
   @Access([PERMISSION_ALLOW_CREATE_ENTITY_PATTERN, PERMISSION_ALLOW_CREATE_ENTITY])
   @Post(API_ENTITY_SAVE_ENTITY)
+  @ContentType('application/json')
   async save(@Param('name') name: string, @Body() data: any, @CurrentUser() user: any): Promise<any> {
     const [entityDef, controller] = this.getControllerForEntityName(name);
     await this.invoker.use(EntityControllerApi).beforeEntityBuild(entityDef, data, user, controller);
@@ -243,6 +252,7 @@ export class EntityAPIController {
    */
   @Access([PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN, PERMISSION_ALLOW_UPDATE_ENTITY])
   @Post(API_ENTITY_UPDATE_ENTITY)
+  @ContentType('application/json')
   async update(@Param('name') name: string, @Param('id') id: string, @Body() data: any, @CurrentUser() user: any) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
     await this.invoker.use(EntityControllerApi).beforeEntityBuild(entityDef, data, user, controller);
@@ -268,6 +278,7 @@ export class EntityAPIController {
    */
   @Access([PERMISSION_ALLOW_DELETE_ENTITY_PATTERN, PERMISSION_ALLOW_DELETE_ENTITY])
   @Delete(API_ENTITY_DELETE_ENTITY)
+  @ContentType('application/json')
   async delete(@Param('name') name: string, @Param('id') id: string, @Body() data: any, @CurrentUser() user: any) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
     const conditions = entityDef.createLookupConditions(id);
