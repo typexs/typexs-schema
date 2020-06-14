@@ -60,13 +60,13 @@
     "tslint": "~6.0.0",
     "typescript": "3.5.3",
     "typescript-require": "^0.2.10",
-    "@typexs/server": "^0.4.23"
+    "@typexs/server": "^0.4.26"
   },
   "dependencies": {
     "@typexs/base": "^0.11.0",
     "@typexs/roles-api": "^1.0.10",
     "commons-expressions": "^1.0.7",
-    "commons-schema-api": "^1.1.14"
+    "commons-schema-api": "^1.1.15"
   },
   "private": true,
   "nyc": {
