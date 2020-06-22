@@ -61,9 +61,9 @@ class SqlPredefinedJoinEPESpec {
       'sortierung'
     ]);
 
-    const metadata = getMetadataArgsStorage();
-    const registries = LookupRegistry.getRegistries();
-    console.log(registries.length);
+    // const metadata = getMetadataArgsStorage();
+    // const registries = LookupRegistry.getRegistries();
+    // console.log(registries.length);
   }
 
 

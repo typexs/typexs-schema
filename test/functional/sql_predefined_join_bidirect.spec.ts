@@ -1,5 +1,5 @@
 import {inspect} from 'util';
-// process.env['SQL_LOG'] = 'X';
+process.env['SQL_LOG'] = 'X';
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
@@ -234,6 +234,8 @@ class SqlSchemaPredefinedJoinBidirectSpec {
     // should happen nothing
     role.permissions = null;
     await xsem.save(role);
+    roles = await xsem.find(Role);
+    expect(roles).to.have.length(1);
     results = await c.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(2);
 
