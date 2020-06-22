@@ -1,4 +1,4 @@
-import {NotSupportedError, StorageRef} from '@typexs/base';
+import {IStorageRef, NotSupportedError} from '@typexs/base';
 import {IFramework} from './IFramework';
 import {SqlFramework} from './typeorm/SqlFramework';
 
@@ -20,14 +20,14 @@ export class FrameworkFactory {
     return this.$self;
   }
 
-  get(storageRef: StorageRef) {
+  get(storageRef: IStorageRef) {
     for (const fwk of this.frameworks) {
       if (fwk.on(storageRef)) {
         return fwk;
       }
     }
 
-    throw new NotSupportedError('no integration found for storage type ' + storageRef.dbType);
+    throw new NotSupportedError('no integration found for storage type ' + storageRef.getType());
   }
 
 }

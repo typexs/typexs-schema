@@ -5,10 +5,10 @@ import {PropertyRef} from '../../registry/PropertyRef';
 
 import {IDataExchange} from '../IDataExchange';
 import {EntityController} from '../../EntityController';
-import {ConnectionWrapper} from '@typexs/base';
 import * as _ from '../../LoDash';
 import {XS_P_PREV_ID} from '../../Constants';
 import {ClassRef} from 'commons-schema-api';
+import {TypeOrmConnectionWrapper} from '@typexs/base';
 
 
 export interface IDeleteData extends IDataExchange<any[]> {
@@ -19,7 +19,7 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
 
   readonly em: EntityController;
 
-  private c: ConnectionWrapper;
+  private c: TypeOrmConnectionWrapper;
 
   private objects: any[] = [];
 
@@ -51,34 +51,43 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
     return sources;
   }
 
-  async visitEntityReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, entityDef: EntityRef, sources: IDeleteData): Promise<IDeleteData> {
+  async visitEntityReference(sourceDef: EntityRef | ClassRef,
+                             propertyDef: PropertyRef,
+                             entityDef: EntityRef, sources: IDeleteData): Promise<IDeleteData> {
     this.entityDepth++;
     return sources;
   }
 
-  leaveEntityReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, entityDef: EntityRef, sources: IDeleteData, visitResult: IDeleteData): Promise<IDeleteData> {
+  leaveEntityReference(sourceDef: EntityRef | ClassRef,
+                       propertyDef: PropertyRef,
+                       entityDef: EntityRef, sources: IDeleteData, visitResult: IDeleteData): Promise<IDeleteData> {
     this.entityDepth--;
     return null;
   }
 
 
-  visitExternalReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+  visitExternalReference(sourceDef: EntityRef | ClassRef,
+                         propertyDef: PropertyRef,
+                         classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return null;
   }
 
   leaveExternalReference(sourceDef: EntityRef | ClassRef,
-                         propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+                         propertyDef: PropertyRef,
+                         classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return null;
   }
 
 
   visitObjectReference(sourceDef: EntityRef | ClassRef,
-                       propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+                       propertyDef: PropertyRef,
+                       classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return undefined;
   }
 
   leaveObjectReference(sourceDef: EntityRef | ClassRef,
-                       propertyDef: PropertyRef, classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
+                       propertyDef: PropertyRef,
+                       classRef: ClassRef, sources: IDeleteData): Promise<IDeleteData> {
     return undefined;
   }
 
@@ -107,7 +116,7 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
 
     const resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
     const entityNames = Object.keys(resolveByEntityDef);
-    this.c = await this.em.storageRef.connect();
+    this.c = (await this.em.storageRef.connect() as TypeOrmConnectionWrapper);
     try {
 
       // start transaction, got to leafs and save

@@ -5,12 +5,13 @@ import {ISaveOp} from './ISaveOp';
 import {IDeleteOp} from './IDeleteOp';
 import {EntityController} from '../EntityController';
 import {SchemaRef} from '../registry/SchemaRef';
+import {IStorageRef} from '@typexs/base';
 
 export interface IFramework {
 
-  on(storageRef: StorageRef): boolean;
+  on(storageRef: IStorageRef): boolean;
 
-  getSchemaMapper(storageRef: StorageRef, schemaDef: SchemaRef): ISchemaMapper;
+  getSchemaMapper(storageRef: IStorageRef, schemaDef: SchemaRef): ISchemaMapper;
 
   getFindOp<T>(entityController: EntityController): IFindOp<T>;
 

@@ -1,4 +1,4 @@
-import {IStorageOptions, NotSupportedError, NotYetImplementedError, StorageRef} from '@typexs/base';
+import {IStorageOptions, NotSupportedError, NotYetImplementedError, REGISTRY_TYPEORM, TypeOrmStorageRef} from '@typexs/base';
 import {
   Column,
   CreateDateColumn,
@@ -7,7 +7,7 @@ import {
   Index,
   PrimaryColumn,
   PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  UpdateDateColumn
 } from 'typeorm';
 
 
@@ -38,7 +38,7 @@ export interface XContext extends IDataExchange<Function> {
 export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMapper {
 
 
-  private storageRef: StorageRef;
+  private storageRef: TypeOrmStorageRef;
 
   private schemaDef: SchemaRef;
 
@@ -47,7 +47,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   private classCache: any = [];
 
 
-  constructor(storageRef: StorageRef, schemaDef: SchemaRef) {
+  constructor(storageRef: TypeOrmStorageRef, schemaDef: SchemaRef) {
     super();
     this.storageRef = storageRef;
     this.schemaDef = schemaDef;
@@ -95,7 +95,9 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
 
-  protected async onEntity(entityDef: EntityRef, referPropertyDef?: PropertyRef, sources?: IDataExchange<any>): Promise<IDataExchange<any>> {
+  protected async onEntity(entityDef: EntityRef,
+                           referPropertyDef?: PropertyRef,
+                           sources?: IDataExchange<any>): Promise<IDataExchange<any>> {
     const cls = entityDef.object.getClass();
     if (!this.isDone(cls) && !this.inClassCache(cls)) {
       this.classCache.push(cls);
@@ -112,7 +114,6 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     const tName = entityDef.storingName;
     const entityClass = entityDef.object.getClass();
     this.createEntityIfNotExists(entityClass, tName);
-// Entity(tName)(entityClass);
     return {next: entityClass};
   }
 
@@ -136,19 +137,15 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       }
 
       this.createColumnIfNotExists('regular', entityClass, propName, propertyDef, propStoreName);
-      // let colDef = this.ColumnDef(propertyDef, propStoreName);
-      // if (colDef) {
-      // colDef(propClass, propName);
-      // }
     }
   }
 
 
-  private handleCheckConditionsIfGiven(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, entityDef: EntityRef | ClassRef) {
+  private handleCheckConditionsIfGiven(sourceRef: EntityRef | ClassRef, propertyDef: PropertyRef, targetRef: EntityRef | ClassRef) {
     const condition: ExprDesc = propertyDef.getOptions('cond', null);
     if (condition) {
-      const referred = entityDef instanceof EntityRef ? entityDef.getClassRef() : entityDef;
-      const referrer = sourceDef instanceof EntityRef ? sourceDef.getClassRef() : sourceDef;
+      const referred = targetRef instanceof EntityRef ? targetRef.getClassRef() : targetRef;
+      const referrer = sourceRef instanceof EntityRef ? sourceRef.getClassRef() : sourceRef;
       return condition.validate(EntityRegistry.$(), referred, referrer);
     } else {
       return false;
@@ -156,7 +153,10 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
 
-  private handleJoinDefinitionIfGiven(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, targetRef: EntityRef | ClassRef, sources: XContext) {
+  private handleJoinDefinitionIfGiven(sourceDef: EntityRef | ClassRef,
+                                      propertyDef: PropertyRef,
+                                      targetRef: EntityRef | ClassRef,
+                                      sources: XContext) {
     const join: JoinDesc = propertyDef.getJoin();
 
     // create join entity class
@@ -189,41 +189,62 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     return {next: this.handleCreateObjectClass(targetRef)};
   }
 
-
-  async visitEntityReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef, entityDef: EntityRef, sources: XContext): Promise<XContext> {
-    if (this.handleCheckConditionsIfGiven(sourceDef, propertyDef, entityDef)) {
+  /**
+   * Entity -> Property -> Entity
+   *
+   * @param sourceRef
+   * @param propertyRef
+   * @param targetRef
+   * @param sources
+   */
+  async visitEntityReference(sourceRef: EntityRef | ClassRef,
+                             propertyRef: PropertyRef,
+                             targetRef: EntityRef,
+                             sources: XContext): Promise<XContext> {
+    if (this.handleCheckConditionsIfGiven(sourceRef, propertyRef, targetRef)) {
       // if condition is given then no new join table is needed
       return sources;
-    } else if (propertyDef.hasJoin()) {
-      return this.handleJoinDefinitionIfGiven(sourceDef, propertyDef, entityDef, sources);
-    } else if (sourceDef instanceof EntityRef) {
+    } else if (propertyRef.hasJoin()) {
+      return this.handleJoinDefinitionIfGiven(sourceRef, propertyRef, targetRef, sources);
+    } else if (sourceRef instanceof EntityRef) {
 
-      if (propertyDef.isEmbedded()) {
-        return this.handleEmbeddedPropertyReference(sourceDef, propertyDef, entityDef, sources);
+      if (propertyRef.isEmbedded()) {
+        return this.handleEmbeddedPropertyReference(sourceRef, propertyRef, targetRef, sources);
       } else {
         /**
          * Default variant if nothing else given generate or use p_{propertyName}_{entityName}
          */
-        const pName = propertyDef.storingName;
-        const clazz = this.handleCreatePropertyClass(propertyDef, pName);
-        this.attachPrimaryKeys(sourceDef, propertyDef, clazz);
-        this.attachTargetKeys(propertyDef, entityDef, clazz);
+        const pName = propertyRef.storingName;
+        const clazz = this.handleCreatePropertyClass(propertyRef, pName);
+        this.attachPrimaryKeys(sourceRef, propertyRef, clazz);
+        this.attachTargetKeys(propertyRef, targetRef, clazz);
         return {next: clazz};
       }
-    } else if (sourceDef instanceof ClassRef) {
-      if (!propertyDef.isCollection()) {
-        this.attachTargetPrefixedKeys(propertyDef.machineName, entityDef, sources.next);
+    } else if (sourceRef instanceof ClassRef) {
+      if (!propertyRef.isCollection()) {
+        this.attachTargetPrefixedKeys(propertyRef.machineName, targetRef, sources.next);
         return sources;
       } else {
         throw new NotYetImplementedError('not supported; entity reference collection in object');
       }
     }
-    throw new NotYetImplementedError('entity reference for ' + sourceDef);
+    throw new NotYetImplementedError('entity reference for ' + sourceRef);
   }
 
 
   async leaveEntityReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef,
                              entityDef: EntityRef, sources: XContext, visitResult: XContext): Promise<XContext> {
+    // const relation: RelationMetadataArgs = {
+    //   target: sourceDef.getClass(),
+    //   relationType: propertyDef.isCollection() ? 'one-to-many' : 'one-to-one',
+    //   propertyName: propertyDef.name,
+    //   // propertyType: reflectedType,
+    //   isLazy: false,
+    //   type: entityDef.getClass(),
+    //   inverseSideProperty: () => entityDef.storingName + '.' + propertyDef.,
+    //   options: {}
+    // };
+    // _.set(propertyDef, 'relation', relation);
     return sources;
   }
 
@@ -252,26 +273,28 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
   }
 
 
-  async _visitReference(sourceDef: EntityRef | ClassRef, propertyDef: PropertyRef,
+  async _visitReference(sourceRef: EntityRef | ClassRef, propertyDef: PropertyRef,
                         classRef: ClassRef, sources: XContext): Promise<XContext> {
-    if (this.handleCheckConditionsIfGiven(sourceDef, propertyDef, classRef)) {
+    if (this.handleCheckConditionsIfGiven(sourceRef, propertyDef, classRef)) {
       // if condition is given then no new join table is needed
       return {next: this.handleCreateObjectClass(classRef)};
     } else if (propertyDef.hasJoin()) {
-      return this.handleJoinDefinitionIfGiven(sourceDef, propertyDef, classRef, sources);
+      return this.handleJoinDefinitionIfGiven(sourceRef, propertyDef, classRef, sources);
     } else if (propertyDef.isEmbedded()) {
       if (!propertyDef.isCollection()) {
-        if (sourceDef instanceof EntityRef) {
-          await this.handleEmbeddedPropertyReference(sourceDef, propertyDef, classRef, sources);
+        if (sourceRef instanceof EntityRef) {
+          await this.handleEmbeddedPropertyReference(sourceRef, propertyDef, classRef, sources);
           return {next: this.handleCreateObjectClass(classRef)};
-        } else if (sourceDef instanceof ClassRef) {
-          await this.handleEmbeddedPropertyReference(sourceDef, propertyDef, classRef, sources);
+        } else if (sourceRef instanceof ClassRef) {
+          await this.handleEmbeddedPropertyReference(sourceRef, propertyDef, classRef, sources);
           return {next: this.handleCreateObjectClass(classRef)};
         }
       }
-    } else if (sourceDef instanceof EntityRef) {
-      const storeClass = this.handleCreatePropertyClass(propertyDef, [sourceDef.name, _.capitalize(propertyDef.name)].filter(x => !_.isEmpty(x)).join(''));
-      this.attachPrimaryKeys(sourceDef, propertyDef, storeClass);
+    } else if (sourceRef instanceof EntityRef) {
+      const storeClass = this.handleCreatePropertyClass(
+        propertyDef, [sourceRef.name, _.capitalize(propertyDef.name)].filter(x => !_.isEmpty(x)).join('')
+      );
+      this.attachPrimaryKeys(sourceRef, propertyDef, storeClass);
 
       /*
       a classref can be generated if no name or id property is given
@@ -283,7 +306,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       } else {
         return {next: storeClass};
       }
-    } else if (sourceDef instanceof ClassRef) {
+    } else if (sourceRef instanceof ClassRef) {
       if (!propertyDef.isCollection()) {
         return {next: sources.next, prefix: propertyDef.name};
       } else {
@@ -292,11 +315,14 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
         return {next: storeClass};
       }
     }
-    throw new NotYetImplementedError('object reference for ' + sourceDef);
+    throw new NotYetImplementedError('object reference for ' + sourceRef);
   }
 
 
-  async _leaveReference(sourceDef: PropertyRef | EntityRef | ClassRef, propertyDef: PropertyRef, classRef: ClassRef, sources: XContext): Promise<XContext> {
+  async _leaveReference(sourceRef: PropertyRef | EntityRef | ClassRef,
+                        propertyRef: PropertyRef,
+                        classRef: ClassRef,
+                        sources: XContext): Promise<XContext> {
     return sources;
   }
 
@@ -386,7 +412,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
   private ColumnDef(property: PropertyRef, name: string, skipIdentifier: boolean = false) {
     if (property.isStoreable()) {
-      let def = _.clone(property.getOptions('typeorm', {}));
+      let def = _.clone(property.getOptions(REGISTRY_TYPEORM, {}));
       const dbType = this.detectDataTypeFromProperty(property);
       def = _.merge(def, {name: name}, dbType);
       if (property.isNullable()) {

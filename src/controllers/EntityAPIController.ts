@@ -3,24 +3,24 @@ import {Body, ContentType, CurrentUser, Delete, Get, JsonController, Param, Post
 import {Inject} from 'typedi';
 import {Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base/browser';
 
-import {Access, ContextGroup} from '@typexs/server';
+import {Access, C_API, ContextGroup, XS_P_LABEL, XS_P_URL} from '@typexs/server';
 import {EntityRegistry} from '../libs/EntityRegistry';
 import {EntityRef} from '../libs/registry/EntityRef';
 import {EntityControllerFactory} from '../libs/EntityControllerFactory';
 import {EntityController} from '../libs/EntityController';
 import * as _ from 'lodash';
 import {
-  API_ENTITY_DELETE_ENTITY,
-  API_ENTITY_FIND_ENTITY,
-  API_ENTITY_GET_ENTITY,
-  API_ENTITY_METADATA_ALL_ENTITIES,
-  API_ENTITY_METADATA_ALL_STORES,
-  API_ENTITY_METADATA_CREATE_ENTITY,
-  API_ENTITY_METADATA_GET_ENTITY,
-  API_ENTITY_METADATA_GET_STORE,
+  _API_CTRL_ENTITY_DELETE_ENTITY,
+  _API_CTRL_ENTITY_FIND_ENTITY,
+  _API_CTRL_ENTITY_GET_ENTITY,
+  _API_CTRL_ENTITY_METADATA_ALL_ENTITIES,
+  _API_CTRL_ENTITY_METADATA_ALL_STORES,
+  _API_CTRL_ENTITY_METADATA_CREATE_ENTITY,
+  _API_CTRL_ENTITY_METADATA_GET_ENTITY,
+  _API_CTRL_ENTITY_METADATA_GET_STORE,
+  _API_CTRL_ENTITY_SAVE_ENTITY,
+  _API_CTRL_ENTITY_UPDATE_ENTITY,
   API_ENTITY_PREFIX,
-  API_ENTITY_SAVE_ENTITY,
-  API_ENTITY_UPDATE_ENTITY,
   PERMISSION_ALLOW_ACCESS_ENTITY,
   PERMISSION_ALLOW_ACCESS_ENTITY_METADATA,
   PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN,
@@ -30,14 +30,12 @@ import {
   PERMISSION_ALLOW_DELETE_ENTITY_PATTERN,
   PERMISSION_ALLOW_UPDATE_ENTITY,
   PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN,
-  XS_P_LABEL,
-  XS_P_URL
 } from '../libs/Constants';
 import {ObjectsNotValidError} from './../libs/exceptions/ObjectsNotValidError';
 import {EntityControllerApi} from '../api/entity.controller.api';
 
 
-@ContextGroup('api')
+@ContextGroup(C_API)
 @JsonController(API_ENTITY_PREFIX)
 export class EntityAPIController {
 
@@ -74,7 +72,7 @@ export class EntityAPIController {
   // @Authorized('read metadata schema')
   // - Check if user has an explicit credential to access the method
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
-  @Get(API_ENTITY_METADATA_ALL_STORES)
+  @Get(_API_CTRL_ENTITY_METADATA_ALL_STORES)
   @ContentType('application/json')
   async schemas(@CurrentUser() user: any): Promise<any> {
     return this.registry.listSchemas().map(x => x.toJson(true, false));
@@ -84,7 +82,7 @@ export class EntityAPIController {
    * Return list of entity
    */
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
-  @Get(API_ENTITY_METADATA_GET_STORE)
+  @Get(_API_CTRL_ENTITY_METADATA_GET_STORE)
   @ContentType('application/json')
   async schema(@Param('name') schemaName: string, @CurrentUser() user: any) {
     const schema = this.registry.getSchemaRefByName(schemaName);
@@ -100,7 +98,7 @@ export class EntityAPIController {
    * Return list of defined entities
    */
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
-  @Get(API_ENTITY_METADATA_ALL_ENTITIES)
+  @Get(_API_CTRL_ENTITY_METADATA_ALL_ENTITIES)
   @ContentType('application/json')
   async entities(@CurrentUser() user: any) {
     return this.registry.listEntities().map(x => x.toJson());
@@ -111,7 +109,7 @@ export class EntityAPIController {
    * Return list of defined entities
    */
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
-  @Get(API_ENTITY_METADATA_GET_ENTITY)
+  @Get(_API_CTRL_ENTITY_METADATA_GET_ENTITY)
   @ContentType('application/json')
   async entity(@Param('name') entityName: string, @CurrentUser() user: any) {
     const entity = this.registry.getEntityRefByName(entityName);
@@ -129,7 +127,7 @@ export class EntityAPIController {
    * Return list of defined entities
    */
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
-  @Post(API_ENTITY_METADATA_CREATE_ENTITY)
+  @Post(_API_CTRL_ENTITY_METADATA_CREATE_ENTITY)
   @ContentType('application/json')
   async entityCreate(@Body() data: any, @CurrentUser() user: any) {
     throw new NotYetImplementedError();
@@ -140,7 +138,7 @@ export class EntityAPIController {
    * Run a query for entity
    */
   @Access([PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN, PERMISSION_ALLOW_ACCESS_ENTITY])
-  @Get(API_ENTITY_FIND_ENTITY)
+  @Get(_API_CTRL_ENTITY_FIND_ENTITY)
   @ContentType('application/json')
   async query(
     @Param('name') name: string,
@@ -195,14 +193,14 @@ export class EntityAPIController {
    * Return a single Entity
    */
   @Access([PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN, PERMISSION_ALLOW_ACCESS_ENTITY])
-  @Get(API_ENTITY_GET_ENTITY)
+  @Get(_API_CTRL_ENTITY_GET_ENTITY)
   @ContentType('application/json')
   async get(@Param('name') name: string, @Param('id') id: string, @CurrentUser() user: any) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
     const conditions = entityDef.createLookupConditions(id);
     let result = null;
     if (_.isArray(conditions)) {
-      result = await controller.find(entityDef.getClass(), conditions, {
+      result = await controller.find(entityDef.getClass(), {$or: conditions}, {
         hooks: {afterEntity: EntityAPIController._afterEntity}
       });
       const results = {
@@ -226,7 +224,7 @@ export class EntityAPIController {
    * Return a new created Entity
    */
   @Access([PERMISSION_ALLOW_CREATE_ENTITY_PATTERN, PERMISSION_ALLOW_CREATE_ENTITY])
-  @Post(API_ENTITY_SAVE_ENTITY)
+  @Post(_API_CTRL_ENTITY_SAVE_ENTITY)
   @ContentType('application/json')
   async save(@Param('name') name: string, @Body() data: any, @CurrentUser() user: any): Promise<any> {
     const [entityDef, controller] = this.getControllerForEntityName(name);
@@ -251,7 +249,7 @@ export class EntityAPIController {
    * Return a updated Entity
    */
   @Access([PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN, PERMISSION_ALLOW_UPDATE_ENTITY])
-  @Post(API_ENTITY_UPDATE_ENTITY)
+  @Post(_API_CTRL_ENTITY_UPDATE_ENTITY)
   @ContentType('application/json')
   async update(@Param('name') name: string, @Param('id') id: string, @Body() data: any, @CurrentUser() user: any) {
     const [entityDef, controller] = this.getControllerForEntityName(name);
@@ -277,7 +275,7 @@ export class EntityAPIController {
    * Return a deleted Entity
    */
   @Access([PERMISSION_ALLOW_DELETE_ENTITY_PATTERN, PERMISSION_ALLOW_DELETE_ENTITY])
-  @Delete(API_ENTITY_DELETE_ENTITY)
+  @Delete(_API_CTRL_ENTITY_DELETE_ENTITY)
   @ContentType('application/json')
   async delete(@Param('name') name: string, @Param('id') id: string, @Body() data: any, @CurrentUser() user: any) {
     const [entityDef, controller] = this.getControllerForEntityName(name);

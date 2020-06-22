@@ -1,7 +1,7 @@
-import {IExpr, KeyDesc} from "commons-expressions/browser";
+import {IExpr, KeyDesc} from 'commons-expressions/browser';
 
 export class OrderDesc implements IExpr {
-  readonly type:string = 'order';
+  readonly type: string = 'order';
   readonly key: KeyDesc;
   readonly asc: boolean;
 
@@ -15,12 +15,12 @@ export class OrderDesc implements IExpr {
  * Asc
  */
 export function Asc(k: KeyDesc) {
-  return new OrderDesc(k, true)
+  return new OrderDesc(k, true);
 }
 
 /**
  * Asc
  */
 export function Desc(k: KeyDesc) {
-  return new OrderDesc(k, false)
+  return new OrderDesc(k, false);
 }

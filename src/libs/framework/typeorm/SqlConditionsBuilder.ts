@@ -1,33 +1,28 @@
+import {SelectQueryBuilder} from 'typeorm';
 import * as _ from 'lodash';
-import {EntityRef} from '../../registry/EntityRef';
 import {NameResolver} from '../../../libs/framework/typeorm/NameResolver';
 import {NotYetImplementedError} from '@typexs/base/browser';
-import {ClassRef} from 'commons-schema-api/browser';
-import {PropertyRef} from '../../..';
-import {AbstractSqlConditionsBuilder} from '@typexs/base/libs/storage/framework/AbstractSqlConditionsBuilder';
-
-export interface IConditionJoin {
-  alias: string;
-  table: string;
-  condition: string;
-}
+import {ClassRef, IClassRef} from 'commons-schema-api/browser';
+import {TypeOrmSqlConditionsBuilder} from '@typexs/base/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder';
+import {PropertyRef} from '../../registry/PropertyRef';
+//
+// export interface IConditionJoin {
+//   alias: string;
+//   table: string;
+//   condition: string;
+// }
 
 
 export interface ISqlBuilderOptions {
   skipNull?: boolean;
 }
 
-export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
+export class SqlConditionsBuilder<T> extends TypeOrmSqlConditionsBuilder<T> {
 
   options: ISqlBuilderOptions = {};
 
   private nameResolver: NameResolver = new NameResolver();
 
-  constructor(entityDef: EntityRef, alias: string = null) {
-    super(entityDef, alias);
-    this.inc = 1;
-    this.options.skipNull = false;
-  }
 
   skipNull() {
     this.options.skipNull = true;
@@ -35,22 +30,33 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
 
 
   lookupKeys(key: string) {
-    const joins = key.split('.');
-    let tmp = this.entityDef.getClassRef();
-    let names: string[] = [this.alias];
-    let rootAlias = this.alias;
-    for (const _join of joins) {
+    switch (this.type) {
+      case 'delete':
+      case 'update':
+        return key;
+    }
+
+    if (this.mode === 'having') {
+      return key;
+    }
+
+    const joins = [];
+    const arrJoins = key.split('.');
+    let tmp: IClassRef = this.entityRef.getClassRef();
+
+    const alias = this.alias ? this.alias : this.baseQueryBuilder ? this.baseQueryBuilder.alias : null;
+    let names: string[] = alias ? [alias] : [];
+    let rootAlias = alias;
+    for (const _join of arrJoins) {
       const prop = <PropertyRef>tmp.getPropertyRef(_join);
       if (prop.isReference()) {
         const from = tmp;
         tmp = prop.getTargetRef() ? <ClassRef>prop.getTargetRef() : null;
-        let join: IConditionJoin = null;
+        let join: any = null;
 
         if (prop.hasConditions()) {
           join = {
             alias: this.createAlias(tmp),
-            //      from: from,
-            //    ref: prop,
             table: tmp.storingName,
             condition: null
           };
@@ -65,11 +71,10 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
             conditions.push([join.alias + '.' + targetKey, sourceKey].join(' = '));
           });
           join.condition = conditions.join(' AND ');
-          this.joins.push(join);
+          joins.push(join);
           rootAlias = join.alias;
           names = [rootAlias];
         } else if (prop.hasJoin()) {
-          // join.condition = prop.getJoin();
           throw new NotYetImplementedError();
         } else if (prop.hasIdKeys()) {
           throw new NotYetImplementedError();
@@ -83,12 +88,10 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
           let conditions: string[] = [];
           join = {
             alias: this.createAlias(joinRef),
-            //      from: from,
-            //    ref: prop,
             table: joinRef.storingName,
             condition: null
           };
-          this.joins.push(join);
+          joins.push(join);
           sourceIds.forEach(x => {
             const [targetId, targetName] = this.nameResolver.forSource(<PropertyRef>x);
             conditions.push(join.alias + '.' + targetName + ' = ' + rootAlias + '.' + x.storingName);
@@ -101,12 +104,10 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
             conditions = [];
             join = {
               alias: this.createAlias(tmp),
-              //      from: from,
-              //    ref: prop,
               table: tmp.storingName,
               condition: null
             };
-            this.joins.push(join);
+            joins.push(join);
 
             targetIds.forEach(x => {
               const [targetId, targetName] = this.nameResolver.forTarget(<PropertyRef>x);
@@ -119,12 +120,10 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
         } else {
           join = {
             alias: this.createAlias(tmp),
-            //      from: from,
-            //    ref: prop,
             table: tmp.storingName,
             condition: null
           };
-          this.joins.push(join);
+          joins.push(join);
           const conditions: string[] = [];
           from.getPropertyRefs().filter(x => x.isIdentifier()).forEach(property => {
             const [targetId, targetName] = this.nameResolver.forSource(<PropertyRef>property);
@@ -139,120 +138,14 @@ export class SqlConditionsBuilder extends AbstractSqlConditionsBuilder {
         names.push(prop.storingName);
       }
     }
-    return names.join('.');
-  }
 
-  build(condition: any, k: string = null): string {
-
-    if (_.isEmpty(condition)) {
-      return null;
-    }
-    let control: any = _.keys(condition).filter(k => k.startsWith('$'));
-    if (!_.isEmpty(control)) {
-      control = control.shift();
-      if (this[control]) {
-        return this[control](condition, k, condition[control]);
-      } else {
-        throw new NotYetImplementedError();
+    for (const _join of joins) {
+      if (this.baseQueryBuilder instanceof SelectQueryBuilder) {
+        this.baseQueryBuilder.leftJoin(_join.table, _join.alias, _join.condition);
       }
-    } else if (_.isArray(condition)) {
-      return this.$or({'$or': condition}, k);
-    } else {
-      return _.keys(condition).map(k => {
-        if (_.isPlainObject(condition[k])) {
-          return this.build(condition[k], k);
-        }
-        const key = this.lookupKeys(k);
-        const value = condition[k];
-        if (_.isString(value) || _.isNumber(value) || _.isDate(value)) {
-          return `${key} = '${value}'`;
-        } else if (_.isNull(value)) {
-          if (this.options.skipNull) {
-            return null;
-          }
-          return `${key} is NULL`;
-        } else {
-          throw new Error(`SQL.build not a plain type ${key} = ${JSON.stringify(value)} (${typeof value})`);
-          // return null;
-        }
-
-      }).filter(c => !_.isNull(c)).join(' AND ');
     }
-  }
 
-  escape(str: any) {
-    if (_.isString(str)) {
-      str = str.replace(/'/g, '\\\'');
-    }
-    return str;
-  }
-
-  $eq(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return `${_key} = '${this.escape(value)}'`;
-  }
-
-  $ne(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return `${_key} <> '${this.escape(value)}'`;
-  }
-
-  $lt(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return `${_key} < ${this.escape(value)}`;
-  }
-
-  $le(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return `${_key} <= ${this.escape(value)}`;
-  }
-
-  $gt(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return `${_key} > ${this.escape(value)}`;
-  }
-
-  $ge(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return `${_key} >= ${this.escape(value)}`;
-  }
-
-  $like(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return `${_key} LIKE '${this.escape(value).replace(/%/g, '%%').replace(/\*/g, '%')}'`;
-  }
-
-  $in(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return `${_key} IN (${value.map((x: any) => this.escape(x)).join(',')})`;
-  }
-
-  $isNull(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return `${_key} IS NULL`;
-  }
-
-  $isNotNull(condition: any, key: string = null, value: any = null) {
-    const _key = this.lookupKeys(key);
-    return `${_key} IS NOT NULL`;
-  }
-
-  $and(condition: any, key: string = null): string {
-    const x = _.map(condition['$and'], c => this.build(c, null)).filter(x => !_.isEmpty(x));
-    if (_.isEmpty(x)) {
-      return '';
-    } else {
-      return '(' + x.join(') AND (') + ')';
-    }
-  }
-
-  $or(condition: any, key: string = null): string {
-    const x = _.map(condition['$or'], c => this.build(c, null)).filter(x => !_.isEmpty(x));
-    if (_.isEmpty(x)) {
-      return '';
-    } else {
-      return '(' + x.join(') OR (') + ')';
-    }
+    return names.join('.');
   }
 
 }

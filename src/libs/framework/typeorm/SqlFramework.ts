@@ -4,7 +4,7 @@ import {IDeleteOp} from '../IDeleteOp';
 import {IFindOp} from '../IFindOp';
 import {ISaveOp} from '../ISaveOp';
 import {ISchemaMapper} from '../ISchemaMapper';
-import {StorageRef} from '@typexs/base';
+import {IStorageRef, StorageRef, TypeOrmStorageRef} from '@typexs/base';
 import {SchemaRef} from '../../registry/SchemaRef';
 import {SqlSchemaMapper} from './SqlSchemaMapper';
 import {SqlFindOp} from './SqlFindOp';
@@ -26,15 +26,15 @@ export class SqlFramework implements IFramework {
     return new SqlSaveOp(entityController);
   }
 
-  getSchemaMapper(storageRef: StorageRef, schemaDef: SchemaRef): ISchemaMapper {
-    return new SqlSchemaMapper(storageRef, schemaDef);
+  getSchemaMapper(storageRef: IStorageRef, schemaDef: SchemaRef): ISchemaMapper {
+    return new SqlSchemaMapper(storageRef as TypeOrmStorageRef, schemaDef);
   }
 
   on(storageRef: StorageRef): boolean {
-  // ignore| "cordova" | "react-native" | "sqljs"
-    if (['mysql', 'postgres', 'mariadb', 'sqlite', 'oracle', 'mssql'].indexOf(storageRef.dbType) !== -1) {
+    // ignore| "cordova" | "react-native" | "sqljs"
+    if (['mysql', 'postgres', 'mariadb', 'sqlite', 'oracle', 'mssql'].indexOf(storageRef.getType()) !== -1) {
       return true;
-    } else if (storageRef.dbType == 'aios') {
+    } else if (storageRef.getType() === 'aios') {
       return true;
     }
     return false;

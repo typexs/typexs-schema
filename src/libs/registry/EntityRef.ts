@@ -1,24 +1,23 @@
 import {PropertyRef} from './PropertyRef';
 import {IEntity} from './IEntity';
 import * as _ from 'lodash';
-import {getFromContainer} from 'class-validator/container';
-import {MetadataStorage} from 'class-validator/metadata/MetadataStorage';
-import {ValidationMetadataArgs} from 'class-validator/metadata/ValidationMetadataArgs';
 
 import {
   AbstractRef,
   ClassRef,
   IBuildOptions,
-  IEntityRef,
+  IEntityRef, IValidationMetadataArgs,
   LookupRegistry,
   SchemaUtils,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
 import {ClassUtils} from 'commons-base/browser';
-import {REGISTRY_TXS_SCHEMA, XS_P_LABEL} from '../Constants';
+import {REGISTRY_TXS_SCHEMA} from '../Constants';
 import {Expressions} from 'commons-expressions/browser';
 import {lookupRegistry} from '../Helper';
+import {getFromContainer, getMetadataStorage, MetadataStorage} from 'class-validator';
+import {XS_P_LABEL} from '@typexs/server';
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true
@@ -173,7 +172,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
         return entity.label;
       }
     } else if (Reflect.has(entity, XS_P_LABEL)) {
-      return entity.$label;
+      return entity[XS_P_LABEL];
     } else {
       // create label from data
       const label: string[] = [];
@@ -208,7 +207,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
       o.properties = this.getPropertyRefs().map(p => p.toJson());
     }
 
-    const storage = getFromContainer(MetadataStorage);
+    const storage = getMetadataStorage();
     const metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null);
 
     metadata.forEach(m => {
@@ -218,7 +217,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
           prop.validator = [];
         }
 
-        const args: ValidationMetadataArgs = {
+        const args: IValidationMetadataArgs = {
           type: m.type,
           target: this.object.className,
           propertyName: m.propertyName,

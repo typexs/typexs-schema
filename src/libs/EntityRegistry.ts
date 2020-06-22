@@ -5,9 +5,6 @@ import {IProperty} from './registry/IProperty';
 import {IEntity} from './registry/IEntity';
 import {ISchema} from './registry/ISchema';
 import * as _ from './LoDash';
-import {ValidationMetadata} from 'class-validator/metadata/ValidationMetadata';
-import {getFromContainer} from 'class-validator/container';
-import {MetadataStorage} from 'class-validator/metadata/MetadataStorage';
 import {
   AbstractRef,
   Binding,
@@ -28,6 +25,8 @@ import {NotYetImplementedError} from '@typexs/base/browser';
 import {ClassUtils} from 'commons-base/browser';
 import {REGISTRY_TXS_SCHEMA} from './Constants';
 import {classRefGet} from './Helper';
+import {ValidationMetadata} from '@typexs/base/libs/class-validator/ValidationMetadata';
+import {getMetadataStorage} from 'class-validator';
 
 
 export class EntityRegistry implements ILookupRegistry {
@@ -119,7 +118,7 @@ export class EntityRegistry implements ILookupRegistry {
         const _m = _.clone(m);
         _m.target = clsRef.getClass(true);
         const vma = new ValidationMetadata(_m);
-        getFromContainer(MetadataStorage).addValidationMetadata(vma);
+        getMetadataStorage().addValidationMetadata(vma);
       });
     }
 

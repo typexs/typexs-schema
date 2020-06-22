@@ -4,7 +4,7 @@ import {EntityRef} from './registry/EntityRef';
 import {ISchemaMapper} from './framework/ISchemaMapper';
 import {INameResolver} from './framework/INameResolver';
 import {IFramework} from './framework/IFramework';
-import {NotSupportedError, StorageRef} from '@typexs/base';
+import {IStorageRef, NotSupportedError, StorageRef, TypeOrmStorageRef} from '@typexs/base';
 import {IFindOptions} from './framework/IFindOptions';
 import {ISaveOptions} from './framework/ISaveOptions';
 import {ClassType} from 'commons-schema-api/browser';
@@ -12,7 +12,7 @@ import {ClassType} from 'commons-schema-api/browser';
 
 export class EntityController {
 
-  constructor(name: string, schema: SchemaRef = null, storageRef: StorageRef = null, framework: IFramework = null) {
+  constructor(name: string, schema: SchemaRef = null, storageRef: IStorageRef = null, framework: IFramework = null) {
     this.name = name;
     this.storageRef = storageRef;
     this.schemaDef = schema;
@@ -23,7 +23,7 @@ export class EntityController {
   }
 
   // revision support
-  readonly storageRef: StorageRef;
+  readonly storageRef: IStorageRef;
 
   readonly schemaDef: SchemaRef;
 

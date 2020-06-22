@@ -2,21 +2,20 @@ import * as _ from '../../LoDash';
 import {IFindOp} from '../IFindOp';
 import {EntityDefTreeWorker} from '../EntityDefTreeWorker';
 import {EntityController} from '../../EntityController';
-import {ConnectionWrapper, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
+import {NotYetImplementedError, TypeOrmConnectionWrapper, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
 import {PropertyRef} from '../../registry/PropertyRef';
 import {EntityRef} from '../../registry/EntityRef';
 
 import {XS_P_$ABORTED, XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
 import {IDataExchange} from '../IDataExchange';
 import {SqlHelper} from './SqlHelper';
-import {Sql} from './Sql';
 import {JoinDesc} from '../../descriptors/JoinDesc';
 import {EntityRegistry} from '../../EntityRegistry';
 import {IFindOptions} from '../IFindOptions';
-import {OrderDesc} from '../../..';
-import {SqlConditionsBuilder} from './SqlConditionsBuilder';
+import {OrderDesc} from '../../../libs/descriptors/OrderDesc';
 import {ClassRef} from 'commons-schema-api';
 import {classRefGet} from '../../Helper';
+import {SqlConditionsBuilder} from './SqlConditionsBuilder';
 
 
 interface IFindData extends IDataExchange<any[]> {
@@ -42,14 +41,14 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
   readonly em: EntityController;
 
-  private c: ConnectionWrapper;
+  private connection: TypeOrmConnectionWrapper;
 
   private options: IFindOptions;
 
 
-  static getTargetKeyMap(targetDef: EntityRef | ClassRef) {
-    const props: PropertyRef[] = targetDef instanceof EntityRef ?
-      targetDef.getPropertyRefs() : EntityRegistry.getPropertyRefsFor(targetDef);
+  static getTargetKeyMap(targetRef: EntityRef | ClassRef) {
+    const props: PropertyRef[] = targetRef instanceof EntityRef ?
+      targetRef.getPropertyRefs() : EntityRegistry.getPropertyRefsFor(targetRef);
     return _.merge({}, ..._.map(props, p => {
       const c = {};
       c[p.name] = p.storingName;
@@ -75,32 +74,39 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
   };
 
 
-  visitDataProperty(propertyDef: PropertyRef, sourceDef: PropertyRef | EntityRef | ClassRef, sources: IFindData, targets: IFindData): void {
+  visitDataProperty(propertyDef: PropertyRef,
+                    sourceDef: PropertyRef | EntityRef | ClassRef,
+                    sources: IFindData, targets: IFindData): void {
   }
 
   /**
    * Returns the entities for source.conditions
    */
-  async visitEntity(entityDef: EntityRef, propertyDef: PropertyRef, sources: IFindData): Promise<IFindData> {
+  async visitEntity(entityRef: EntityRef, propertyRef: PropertyRef, sources: IFindData): Promise<IFindData> {
     // TODO default limit configurable
-    const limit = _.get(sources, 'options.limit', propertyDef ? this.options.subLimit : this.options.limit);
+    const limit = _.get(sources, 'options.limit', propertyRef ? this.options.subLimit : this.options.limit);
     const offset = _.get(sources, 'options.offset', null);
     const sortBy = _.get(sources, 'options.sort', null);
 
-    const qb = this.c.manager.getRepository(entityDef.object.getClass()).createQueryBuilder();
+    let qb = this.connection.manager.getRepository(entityRef.object.getClass()).createQueryBuilder();
 
     if (sources.condition) {
-      const builder = new SqlConditionsBuilder(entityDef, qb.alias);
-      builder.skipNull();
-      const where = builder.build(sources.condition);
-      if (_.isEmpty(where)) {
-        return {next: [], abort: true};
-      }
+      const builder = new SqlConditionsBuilder<T>(qb, entityRef, this.connection.getStorageRef(), 'select');
+      // builder.skipNull();
+      builder.build(propertyRef ? {$or: sources.condition} : sources.condition);
+      qb = builder.getQueryBuilder() as any;
 
-      builder.getJoins().forEach(join => {
-        qb.leftJoin(join.table, join.alias, join.condition);
-      });
-      qb.where(where);
+      // const builder = new TypeOrmSqlConditionsBuilder(entityDef, qb.alias);
+      // builder.skipNull();
+      // const where = builder.build(sources.condition);
+      // if (_.isEmpty(where)) {
+      //   return {next: [], abort: true};
+      // }
+      //
+      // builder.getJoins().forEach(join => {
+      //   qb.leftJoin(join.table, join.alias, join.condition);
+      // });
+      // qb.where(where);
     }
 
     const recordCount = await qb.getCount();
@@ -114,12 +120,12 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     }
 
     if (_.isNull(sortBy)) {
-      entityDef.getPropertyRefIdentifier().forEach(x => {
+      entityRef.getPropertyRefIdentifier().forEach(x => {
         qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
       });
-    } else if (propertyDef && propertyDef.hasOrder()) {
-      const mapping = SqlFindOp.getTargetKeyMap(entityDef);
-      propertyDef.getOrder().forEach((o: OrderDesc) => {
+    } else if (propertyRef && propertyRef.hasOrder()) {
+      const mapping = SqlFindOp.getTargetKeyMap(entityRef);
+      propertyRef.getOrder().forEach((o: OrderDesc) => {
         qb.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
       });
     } else {
@@ -133,7 +139,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     results[XS_P_$OFFSET] = offset;
     results[XS_P_$LIMIT] = limit;
 
-    const abort = results.length === 0 || this.hookAbortCondition(entityDef, propertyDef, results, this);
+    const abort = results.length === 0 || this.hookAbortCondition(entityRef, propertyRef, results, this);
     if (abort) {
       // marked as aborted
       results.forEach(r => {
@@ -141,11 +147,6 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       });
     }
     return {next: results, abort: abort};
-  }
-
-  // Object.keys(condition).map(k => `${k} = '${condition[k]}'`).join(' AND ')
-  private handleCondition(condition: any, entityDef: EntityRef = null): string {
-    return Sql.conditionsToString(condition, null, entityDef ? entityDef.getKeyMap() : {});
   }
 
 
@@ -177,10 +178,13 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     }
 
 
-    const where = Sql.conditionsToString(conditions);
-    if (!_.isEmpty(conditions) && where) {
-      const queryBuilder = this.c.manager.getRepository(joinDef.joinRef.getClass()).createQueryBuilder();
-      queryBuilder.where(Sql.conditionsToString(conditions));
+    // const where = Sql.conditionsToString(conditions);
+    if (!_.isEmpty(conditions)) {
+      const entityRef = this.connection.getStorageRef().getEntityRef(joinDef.joinRef.getClass());
+      let queryBuilder = this.connection.manager.getRepository(entityRef.getClassRef().getClass()).createQueryBuilder();
+      const builder = new SqlConditionsBuilder(queryBuilder, entityRef, this.connection.getStorageRef(), 'select');
+      builder.build({$or: conditions});
+      queryBuilder = builder.getQueryBuilder() as any;
 
       joinDef.order.forEach(o => {
         queryBuilder.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
@@ -285,7 +289,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       const [sourceTypeId, sourceTypeName] = this.em.nameResolver().forSource(XS_P_TYPE);
       const [sourceSeqNrId, sourceSeqNrName] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
 
-      const qb = this.c.manager.getRepository(propertyDef.joinRef.getClass()).createQueryBuilder();
+      const qb = this.connection.manager.getRepository(propertyDef.joinRef.getClass()).createQueryBuilder();
 
       for (const source of sources.next) {
         const condition: any = {};
@@ -385,14 +389,19 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     }
 
     if (_.isEmpty(conditions)) {
-      return {next: [], condition: conditions, lookup: [], join: results, abort: conditions.length === 0};
+      return {
+        next: [],
+        condition: conditions,
+        lookup: [],
+        join: results,
+        abort: conditions.length === 0
+      };
     }
     return {
       next: sources.next,
       condition: conditions,
       join: results,
       lookup: lookups,
-//      target: sources.next,
       abort: conditions.length === 0
     };
   }
@@ -539,7 +548,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
       if (conditions.length > 0) {
         // fetch the results
-        const repo = this.c.manager.getRepository(classRef.getClass());
+        const repo = this.connection.manager.getRepository(classRef.getClass());
         const queryBuilder = repo.createQueryBuilder();
         for (const cond of conditions) {
           const query = SqlFindOp.conditionToQuery(cond);
@@ -571,7 +580,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         // collect pk from source objects
         const idProperties = sourceRefDef.getPropertyRefIdentifier();
 
-        const repo = this.c.manager.getRepository(joinClass);
+        const repo = this.connection.manager.getRepository(joinClass);
         const queryBuilder = repo.createQueryBuilder();
 
         const lookups: any[] = [];
@@ -606,7 +615,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
         // collect pk from source objects
 
-        const repo = this.c.manager.getRepository(joinClass);
+        const repo = this.connection.manager.getRepository(joinClass);
         const queryBuilder = repo.createQueryBuilder();
 
 
@@ -645,7 +654,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       const refProps = SqlHelper.getEmbeddedPropertyIds(propertyDef);
 
 
-      const repo = this.c.manager.getRepository(propertyDef.getTargetClass());
+      const repo = this.connection.manager.getRepository(propertyDef.getTargetClass());
       const queryBuilder = repo.createQueryBuilder();
 
       for (const extJoinObj of sources.next) {
@@ -687,12 +696,15 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         conditions.push(conditionDef.for(source, mapping));
       }
 
-      const repo = this.c.manager.getRepository(classRef.getClass());
-      const queryBuilder = repo.createQueryBuilder();
-      const whereConditions = this.handleCondition(conditions);
+      const repo = this.connection.manager.getRepository(classRef.getClass());
+      let queryBuilder = repo.createQueryBuilder();
 
-      if (whereConditions) {
-        queryBuilder.where(whereConditions);
+      if (conditions) {
+        const refEntityRef = this.connection.getStorageRef().getEntityRef(classRef.getClass());
+        const builder = new SqlConditionsBuilder<T>(queryBuilder, refEntityRef, this.connection.getStorageRef(), 'select');
+        // builder.skipNull();
+        builder.build({$or: conditions});
+        queryBuilder = builder.getQueryBuilder() as any;
         if (propertyDef.hasOrder()) {
           propertyDef.getOrder().forEach((o: OrderDesc) => {
             queryBuilder.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
@@ -872,7 +884,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
   async run(entityType: Function | string, findConditions: any = null, options?: IFindOptions):
     Promise<T[]> {
-    this.c = await this.em.storageRef.connect();
+    this.connection = (await this.em.storageRef.connect() as TypeOrmConnectionWrapper);
     const opts = _.clone(options) || {};
     this.options = _.defaults(opts, {limit: 100, subLimit: 100});
     this.hookAbortCondition = _.get(options, 'hooks.abortCondition', this.hookAbortCondition);
@@ -883,7 +895,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       condition: findConditions,
       options: options
     });
-    await this.c.close();
+    await this.connection.close();
     return result.next;
   }
 

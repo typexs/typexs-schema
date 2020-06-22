@@ -1,4 +1,5 @@
-import {EntityController, EntityRef} from "..";
+import {EntityRef} from '../libs/registry/EntityRef';
+import {EntityController} from '../libs/EntityController';
 
 export interface IEntityControllerApi {
 
