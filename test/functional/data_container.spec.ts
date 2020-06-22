@@ -4,9 +4,9 @@ import {expect} from 'chai';
 
 import * as _ from 'lodash';
 import {ValidPerson} from './schemas/validation/ValidPerson';
-import {EntityRegistry} from '../../src';
 import {DataContainer} from '@typexs/base';
 import {TreeUtils, WalkValues} from 'commons-base/browser';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
 
 
 const registry = EntityRegistry.$();

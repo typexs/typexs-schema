@@ -1,12 +1,12 @@
 import {suite, test, timeout} from 'mocha-typescript';
 import {Bootstrap, Container, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
-import {K_ROUTE_CONTROLLER, Server} from '@typexs/server';
+import {K_ROUTE_CONTROLLER, Server, XS_P_URL} from '@typexs/server';
 import * as _ from 'lodash';
 import {expect} from 'chai';
 import {TestHelper} from '../TestHelper';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {HttpFactory, IHttp} from 'commons-http';
-import {XS_P_URL} from '../../../src';
+import {API_CTRL_ENTITY_GET_ENTITY, API_CTRL_ENTITY_SAVE_ENTITY} from '../../../src/libs/Constants';
 
 const settingsTemplate: any = {
   storage: {
@@ -97,12 +97,19 @@ class ApiserverSpec {
 
     const url = server.url();
 
-    let res: any = await http.post(url + '/api/entity/book3', {body: data, json: true, passBody: true});
+    let res: any = await http.post(url + '/api' + API_CTRL_ENTITY_SAVE_ENTITY.replace(':name', 'book3'), {
+      body: data,
+      json: true,
+      passBody: true
+    });
     expect(res).to.deep.include({id: 1});
-    res = await http.get(url + `/api/entity/book3/${res.id}`, {json: true, passBody: true});
+    res = await http.get(url + '/api' + API_CTRL_ENTITY_GET_ENTITY
+      .replace(':name', 'book3').replace(':id', '1'),
+      {json: true, passBody: true});
     expect(res).to.deep.include({id: 1});
     const x = {};
     x[XS_P_URL] = 'api/entity/book_3/1';
+
     expect(res).to.deep.include(x);
     expect(res).to.deep.include(data);
 

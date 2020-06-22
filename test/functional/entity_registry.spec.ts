@@ -1,10 +1,12 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {Entity, EntityRef, EntityRegistry, Property, REGISTRY_TXS_SCHEMA, XS_ANNOTATION_OPTIONS_CACHE, } from '../../src';
 import * as _ from 'lodash';
-
-import {MetaArgs} from '@typexs/base';
 import {AnnotationsHelper, ClassRef, XS_DEFAULT_SCHEMA} from 'commons-schema-api';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
+import {EntityRef} from '../../src/libs/registry/EntityRef';
+import {REGISTRY_TXS_SCHEMA} from '../../src/libs/Constants';
+import {Property} from '../../src/libs/decorators/Property';
+import {Entity} from '../../src/libs/decorators/Entity';
 
 
 @suite('functional/entity_registry')
@@ -197,7 +199,7 @@ class EntityRegistrySpec {
     const test2 = props.find(p => p.name === 'test2');
     expect(test2.getOptions()).to.deep.include({hallo: 'welt2'});
 
-    expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);
+    // expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);
   }
 
   @test
@@ -228,7 +230,7 @@ class EntityRegistrySpec {
     const entityDef2 = registry.getEntityRefByName('TestAnno3');
     expect(entityDef2.getOptions()).to.deep.include({hallo: 'welt2'});
 
-    expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);
+    // expect(MetaArgs.key(XS_ANNOTATION_OPTIONS_CACHE)).to.have.length(0);
 
   }
 

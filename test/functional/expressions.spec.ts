@@ -4,9 +4,8 @@ import {expect} from 'chai';
 
 import {TestHelper} from './TestHelper';
 import {And, Eq, Expressions, ExpressionValidationError, Key, Value} from 'commons-expressions';
-import {ClassRef} from 'commons-schema-api';
-import {EntityRegistry} from '../../src';
 import {classRefGet} from '../../src/libs/Helper';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
 
 
 @suite('functional/expressions')

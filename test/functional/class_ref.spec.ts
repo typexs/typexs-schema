@@ -1,16 +1,16 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-
-import * as _ from 'lodash';
 import {ClassRef, SchemaUtils} from 'commons-schema-api';
 
 
 @suite('functional/class_ref')
-class Class_refSpec {
+class ClassRefSpec {
 
   @test
   async 'class name'() {
-    class Abc {}
+    class Abc {
+    }
+
     let classRef = ClassRef.get(Abc);
     expect(classRef.className).to.be.eq('Abc');
 

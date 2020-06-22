@@ -1,7 +1,9 @@
+import {Schema} from '../../../../src/libs/decorators/Schema';
+import {Entity} from '../../../../src/libs/decorators/Entity';
+import {Property} from '../../../../src/libs/decorators/Property';
 
-import {Entity, Property,Schema} from "../../../../src";
 
-@Schema({name:'direct_property'})
+@Schema({name: 'direct_property'})
 @Entity()
 export class Skil {
 

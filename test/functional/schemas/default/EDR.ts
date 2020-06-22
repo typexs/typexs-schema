@@ -1,5 +1,6 @@
-import {Entity, Property} from "../../../../src";
-import {EDR_Object_DR} from "./EDR_Object_DR";
+import {Property} from '../../../../src/libs/decorators/Property';
+import {Entity} from '../../../../src/libs/decorators/Entity';
+import {EDR_Object_DR} from './EDR_Object_DR';
 
 @Entity({name: 'level_one'})
 export class EDR {

@@ -1,10 +1,10 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityRegistry} from '../../src';
 import {MultipleTypes} from './schemas/reflection/MultipleTypes';
 import 'reflect-metadata';
 import {NoEntity} from './schemas/reflection/NoEntity';
 import {SomeEntity} from './schemas/reflection/SomeEntity';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
 
 @suite('functional/property_reflection')
 class PropertyReflectionSpec {

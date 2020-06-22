@@ -5,6 +5,7 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
+import {TypeOrmConnectionWrapper} from '@typexs/base';
 
 
 const FINDOPT = {
@@ -43,7 +44,7 @@ class SqlIndirectReferencingSpec {
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
-    const c = await ref.connect();
+    const c = await ref.connect() as TypeOrmConnectionWrapper;
 
 
     const a = new Author();
@@ -112,7 +113,7 @@ class SqlIndirectReferencingSpec {
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
-    const c = await ref.connect();
+    const c = await ref.connect() as TypeOrmConnectionWrapper;
 
     let room_save_1 = new Room();
     room_save_1.number = 123;

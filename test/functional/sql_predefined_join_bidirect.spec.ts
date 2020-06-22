@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 
 import {TEST_STORAGE_OPTIONS} from './config';
+import {TypeOrmConnectionWrapper} from '@typexs/base';
 // import {Permission} from "./schemas/role_permissions/Permission";
 // import {ContentHolder} from "./schemas/join/ContentHolder";
 
@@ -33,7 +34,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
-    const c = await ref.connect();
+    const c = await ref.connect() as TypeOrmConnectionWrapper;
 
     const tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';');
     expect(_.map(tables, t => t.name)).to.have.include.members([
@@ -104,7 +105,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
-    const c = await ref.connect();
+    const c = await ref.connect() as TypeOrmConnectionWrapper;
 
 
     // create empty role
@@ -141,7 +142,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
-    const c = await ref.connect();
+    const c = await ref.connect()  as TypeOrmConnectionWrapper;
 
 
     // create empty role

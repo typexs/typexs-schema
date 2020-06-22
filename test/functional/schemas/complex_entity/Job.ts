@@ -1,13 +1,14 @@
-import {Property, Schema} from "../../../../src";
-import {Language} from "./Language";
+import {Language} from './Language';
+import {Schema} from '../../../../src/libs/decorators/Schema';
+import {Property} from '../../../../src/libs/decorators/Property';
 
 @Schema({name: 'complex_entity'})
-export class Job{
+export class Job {
 
   @Property({type: 'string'})
-  position:string;
+  position: string;
 
   @Property({targetClass: Language, cardinality: 0})
-  languages: Language[]
+  languages: Language[];
 
 }

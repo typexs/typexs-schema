@@ -1,4 +1,6 @@
-import {Entity, Property, Schema} from '../../../../src';
+import {Schema} from '../../../../src/libs/decorators/Schema';
+import {Entity} from '../../../../src/libs/decorators/Entity';
+import {Property} from '../../../../src/libs/decorators/Property';
 
 @Schema({name: 'join'})
 @Entity({name: 'personal'})

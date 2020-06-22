@@ -1,17 +1,17 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityRegistry} from "../../src";
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
 
 
 @suite('functional/entities_to_json')
-class Entities_to_jsonSpec {
+class EntitiesToJsonSpec {
 
 
   @test
   async 'with entity reference'() {
     require('./schemas/default/Book');
-    let regEntityDef = EntityRegistry.getEntityRefFor("Book");
-    let data = regEntityDef.toJson();
+    const regEntityDef = EntityRegistry.getEntityRefFor('Book');
+    const data = regEntityDef.toJson();
     expect(data.properties).to.have.length(4);
     expect(data.properties[3].targetRef).to.deep.eq({
       schema: 'default',
@@ -19,14 +19,14 @@ class Entities_to_jsonSpec {
       isEntity: true,
       options: {}
     });
-    expect(JSON.parse(JSON.stringify(data.properties[1].validator[0]))).to.deep.eq({
-      "type": "isDefined",
-      "target": "Book",
-      "propertyName": "label",
-      "validationOptions": {
-        "groups": [],
-        "always": false,
-        "each": false
+    expect(JSON.parse(JSON.stringify(data.properties[1].validator[0]))).to.deep.include({
+      'type': 'isDefined',
+      'target': 'Book',
+      'propertyName': 'label',
+      'validationOptions': {
+        'groups': [],
+        'always': false,
+        'each': false
       }
     });
   }
@@ -35,8 +35,8 @@ class Entities_to_jsonSpec {
   @test
   async 'with classref reference'() {
     require('./schemas/direct_property/Car');
-    let regEntityDef = EntityRegistry.getEntityRefFor("Car");
-    let data = regEntityDef.toJson();
+    const regEntityDef = EntityRegistry.getEntityRefFor('Car');
+    const data = regEntityDef.toJson();
     // console.log(inspect(data, false, 10))
     expect(data.properties).to.have.length(4);
     expect(JSON.parse(JSON.stringify(data.properties[2].targetRef))).to.deep.eq({

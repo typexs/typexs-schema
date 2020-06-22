@@ -1,5 +1,7 @@
-import {Entity, Property} from "../../../../src";
-import {ConditionObjKeeper} from "./ConditionObjKeeper";
+import {Property} from '../../../../src/libs/decorators/Property';
+import {Entity} from '../../../../src/libs/decorators/Entity';
+
+import {ConditionObjKeeper} from './ConditionObjKeeper';
 
 @Entity()
 export class ConditionObjBase {
@@ -13,7 +15,6 @@ export class ConditionObjBase {
     cardinality: 0
   })
   objects: ConditionObjKeeper[];
-
 
 
 }

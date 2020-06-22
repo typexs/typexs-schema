@@ -1,8 +1,6 @@
+import {Property} from '../../../../src/libs/decorators/Property';
+import {Entity} from '../../../../src/libs/decorators/Entity';
 
-
-
-
-import {Entity, Property} from "../../../../src";
 
 @Entity()
 export class Periode {
@@ -11,6 +9,6 @@ export class Periode {
   perid: number;
 
   @Property({type: 'number'})
-  year:number
+  year: number;
 
 }

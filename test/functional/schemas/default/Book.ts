@@ -1,7 +1,8 @@
-
 import {Author} from './Author';
-import {Entity, Property, Schema} from "../../../../src";
-import {IsDefined} from "class-validator";
+import {Property} from '../../../../src/libs/decorators/Property';
+import {Entity} from '../../../../src/libs/decorators/Entity';
+
+import {IsDefined} from 'class-validator';
 
 
 @Entity()

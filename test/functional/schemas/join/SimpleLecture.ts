@@ -2,8 +2,11 @@ import {Teacher} from './Teacher';
 
 import {RBelongsTo} from './RBelongsTo';
 import {From, Join, To} from '../../../../src/libs/descriptors/JoinDesc';
-import {Asc, Entity, Property, Schema} from '../../../../src';
 import {And, Eq, Key, Value} from 'commons-expressions';
+import {Schema} from '../../../../src/libs/decorators/Schema';
+import {Entity} from '../../../../src/libs/decorators/Entity';
+import {Property} from '../../../../src/libs/decorators/Property';
+import {Asc} from '../../../../src/libs/descriptors/OrderDesc';
 
 @Schema({name: 'join'})
 @Entity({name: 'simple_course'})

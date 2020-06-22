@@ -1,11 +1,10 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityRegistry} from '../../src';
 import * as _ from 'lodash';
-import {TestHelper} from './TestHelper';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
 
 
-@suite(TestHelper.suiteName(__filename))
+@suite('functional/entities_id_handling')
 class EntityIdHandlingSpec {
 
 

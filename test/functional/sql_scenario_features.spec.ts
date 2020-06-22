@@ -1,9 +1,9 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {inspect} from "util";
-import {TestHelper} from "./TestHelper";
-import * as _ from "lodash";
-import {TEST_STORAGE_OPTIONS} from "./config";
+import {TestHelper} from './TestHelper';
+import * as _ from 'lodash';
+import {TEST_STORAGE_OPTIONS} from './config';
+import {TypeOrmConnectionWrapper} from '@typexs/base';
 
 
 @suite('functional/sql_scenario_features')
@@ -15,11 +15,8 @@ class Sql_scenario_featuresSpec {
   }
 
 
-
-
   @test
   async 'entity lifecycle for scenario'() {
-
 
 
     const PathFeatureCollection = require('./schemas/features/PathFeatureCollection').PathFeatureCollection;
@@ -28,12 +25,11 @@ class Sql_scenario_featuresSpec {
     const Speed = require('./schemas/features/Speed').Speed;
 
 
-    let options = _.clone(TEST_STORAGE_OPTIONS);
-    let connect = await TestHelper.connect(options);
-    let xsem = connect.controller;
-    let ref = connect.ref;
-    let c = await ref.connect();
-
+    const options = _.clone(TEST_STORAGE_OPTIONS);
+    const connect = await TestHelper.connect(options);
+    const xsem = connect.controller;
+    const ref = connect.ref;
+    const c = await ref.connect();
 
 
     let a = new PathFeatureCollection();
@@ -54,10 +50,10 @@ class Sql_scenario_featuresSpec {
     a.features[0].geometry.longitude = 13.15;
 
     a = await xsem.save(a, {validate: false});
-    //console.log(inspect(a,false,10));
+    // console.log(inspect(a,false,10));
 
-    let b = await xsem.find(PathFeatureCollection,{id:1});
-    //console.log(inspect(b,false,10));
+    const b = await xsem.find(PathFeatureCollection, {id: 1});
+    // console.log(inspect(b,false,10));
 
     expect(b.shift()).to.deep.eq(a);
 
@@ -72,12 +68,12 @@ class Sql_scenario_featuresSpec {
     const Room = require('./schemas/integrated_property/Room').Room;
     const Equipment = require('./schemas/integrated_property/Equipment').Equipment;
 
-    let options = _.clone(TEST_STORAGE_OPTIONS);
+    const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'integrated_property';
-    let connect = await TestHelper.connect(options);
-    let xsem = connect.controller;
-    let ref = connect.ref;
-    let c = await ref.connect();
+    const connect = await TestHelper.connect(options);
+    const xsem = connect.controller;
+    const ref = connect.ref;
+    const c = await ref.connect() as TypeOrmConnectionWrapper;
 
     let r = new Room();
     r.number = 123;
@@ -95,13 +91,13 @@ class Sql_scenario_featuresSpec {
 
     r = await xsem.save(r, {validate: false});
 
-    let data = await c.connection.query('select * from p_equipment');
+    const data = await c.connection.query('select * from p_equipment');
     expect(data).to.have.length(2);
 
-    let roomsIn = await xsem.find(Room, {id: 1});
+    const roomsIn = await xsem.find(Room, {id: 1});
     expect(roomsIn).to.have.length(1);
 
-    let roomIn = roomsIn.shift();
+    const roomIn = roomsIn.shift();
     expect(roomIn).to.deep.eq(r);
 
     await c.close();

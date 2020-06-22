@@ -1,6 +1,10 @@
-import {Asc, Desc, Entity, Property, Schema} from "../../../../src";
-import {CondObjectContent} from "./CondObjectContent";
-import {Eq, Key} from "commons-expressions";
+import {Schema} from '../../../../src/libs/decorators/Schema';
+import {Property} from '../../../../src/libs/decorators/Property';
+import {Entity} from '../../../../src/libs/decorators/Entity';
+
+import {CondObjectContent} from './CondObjectContent';
+import {Eq, Key} from 'commons-expressions';
+import {Asc} from '../../../../src/libs/descriptors/OrderDesc';
 
 @Schema({name: 'conditions'})
 @Entity()
@@ -10,11 +14,11 @@ export class CondEntityHolder {
   id: number;
 
   @Property({type: 'number'})
-  mynr:number;
+  mynr: number;
 
   @Property({
     type: CondObjectContent, nullable: true, cardinality: 0,
-    cond: Eq('somenr',Key('mynr')),
+    cond: Eq('somenr', Key('mynr')),
     order: Asc(Key('nickname'))
   })
   contents: CondObjectContent[];

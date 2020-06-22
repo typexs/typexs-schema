@@ -1,6 +1,7 @@
-import {Entity, Property, Schema} from "../../../../src";
-import {Job} from "./Job";
-
+import {Schema} from '../../../../src/libs/decorators/Schema';
+import {Property} from '../../../../src/libs/decorators/Property';
+import {Entity} from '../../../../src/libs/decorators/Entity';
+import {Job} from './Job';
 @Schema({name: 'complex_entity'})
 @Entity()
 export class Person {
@@ -13,6 +14,6 @@ export class Person {
   name: string;
 
   @Property({targetClass: Job, cardinality: 0})
-  jobs: Job[]
+  jobs: Job[];
 
 }

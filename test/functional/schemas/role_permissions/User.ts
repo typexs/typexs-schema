@@ -1,8 +1,11 @@
 import * as _ from 'lodash';
-import {Asc, Entity, From, Join, Property, To} from '../../../../src';
 import {RBelongsTo2} from './RBelongsTo2';
 import {And, Eq, Key, Value} from 'commons-expressions';
 import {Role} from './Role';
+import {Entity} from '../../../../src/libs/decorators/Entity';
+import {Property} from '../../../../src/libs/decorators/Property';
+import {From, Join, To} from '../../../../src/libs/descriptors/JoinDesc';
+import {Asc} from '../../../../src/libs/descriptors/OrderDesc';
 
 
 @Entity()

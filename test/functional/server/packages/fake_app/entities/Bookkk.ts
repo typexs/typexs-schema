@@ -1,5 +1,7 @@
 import {Personnn} from './Personnn';
-import {Entity, IProperty, Property} from "../../../../../../src";
+import {Entity} from '../../../../../../src/libs/decorators/Entity';
+import {Property} from '../../../../../../src/libs/decorators/Property';
+import {IProperty} from '../../../../../../src/libs/registry/IProperty';
 
 @Entity()
 export class Bookkk {

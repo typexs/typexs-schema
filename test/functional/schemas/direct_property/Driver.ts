@@ -1,7 +1,8 @@
 import {Skil} from './Skil';
-import {Property, Schema} from "../../../../src";
+import {Schema} from '../../../../src/libs/decorators/Schema';
+import {Property} from '../../../../src/libs/decorators/Property';
 
-@Schema({name:'direct_property'})
+@Schema({name: 'direct_property'})
 export class Driver {
 
   @Property({type: 'number'})

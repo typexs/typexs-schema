@@ -1,6 +1,6 @@
-import {Speed} from "./Speed";
-import {PointFeature} from "./PointFeature";
-import {Entity, Property} from "../../../../src";
+import {Speed} from './Speed';
+import {PointFeature} from './PointFeature';
+import {Property} from '../../../../src/libs/decorators/Property';
 
 
 export class PathFeature {

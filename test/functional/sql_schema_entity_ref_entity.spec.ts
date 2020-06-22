@@ -1,24 +1,22 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {inspect} from "util";
-import * as _ from "lodash";
-import {TestHelper} from "./TestHelper";
-import {TEST_STORAGE_OPTIONS} from "./config";
-import {XS_P_$ABORTED} from "../../src";
-
+import * as _ from 'lodash';
+import {TestHelper} from './TestHelper';
+import {TEST_STORAGE_OPTIONS} from './config';
+import {XS_P_$ABORTED} from '../../src/libs/Constants';
 
 
 const FINDOPT = {
   hooks: {
     abortCondition: (entityRef: any, propertyDef: any, results: any, op: any) => {
-      return op.entityDepth > 1
+      return op.entityDepth > 1;
     }
   }
-}
+};
 
 
 @suite('functional/sql_schema_entity_ref_entity')
-class Sql_schema_entity_ref_entitySpec {
+class SqlSchemaEntityRefEntitySpec {
 
 
   before() {
@@ -37,19 +35,19 @@ class Sql_schema_entity_ref_entitySpec {
 
     // let classRefs = EntityRegistry.$().listClassRefs();
 
-    let options = _.clone(TEST_STORAGE_OPTIONS);
+    const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
-    let connect = await TestHelper.connect(options);
-    let xsem = connect.controller;
-    let ref = connect.ref;
-    let c = await ref.connect();
+    const connect = await TestHelper.connect(options);
+    const xsem = connect.controller;
+    const ref = connect.ref;
+    const c = await ref.connect();
 
 
-    let addr_save_01 = new Address();
+    const addr_save_01 = new Address();
     addr_save_01.postalcode = '10777';
     addr_save_01.street = 'Fuggergasse 8';
 
-    let pers_save_01 = new PersonData();
+    const pers_save_01 = new PersonData();
     pers_save_01.lastName = 'Bert';
     pers_save_01.address = addr_save_01;
 
@@ -58,7 +56,7 @@ class Sql_schema_entity_ref_entitySpec {
     trai_save_01.type = 'Running';
 
     trai_save_01 = await xsem.save(trai_save_01, {validate: false});
-    let saved_str_01 = JSON.parse(JSON.stringify(trai_save_01));
+    const saved_str_01 = JSON.parse(JSON.stringify(trai_save_01));
 
     // Update the existing entity
     let trai_save_02 = new Training();
@@ -67,14 +65,14 @@ class Sql_schema_entity_ref_entitySpec {
     trai_save_02.type = 'Running';
 
     trai_save_02 = await xsem.save(trai_save_02, {validate: false});
-    let saved_str_02 = JSON.parse(JSON.stringify(trai_save_02));
+    const saved_str_02 = JSON.parse(JSON.stringify(trai_save_02));
     expect(saved_str_02).to.deep.eq(saved_str_01);
 
 
-    let pers_save_02 = new PersonData();
+    const pers_save_02 = new PersonData();
     pers_save_02.id = pers_save_01.id;
     pers_save_02.lastName = 'Bert';
-    //pers_save_01.address = addr_save_01;
+    // pers_save_01.address = addr_save_01;
 
     let trai_save_03 = new Training();
     trai_save_03.id = trai_save_01.id;
@@ -84,10 +82,10 @@ class Sql_schema_entity_ref_entitySpec {
     trai_save_03 = await xsem.save(trai_save_03, {validate: false});
     // console.log(inspect(trai_save_03, false, 10));
 
-    let trai_find_01 = await xsem.find(Training, {id: trai_save_03.id},FINDOPT);
+    const trai_find_01 = await xsem.find(Training, {id: trai_save_03.id}, FINDOPT);
     expect(trai_find_01).to.have.length(1);
 
-    let find_str_01 = JSON.parse(JSON.stringify(trai_find_01.shift()));
+    const find_str_01 = JSON.parse(JSON.stringify(trai_find_01.shift()));
     delete find_str_01.trainer.address[XS_P_$ABORTED];
     expect(find_str_01).to.deep.eq(saved_str_01);
 
@@ -102,14 +100,14 @@ class Sql_schema_entity_ref_entitySpec {
     const Training = require('./schemas/default/Training').Training;
     const Address = require('./schemas/default/Address').Address;
 
-    let options = _.clone(TEST_STORAGE_OPTIONS);
+    const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
-    let connect = await TestHelper.connect(options);
-    let xsem = connect.controller;
-    let ref = connect.ref;
-    let c = await ref.connect();
+    const connect = await TestHelper.connect(options);
+    const xsem = connect.controller;
+    const ref = connect.ref;
+    const c = await ref.connect();
 
-    let addr_save_01 = new Address();
+    const addr_save_01 = new Address();
     addr_save_01.postalcode = '10888';
     addr_save_01.street = 'Franzgasse 8';
 
@@ -118,16 +116,16 @@ class Sql_schema_entity_ref_entitySpec {
     pers_save_01.address = addr_save_01;
 
     pers_save_01 = await xsem.save(pers_save_01, {validate: false});
-    //console.log(inspect(pers_save_01, false, 10));
+    // console.log(inspect(pers_save_01, false, 10));
 
     let trai_save_01 = new Training();
     trai_save_01.trainer = {id: pers_save_01.id};
     trai_save_01.type = 'Running';
 
     trai_save_01 = await xsem.save(trai_save_01, {validate: false});
-    //console.log(inspect(trai_save_01, false, 10));
+    // console.log(inspect(trai_save_01, false, 10));
 
-    let trai_find_01 = await xsem.find(Training, {id: trai_save_01.id});
+    const trai_find_01 = await xsem.find(Training, {id: trai_save_01.id});
     expect(trai_find_01).to.have.length(1);
   }
 

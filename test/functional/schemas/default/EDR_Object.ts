@@ -1,4 +1,5 @@
-import {CObject, Property} from "../../../../src";
+import {Property} from '../../../../src/libs/decorators/Property';
+import {CObject} from '../../../../src/libs/decorators/CObject';
 
 
 @CObject({name: 'object_level_three'})

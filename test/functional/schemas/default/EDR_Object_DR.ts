@@ -1,5 +1,6 @@
-import {CObject, Property} from "../../../../src";
-import {EDR_Object} from "./EDR_Object";
+import {Property} from '../../../../src/libs/decorators/Property';
+import {EDR_Object} from './EDR_Object';
+import {CObject} from '../../../../src/libs/decorators/CObject';
 
 @CObject({name: 'object_level_two'})
 export class EDR_Object_DR {

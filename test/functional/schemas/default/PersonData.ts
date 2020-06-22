@@ -1,5 +1,6 @@
-import {Entity, Property} from "../../../../src";
-import {Address} from "./Address";
+import {Property} from '../../../../src/libs/decorators/Property';
+import {Entity} from '../../../../src/libs/decorators/Entity';
+import {Address} from './Address';
 
 @Entity()
 export class PersonData {

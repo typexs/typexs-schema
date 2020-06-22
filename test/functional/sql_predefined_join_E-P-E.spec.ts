@@ -3,11 +3,12 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
-import {ConnectionWrapper} from '@typexs/base';
-import {EntityController} from '../../src';
+import {EntityController} from '../../src/libs/EntityController';
+import {TypeOrmConnectionWrapper} from '@typexs/base';
+import {LookupRegistry} from 'commons-schema-api';
+import {getMetadataArgsStorage} from 'typeorm';
 
-
-let c: ConnectionWrapper;
+let c: TypeOrmConnectionWrapper;
 let entityController: EntityController;
 
 let Teacher: any;
@@ -60,6 +61,9 @@ class SqlPredefinedJoinEPESpec {
       'sortierung'
     ]);
 
+    const metadata = getMetadataArgsStorage();
+    const registries = LookupRegistry.getRegistries();
+    console.log(registries.length);
   }
 
 

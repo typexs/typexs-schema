@@ -1,8 +1,8 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityRegistry} from '../../src';
 import {MultipleTypesDeclared} from './schemas/conversion/MultipleTypesDeclared';
 import {EmbeddedMultipleTypesDeclared} from './schemas/conversion/EmbeddedMultipleTypesDeclared';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
 
 
 @suite('functional/conversion')

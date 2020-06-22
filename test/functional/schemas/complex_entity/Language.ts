@@ -1,4 +1,5 @@
-import {Property, Schema} from "../../../../src";
+import {Schema} from '../../../../src/libs/decorators/Schema';
+import {Property} from '../../../../src/libs/decorators/Property';
 
 @Schema({name: 'complex_entity'})
 export class Language {

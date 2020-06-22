@@ -1,7 +1,8 @@
+import {ConditionObjectHolder} from './ConditionObjectHolder';
+import {Property} from '../../../../src/libs/decorators/Property';
+import {Entity} from '../../../../src/libs/decorators/Entity';
 
-import {ConditionObjectHolder} from "./ConditionObjectHolder";
-import {Entity, Property} from "../../../../src";
-import {And, Eq, Key, Value} from "commons-expressions";
+import {And, Eq, Key, Value} from 'commons-expressions';
 
 @Entity()
 export class ConditionObjectKeeper {

@@ -3,11 +3,11 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
-import {ConnectionWrapper} from '@typexs/base';
-import {EntityController} from '../../src';
+import {TypeOrmConnectionWrapper} from '@typexs/base';
+import {EntityController} from '../../src/libs/EntityController';
 
 
-let c: ConnectionWrapper;
+let c: TypeOrmConnectionWrapper;
 let entityController: EntityController;
 
 let Candidate: any;

@@ -1,7 +1,8 @@
+import {ConditionHolder} from './ConditionHolder';
+import {Property} from '../../../../src/libs/decorators/Property';
+import {Entity} from '../../../../src/libs/decorators/Entity';
 
-import {ConditionHolder} from "./ConditionHolder";
-import {Entity, Property} from "../../../../src";
-import {And, Eq, Key, Value} from "commons-expressions";
+import {And, Eq, Key, Value} from 'commons-expressions';
 
 
 @Entity()

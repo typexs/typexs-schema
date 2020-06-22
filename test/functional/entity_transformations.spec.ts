@@ -1,11 +1,11 @@
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
-import {EntityRegistry} from '../../src';
 import * as _ from 'lodash';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
 
 
 @suite('functional/entity_transformations')
-class Entity_transformationsSpec {
+class EntityTransformationsSpec {
 
 
   @test

@@ -1,4 +1,6 @@
-import {CObject, Property, Schema} from '../../../../src';
+import {Schema} from '../../../../src/libs/decorators/Schema';
+import {CObject} from '../../../../src/libs/decorators/CObject';
+import {Property} from '../../../../src/libs/decorators/Property';
 
 @Schema({name: 'role_permissions'})
 @CObject({name: 'r_belongsto2'})

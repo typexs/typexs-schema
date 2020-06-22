@@ -1,9 +1,9 @@
-// process.env['SQL_LOG'] = '1';
+process.env['SQL_LOG'] = '1';
 
 import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-import {StorageRef} from '@typexs/base';
+import {StorageRef, TypeOrmConnectionWrapper} from '@typexs/base';
 import {EntityController} from '../../src/libs/EntityController';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
@@ -39,7 +39,7 @@ class SqlDirectReferencingSpec {
     const connect = await this.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
-    const c = await ref.connect();
+    const c = await ref.connect() as TypeOrmConnectionWrapper;
 
     const a = new Author();
     a.firstName = 'Robert';
@@ -176,9 +176,9 @@ class SqlDirectReferencingSpec {
     const Book2 = require('./schemas/default/Book2').Book2;
 
     const connect = await this.connect(options);
-    const xsem = connect.controller;
-    const ref = connect.ref;
-    const c = await ref.connect();
+    const entityController = connect.controller;
+    const storageRef = connect.ref;
+    const c = await storageRef.connect();
 
     const a = new Author();
     a.firstName = 'Robert';
@@ -200,14 +200,20 @@ class SqlDirectReferencingSpec {
     book_save_1.content = 'This is a good book';
     book_save_1.authors = [a, a2];
 
-    book_save_1 = await xsem.save(book_save_1, {validate: false});
+    book_save_1 = await entityController.save(book_save_1, {validate: false});
     // console.log(book_save_1);
     expect(book_save_1.id).to.be.eq(1);
     expect(book_save_1.authors).to.have.length(2);
     expect(_.find(book_save_1.authors, {lastName: 'Bania', id: 2})).to.deep.include({lastName: 'Bania', id: 2});
     expect(_.find(book_save_1.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
 
-    let books: any[] = await xsem.find(Book2, {id: 1}, FINDOPT);
+    const connection = await storageRef.connect() as TypeOrmConnectionWrapper; // getController().find(Author, {$and: [{id: 1}, {id: 2}]});
+    const authorsFound = await connection.manager.find(Author, [{id: 1}, {id: 2}]);
+    expect(authorsFound).to.have.length(2);
+    await connection.close();
+
+
+    let books: any[] = await entityController.find(Book2, {id: 1}, FINDOPT);
     // console.log(books);
     expect(books).to.have.length(1);
     const book_find_1 = books.shift();
@@ -219,13 +225,13 @@ class SqlDirectReferencingSpec {
     let book_save_2 = new Book2();
     book_save_2.content = 'Robi tobi und das Fliwatüt';
     book_save_2.authors = [a];
-    book_save_2 = await xsem.save(book_save_2, {validate: false});
+    book_save_2 = await entityController.save(book_save_2, {validate: false});
     // console.log(book_save_2);
     expect(book_save_2.id).to.be.eq(2);
     expect(book_save_2.authors).to.have.length(1);
     expect(_.find(book_save_2.authors, {lastName: 'Kania', id: 1})).to.deep.include({lastName: 'Kania', id: 1});
 
-    books = await xsem.find(Book2, {id: 2}, FINDOPT);
+    books = await entityController.find(Book2, {id: 2}, FINDOPT);
     // console.log(books);
     expect(books).to.have.length(1);
     const book_find_3 = books.shift();
@@ -244,11 +250,11 @@ class SqlDirectReferencingSpec {
     book_save_4.authors = [a3, a4];
 
 
-    let books_saved = await xsem.save([book_save_3, book_save_4], {validate: false});
+    let books_saved = await entityController.save([book_save_3, book_save_4], {validate: false});
     // console.log(inspect(books_saved, false, 10));
     expect(books_saved).to.have.length(2);
 
-    let books_found = await xsem.find(Book2, [{id: 3}, {id: 4}], FINDOPT);
+    let books_found = await entityController.find(Book2, {$or: [{id: 3}, {id: 4}]}, FINDOPT);
     // console.log(inspect(books_found, false, 10));
     expect(books_found).to.have.length(2);
     expect(books_saved).to.deep.eq(books_found);
@@ -257,11 +263,11 @@ class SqlDirectReferencingSpec {
     const book_save_5 = new Book2();
     book_save_5.content = 'Karate';
 
-    books_saved = await xsem.save([book_save_5], {validate: false});
+    books_saved = await entityController.save([book_save_5], {validate: false});
     // console.log(inspect(books_saved, false, 10));
     expect(books_saved).to.have.length(1);
 
-    books_found = await xsem.find(Book2, [{id: 5}], FINDOPT);
+    books_found = await entityController.find(Book2, [{id: 5}], FINDOPT);
     // console.log(inspect(books_found, false, 10));
     expect(books_found).to.have.length(1);
     expect(books_saved).to.deep.eq(books_found);
@@ -271,10 +277,10 @@ class SqlDirectReferencingSpec {
     book_save_6.content = 'Karate';
     book_save_6.authors = [];
 
-    books_saved = await xsem.save([book_save_6], {validate: false});
+    books_saved = await entityController.save([book_save_6], {validate: false});
     // console.log(inspect(books_saved, false, 10));
 
-    books_found = await xsem.find(Book2, [{id: 6}], FINDOPT);
+    books_found = await entityController.find(Book2, [{id: 6}], FINDOPT);
     // console.log(inspect(books_found, false, 10));
     expect(books_found).to.have.length(1);
     expect(books_saved).to.deep.eq(books_found);
@@ -299,7 +305,7 @@ class SqlDirectReferencingSpec {
     const connect = await this.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
-    const c = await ref.connect();
+    const c = await ref.connect() as TypeOrmConnectionWrapper;
 
     const tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
     expect(tables).to.have.length(5);
@@ -495,7 +501,7 @@ class SqlDirectReferencingSpec {
     expect(booksFound).to.have.length(11);
     expect(booksFound['$count']).to.eq(11);
 
-    booksFound = await xsem.find(Book, {label: {$like: 'Book1%'}}, {limit: 5, ...FINDOPT });
+    booksFound = await xsem.find(Book, {label: {$like: 'Book1%'}}, {limit: 5, ...FINDOPT});
     expect(booksFound).to.have.length(5);
     expect(booksFound['$count']).to.eq(11);
 

@@ -1,4 +1,4 @@
-import {Property} from "../../../../src";
+import {Property} from '../../../../src/libs/decorators/Property';
 
 
 export class Speed {

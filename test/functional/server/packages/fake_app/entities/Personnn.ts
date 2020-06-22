@@ -1,10 +1,11 @@
 import {IsDefined} from 'class-validator';
-import {Entity, Property} from "../../../../../../src";
+import {Entity} from '../../../../../../src/libs/decorators/Entity';
+import {Property} from '../../../../../../src/libs/decorators/Property';
 
 @Entity()
 export class Personnn {
 
-  @Property({type: 'number',  auto: true})
+  @Property({type: 'number', auto: true})
   id: number;
 
   @IsDefined()
@@ -14,7 +15,7 @@ export class Personnn {
   @Property({type: 'string'})
   lastName: string;
 
-  label(){
+  label() {
     return this.lastName + ', ' + this.firstName;
   }
 }

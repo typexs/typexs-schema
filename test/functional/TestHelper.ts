@@ -1,9 +1,9 @@
 import * as _ from 'lodash';
 import {getMetadataArgsStorage} from 'typeorm';
-import {Container, Invoker, SqliteSchemaHandler, StorageRef} from '@typexs/base';
+import {Container, Invoker, SqliteSchemaHandler, TypeOrmStorageRef} from '@typexs/base';
 import {EntityController} from '../../src/libs/EntityController';
-import {EntityRegistry, FrameworkFactory} from '../../src';
-import {PlatformTools} from 'typeorm/platform/PlatformTools';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
+import {FrameworkFactory} from '../../src/libs/framework/FrameworkFactory';
 
 export class TestHelper {
 
@@ -11,11 +11,13 @@ export class TestHelper {
     return filename.split('/test/').pop();
   }
 
-  static async connect(options: any): Promise<{ ref: StorageRef, controller: EntityController }> {
+  static async connect(options: any): Promise<{ ref: TypeOrmStorageRef, controller: EntityController }> {
     const invoker = new Invoker();
     Container.set(Invoker.NAME, invoker);
-    const ref = new StorageRef(options);
-    ref.setSchemaHandler(Reflect.construct(SqliteSchemaHandler, [ref]));
+    const ref = new TypeOrmStorageRef(options);
+    const schemaHandler = Reflect.construct(SqliteSchemaHandler, [ref]) as SqliteSchemaHandler;
+    await schemaHandler.initOnceByType();
+    ref.setSchemaHandler(schemaHandler);
     await ref.prepare();
     const schemaDef = EntityRegistry.getSchema(options.name);
 
