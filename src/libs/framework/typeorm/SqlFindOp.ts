@@ -51,7 +51,8 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       targetRef.getPropertyRefs() : EntityRegistry.getPropertyRefsFor(targetRef);
     return _.merge({}, ..._.map(props, p => {
       const c = {};
-      c[p.name] = p.storingName;
+      // c[p.name] = p.storingName;
+      c[p.name] = p.name;
       return c;
     }));
   }

@@ -242,8 +242,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
     // delete previous relations
     if (!_.isEmpty(removeConditions)) {
       const removeEntityRef = this.c.getStorageRef().getEntityRef(clazz);
-      const queryBuilder = this.c.manager.getRepository(removeEntityRef.getClassRef().getClass()).createQueryBuilder();
-      const builder = new SqlConditionsBuilder<T>(queryBuilder, removeEntityRef, this.c.getStorageRef(), 'delete');
+      const builder = new SqlConditionsBuilder<T>(this.c.manager, removeEntityRef, this.c.getStorageRef(), 'delete');
       builder.build(removeConditions);
       await builder.getQueryBuilder().execute();
     }
