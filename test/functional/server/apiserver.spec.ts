@@ -1,5 +1,5 @@
 import {suite, test, timeout} from 'mocha-typescript';
-import {Bootstrap, Container, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
+import {Bootstrap, Injector, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
 import {K_ROUTE_CONTROLLER, Server, XS_P_URL} from '@typexs/server';
 import * as _ from 'lodash';
 import {expect} from 'chai';
@@ -76,7 +76,7 @@ class ApiserverSpec {
     await bootstrap.activateStorage();
     await bootstrap.startup();
 
-    server = Container.get('server.default');
+    server = Injector.get('server.default');
     await server.start();
   }
 

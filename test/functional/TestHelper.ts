@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {getMetadataArgsStorage} from 'typeorm';
-import {Container, Invoker, SqliteSchemaHandler, TypeOrmStorageRef} from '@typexs/base';
+import {Injector, Invoker, SqliteSchemaHandler, TypeOrmStorageRef} from '@typexs/base';
 import {EntityController} from '../../src/libs/EntityController';
 import {EntityRegistry} from '../../src/libs/EntityRegistry';
 import {FrameworkFactory} from '../../src/libs/framework/FrameworkFactory';
@@ -13,7 +13,7 @@ export class TestHelper {
 
   static async connect(options: any): Promise<{ ref: TypeOrmStorageRef, controller: EntityController }> {
     const invoker = new Invoker();
-    Container.set(Invoker.NAME, invoker);
+    Injector.set(Invoker.NAME, invoker);
     const ref = new TypeOrmStorageRef(options);
     const schemaHandler = Reflect.construct(SqliteSchemaHandler, [ref]) as SqliteSchemaHandler;
     await schemaHandler.initOnceByType();

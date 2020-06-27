@@ -4,7 +4,7 @@ import {suite, test} from 'mocha-typescript';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 
-import {Container, IRuntimeLoaderOptions, TypeOrmEntityRegistry} from '@typexs/base';
+import {Injector, IRuntimeLoaderOptions, TypeOrmEntityRegistry} from '@typexs/base';
 import {Bootstrap} from '@typexs/base/Bootstrap';
 
 import {TestHelper} from './TestHelper';
@@ -88,7 +88,7 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
     await bootstrap.activateStorage();
     await bootstrap.startup();
 
-    server = Container.get('server.default');
+    server = Injector.get('server.default');
     await server.start();
   }
 
@@ -126,7 +126,7 @@ class Sql_schema_predefined_join_bidirect_over_apiSpec {
     perm03.disabled = false;
     perm03.permission = 'allow everything but this';
 
-    const api = Container.get(EntityAPIController);
+    const api = Injector.get(EntityAPIController);
     let role = new Role();
     role.displayName = 'User';
     role.permissions = [perm01, perm02];

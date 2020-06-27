@@ -1,6 +1,6 @@
-import {Bootstrap, Container} from "@typexs/base";
-import {K_ROUTE_CONTROLLER, Server} from "@typexs/server";
-import * as _ from "lodash";
+import {Bootstrap, Injector} from '@typexs/base';
+import {K_ROUTE_CONTROLLER, Server} from '@typexs/server';
+import * as _ from 'lodash';
 
 const settingsTemplate: any = {
   storage: {
@@ -45,10 +45,10 @@ const settingsTemplate: any = {
 };
 
 
-(async function(){
+(async function () {
   let bootstrap: Bootstrap = null;
   let server: Server = null;
-  let settings = _.clone(settingsTemplate);
+  const settings = _.clone(settingsTemplate);
 
 
   bootstrap = Bootstrap
@@ -61,7 +61,7 @@ const settingsTemplate: any = {
   await bootstrap.activateStorage();
   await bootstrap.startup();
 
-  server = Container.get('server.default');
+  server = Injector.get('server.default');
   await server.start();
 
 })();
