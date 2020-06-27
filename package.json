@@ -1,6 +1,6 @@
 {
   "name": "@typexs/schema",
-  "version": "1.0.5",
+  "version": "1.0.4",
   "description": "Schema for typexs",
   "main": "index.js",
   "browser": "browser.js",
@@ -66,7 +66,7 @@
     "@typexs/server": "^1.0.2"
   },
   "dependencies": {
-    "@typexs/base": "^1.2.19",
+    "@typexs/base": "^1.2.20",
     "@typexs/roles-api": "^1.0.10"
   },
   "private": true,
