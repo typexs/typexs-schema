@@ -71,7 +71,7 @@ let server: Server = null;
 
 
 @suite('functional/sql_schema_predefined_join_bidirect_over_api')
-class Sql_schema_predefined_join_bidirect_over_apiSpec {
+class SqlSchemaPredefinedJoinBidirectOverApiSpec {
 
 
   static async before() {
