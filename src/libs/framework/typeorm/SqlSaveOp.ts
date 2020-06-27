@@ -1,6 +1,5 @@
-import {DataContainer, NotYetImplementedError, TypeOrmConnectionWrapper} from '@typexs/base';
+import {DataContainer, ISaveOptions, NotYetImplementedError, TypeOrmConnectionWrapper} from '@typexs/base';
 import {EntityDefTreeWorker} from '../EntityDefTreeWorker';
-import {ISaveOp} from '../ISaveOp';
 import {EntityController} from '../../EntityController';
 import {PropertyRef} from '../../registry/PropertyRef';
 import {EntityRef} from '../../registry/EntityRef';
@@ -10,12 +9,11 @@ import {IDataExchange} from '../IDataExchange';
 import {SqlHelper} from './SqlHelper';
 import {JoinDesc} from '../../descriptors/JoinDesc';
 import {EntityRegistry} from '../../EntityRegistry';
-
 import {ObjectsNotValidError} from '../../exceptions/ObjectsNotValidError';
-import {ISaveOptions} from '../ISaveOptions';
 import {ClassRef} from 'commons-schema-api';
 import {SchemaUtils} from '../../SchemaUtils';
 import {SqlConditionsBuilder} from './SqlConditionsBuilder';
+import {ISaveOp} from '@typexs/base/libs/storage/framework/ISaveOp';
 
 const PROP_KEY_LOOKUP = '__lookup__';
 const PROP_KEY_TARGET = '__target__';
@@ -32,14 +30,18 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
   constructor(em: EntityController) {
     super();
-    this.em = em;
+    this.entityController = em;
   }
 
-  readonly em: EntityController;
+  readonly entityController: EntityController;
 
   private objects: T[] = [];
 
   private c: TypeOrmConnectionWrapper;
+
+  private isArray: boolean;
+
+  private options: ISaveOptions;
 
   static extractKeyableValues(data: any[]) {
     return data.map(obj => {
@@ -84,7 +86,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       let targetName, targetId;
 
       for (const embed of embedded) {
-        const targetIdProps = this.em.schema().getPropertiesFor(embed.getTargetClass()).filter(p => p.identifier);
+        const targetIdProps = this.entityController.schema().getPropertiesFor(embed.getTargetClass()).filter(p => p.identifier);
         const refProps = SqlHelper.getEmbeddedPropertyIds(embed);
         for (const target of sources.next) {
           let idx = 0;
@@ -92,7 +94,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
             const name = refProps[idx++];
             [targetId, targetName] = SqlHelper
               .resolveNameForEmbeddedIds(
-                this.em.nameResolver(), name, embed, prop);
+                this.entityController.nameResolver(), name, embed, prop);
             delete target[targetId];
           });
         }
@@ -156,13 +158,13 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           // if (!target) continue;
           const joinObj = propertyDef.joinRef.new();
           joinObjs.push(joinObj);
-          let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
+          let [id, name] = this.entityController.nameResolver().forSource(XS_P_TYPE);
           joinObj[id] = sourceEntityDef.machineName;
           sourceEntityDef.getPropertyRefIdentifier().forEach(prop => {
-            [id, name] = this.em.nameResolver().forSource(prop);
+            [id, name] = this.entityController.nameResolver().forSource(prop);
             joinObj[id] = prop.get(source);
           });
-          [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
+          [id, name] = this.entityController.nameResolver().forSource(XS_P_SEQ_NR);
           joinObj[id] = seqNr++;
           joinObj[propertyDef.name] = target;
         }
@@ -282,7 +284,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       const joinObj = join[x];
       const target = propertyDef.get(joinObj);
       targetIdProps.forEach(prop => {
-        const [targetId, ] = this.em.nameResolver().forTarget(prop);
+        const [targetId, _x] = this.entityController.nameResolver().forTarget(prop);
         joinObj[targetId] = prop.get(target);
       });
     }
@@ -313,7 +315,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
         targetIdProps.forEach(prop => {
           const name = refProps[idx++];
           [targetId, targetName] = SqlHelper.resolveNameForEmbeddedIds(
-            this.em.nameResolver(), name, propertyDef, prop);
+            this.entityController.nameResolver(), name, propertyDef, prop);
           target[targetId] = prop.get(source);
         });
       }
@@ -329,7 +331,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           const joinObj = visitResult.join[x];
           const target = propertyDef.get(joinObj);
           refIdProps.forEach(prop => {
-            const [propId, ] = this.em.nameResolver().for(propertyDef.machineName, prop);
+            const [propId, _x] = this.entityController.nameResolver().for(propertyDef.machineName, prop);
             joinObj[propId] = prop.get(target);
           });
         }
@@ -367,6 +369,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
                         propertyDef: PropertyRef,
                         classRef: ClassRef,
                         sources: ISaveData): Promise<ISaveData> {
+    // tslint:disable-next-line:prefer-const
     let [map, targetObjects] = SchemaUtils.extractPropertyObjects(propertyDef, sources.next);
     let joinObjs: any[] = [];
 
@@ -411,7 +414,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
         abort: targetObjects.length === 0
       };
     } else if (propertyDef.hasJoinRef()) {
-      const targetIdProps = this.em.schema().getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
+      const targetIdProps = this.entityController.schema().getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
 
       if (!_.isEmpty(targetIdProps)) {
         const notNullProps = this.getNotNullablePropertyNames(classRef.getClass());
@@ -428,7 +431,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       if (sourceDef instanceof EntityRef) {
 
         const sourceIdProps = sourceDef.getPropertyRefIdentifier();
-        const embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
+        const embedProps = this.entityController.schema().getPropertiesFor(classRef.getClass());
         const notNullProps = this.getNotNullablePropertiesForEmbedded(propertyDef, embedProps);
 
         for (const source of sources.next) {
@@ -445,15 +448,15 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           for (const target of _targetObjects) {
             const joinObj = propertyDef.joinRef.new();
             joinObjs.push(joinObj);
-            let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
+            let [id, name] = this.entityController.nameResolver().forSource(XS_P_TYPE);
             joinObj[id] = sourceDef.machineName;
 
             sourceIdProps.forEach(prop => {
-              [id, name] = this.em.nameResolver().forSource(prop);
+              [id, name] = this.entityController.nameResolver().forSource(prop);
               joinObj[id] = prop.get(source);
             });
 
-            [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
+            [id, name] = this.entityController.nameResolver().forSource(XS_P_SEQ_NR);
             joinObj[id] = seqNr++;
 
 
@@ -465,7 +468,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
             // if target because of reference to an object
             targetIdProps.forEach(prop => {
-              const [targetId, asd] = this.em.nameResolver().forTarget(prop);
+              const [targetId, asd] = this.entityController.nameResolver().forTarget(prop);
               joinObj[targetId] = prop.get(target);
             });
 
@@ -492,7 +495,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       } else if (sourceDef instanceof ClassRef) {
 
         // my own property
-        const embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
+        const embedProps = this.entityController.schema().getPropertiesFor(classRef.getClass());
         const notNullProps = this.getNotNullablePropertiesForEmbedded(propertyDef, embedProps);
 
         for (const join of sources.join) {
@@ -504,16 +507,16 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
             joinObj['__property__'] = join;
             joinObjs.push(joinObj);
 
-            let [id, name] = this.em.nameResolver().forSource(XS_P_TYPE);
+            let [id, name] = this.entityController.nameResolver().forSource(XS_P_TYPE);
             joinObj[id] = sourceDef.machineName;
 
-            [id, name] = this.em.nameResolver().forSource(XS_P_PROPERTY);
+            [id, name] = this.entityController.nameResolver().forSource(XS_P_PROPERTY);
             joinObj[id] = propertyDef.machineName;
 
-            [id, name] = this.em.nameResolver().forSource(XS_P_PROPERTY_ID);
+            [id, name] = this.entityController.nameResolver().forSource(XS_P_PROPERTY_ID);
             joinObj[id] = join.id;
 
-            [id, name] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
+            [id, name] = this.entityController.nameResolver().forSource(XS_P_SEQ_NR);
             joinObj[id] = seqNr++;
 
 
@@ -542,7 +545,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       // save targets
       const targetClass = classRef.getClass();
       // TODO save
-      const embed = this.em.schema()
+      const embed = this.entityController.schema()
         .getPropertiesFor(targetClass)
         .filter(p => p.isEmbedded() && !p.isNullable());
 
@@ -568,7 +571,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
     } else {
 
       // not my own property
-      const embedProps = this.em.schema().getPropertiesFor(classRef.getClass());
+      const embedProps = this.entityController.schema().getPropertiesFor(classRef.getClass());
 
       if (sources.join) {
         for (const join of sources.join) {
@@ -584,7 +587,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
             // single entry direct or indirect?
             const target = _.first(targets);
             embedProps.forEach(prop => {
-              const [id, name] = this.em.nameResolver().for(propertyDef.machineName, prop);
+              const [id, name] = this.entityController.nameResolver().for(propertyDef.machineName, prop);
               join[id] = prop.get(target);
             });
 
@@ -626,7 +629,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
       // set saved referrer id to base entity
       const targetClass = propertyDef.getTargetClass();
-      const targetIdProps = this.em.schema().getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
+      const targetIdProps = this.entityController.schema().getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
       const refProps = SqlHelper.getEmbeddedPropertyIds(propertyDef);
       let targetName, targetId;
       for (const target of sources.target) {
@@ -635,7 +638,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
         targetIdProps.forEach(prop => {
           const name = refProps[idx++];
           [targetId, targetName] = SqlHelper.resolveNameForEmbeddedIds(
-            this.em.nameResolver(), name, propertyDef, prop);
+            this.entityController.nameResolver(), name, propertyDef, prop);
           target[targetId] = prop.get(source);
         });
       }
@@ -646,7 +649,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
         targetIdProps.forEach(prop => {
           const name = refProps[idx++];
           [targetId, targetName] = SqlHelper.resolveNameForEmbeddedIds(
-            this.em.nameResolver(), name, propertyDef, prop);
+            this.entityController.nameResolver(), name, propertyDef, prop);
           delete target[targetId];
         });
       }
@@ -657,7 +660,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
 
   private async saveByEntityDef<T>(entityName: string | EntityRef, objects: T[]): Promise<T[]> {
-    const entityDef = _.isString(entityName) ? this.em.schema().getEntity(entityName) : entityName;
+    const entityDef = _.isString(entityName) ? this.entityController.schema().getEntity(entityName) : entityName;
     return await this.walk(entityDef, objects);
   }
 
@@ -684,9 +687,9 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
 
   async run(object: T | T[], options: ISaveOptions = {validate: true}): Promise<T | T[]> {
-    const isArray = _.isArray(object);
-
+    this.isArray = _.isArray(object);
     this.objects = this.prepare(object);
+    this.options = options;
     let objectsValid = true;
     if (_.get(options, 'validate', false)) {
       objectsValid = await this.validate();
@@ -696,7 +699,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
     if (objectsValid) {
       const resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
       const entityNames = Object.keys(resolveByEntityDef);
-      this.c = await this.em.storageRef.connect() as TypeOrmConnectionWrapper;
+      this.c = await this.entityController.storageRef.connect() as TypeOrmConnectionWrapper;
 
       // start transaction, got to leafs and save
       try {
@@ -713,18 +716,16 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       } finally {
         await this.c.close();
       }
-
-
     } else {
-      throw new ObjectsNotValidError(this.objects, isArray);
+      throw new ObjectsNotValidError(this.objects, this.isArray);
     }
 
-
-    if (!isArray) {
+    if (!this.isArray) {
       return this.objects.shift();
     }
     return this.objects;
   }
+
 
   private getNotNullablePropertyNames(clazz: Function) {
     const metadata = this.c.manager.connection.getMetadata(clazz);
@@ -742,6 +743,19 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       _.remove(notNullProps, x => x === prop.name);
     });
     return notNullProps;
+  }
+
+
+  getOptions(): ISaveOptions {
+    return this.options;
+  }
+
+  getObjects(): T[] {
+    return this.objects;
+  }
+
+  getIsArray(): boolean {
+    return this.isArray;
   }
 
 }

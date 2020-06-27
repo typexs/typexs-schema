@@ -1,14 +1,14 @@
 import {EntityDefTreeWorker} from '../EntityDefTreeWorker';
-import {IDeleteOp} from '../IDeleteOp';
 import {EntityRef} from '../../registry/EntityRef';
 import {PropertyRef} from '../../registry/PropertyRef';
-
 import {IDataExchange} from '../IDataExchange';
 import {EntityController} from '../../EntityController';
 import * as _ from '../../LoDash';
 import {XS_P_PREV_ID} from '../../Constants';
-import {ClassRef} from 'commons-schema-api';
-import {TypeOrmConnectionWrapper} from '@typexs/base';
+import {ClassRef, ClassType} from 'commons-schema-api';
+import {NotSupportedError, TypeOrmConnectionWrapper} from '@typexs/base';
+import {IDeleteOp} from '@typexs/base/libs/storage/framework/IDeleteOp';
+import {IDeleteOptions} from '@typexs/base/libs/storage/framework/IDeleteOptions';
 
 
 export interface IDeleteData extends IDataExchange<any[]> {
@@ -139,6 +139,22 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
       return this.objects.shift();
     }
     return this.objects;
+  }
+
+  // TODO
+  getConditions(): any {
+    throw new NotSupportedError('removeing by conditions');
+  }
+
+  // TODO
+  // @ts-ignore
+  getOptions(): IDeleteOptions {
+    throw new NotSupportedError('removeing with options');
+  }
+
+  // TODO
+  getRemovable(): T[] | ClassType<T> | T {
+    throw new NotSupportedError('removeing by single class');
   }
 
 

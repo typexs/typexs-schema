@@ -1,13 +1,8 @@
 import {EntityRef} from '../registry/EntityRef';
 import {PropertyRef} from '../registry/PropertyRef';
+import {IFindOptions as _IFindOptions} from '@typexs/base/libs/storage/framework/IFindOptions';
 
-export interface IFindOptions {
-
-  limit?: number;
-
-  offset?: number;
-
-  sort?: { [key: string]: 'asc' | 'desc' };
+export interface IFindOptions extends _IFindOptions {
 
   /**
    * limit for queries for subelements, default will be 50

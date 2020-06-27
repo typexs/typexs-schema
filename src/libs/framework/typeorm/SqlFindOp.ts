@@ -1,5 +1,4 @@
 import * as _ from '../../LoDash';
-import {IFindOp} from '../IFindOp';
 import {EntityDefTreeWorker} from '../EntityDefTreeWorker';
 import {EntityController} from '../../EntityController';
 import {NotYetImplementedError, TypeOrmConnectionWrapper, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
@@ -16,6 +15,7 @@ import {OrderDesc} from '../../../libs/descriptors/OrderDesc';
 import {ClassRef} from 'commons-schema-api';
 import {classRefGet} from '../../Helper';
 import {SqlConditionsBuilder} from './SqlConditionsBuilder';
+import {IFindOp} from '@typexs/base/libs/storage/framework/IFindOp';
 
 
 interface IFindData extends IDataExchange<any[]> {
@@ -45,6 +45,10 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
   private options: IFindOptions;
 
+  findConditions: any;
+
+  entityType: any;
+
 
   static getTargetKeyMap(targetRef: EntityRef | ClassRef) {
     const props: PropertyRef[] = targetRef instanceof EntityRef ?
@@ -69,10 +73,10 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     (entityDef: EntityRef, propertyDef: PropertyRef,
      results: any[], op: SqlFindOp<T>) => {
       return op.entityDepth > 0;
-    };
+    }
 
   private hookAfterEntity: (entityDef: EntityRef, entities: any[]) => void = () => {
-  };
+  }
 
 
   visitDataProperty(propertyDef: PropertyRef,
@@ -777,8 +781,8 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         return;
 
       } else if (sourceDef instanceof ClassRef) {
-        // let classProp = this.em.schema().getPropertiesFor(classRefGet.getClass());
-//        let [sourceSeqNrId, sourceSeqNrName] = this.em.nameResolver().forSource(XS_P_SEQ_NR);
+        // let classProp = this.entityController.schema().getPropertiesFor(classRefGet.getClass());
+//        let [sourceSeqNrId, sourceSeqNrName] = this.entityController.nameResolver().forSource(XS_P_SEQ_NR);
 
         for (let x = 0; x < sources.lookup.length; x++) {
           const lookup = sources.lookup[x];
@@ -885,6 +889,8 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
   async run(entityType: Function | string, findConditions: any = null, options?: IFindOptions):
     Promise<T[]> {
+    this.entityType = entityType;
+    this.findConditions = findConditions;
     this.connection = (await this.em.storageRef.connect() as TypeOrmConnectionWrapper);
     const opts = _.clone(options) || {};
     this.options = _.defaults(opts, {limit: 100, subLimit: 100});
@@ -898,6 +904,18 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     });
     await this.connection.close();
     return result.next;
+  }
+
+  getEntityType() {
+    return this.entityType;
+  }
+
+  getFindConditions() {
+    return this.findConditions;
+  }
+
+  getOptions(): IFindOptions {
+    return this.options;
   }
 
 

@@ -4,9 +4,8 @@ import {EntityRef} from './registry/EntityRef';
 import {ISchemaMapper} from './framework/ISchemaMapper';
 import {INameResolver} from './framework/INameResolver';
 import {IFramework} from './framework/IFramework';
-import {IStorageRef, NotSupportedError, StorageRef, TypeOrmStorageRef} from '@typexs/base';
+import {ISaveOptions, IStorageRef, NotSupportedError, StorageRef, TypeOrmStorageRef} from '@typexs/base';
 import {IFindOptions} from './framework/IFindOptions';
-import {ISaveOptions} from './framework/ISaveOptions';
 import {ClassType} from 'commons-schema-api/browser';
 
 
@@ -87,7 +86,7 @@ export class EntityController {
 
   async remove<T>(object: T): Promise<T>;
   async remove<T>(object: T[]): Promise<T[]>;
-  async remove<T>(object: T | T[]): Promise<T | T[]> {
+  async remove<T>(object: T | T[]): Promise<T[] | number | T> {
     if (!this.framework) { throw new NotSupportedError('no framework support'); }
     return this.framework.getDeleteOp<T>(this).run(object);
   }

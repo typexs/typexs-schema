@@ -337,7 +337,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     this.createEntityIfNotExists(entityClass, tName);
     // Entity(tName)(entityClass);
     // check if an ID exists in class else add one
-    this.addType(entityClass);
+
     if (targetRef) {
       const sourceClass = targetRef.getClass();
       getMetadataArgsStorage().entitySubscribers.filter(s => s.target === sourceClass).map(s => {
@@ -356,7 +356,6 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     const storingName = propertyDef.storingName;
     this.createEntityIfNotExists(storeClass, storingName);
     // Entity(storingName)(storeClass);
-    this.addType(storeClass);
     return storeClass;
   }
 
@@ -441,6 +440,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       return;
     }
     Entity(name)(entityClass);
+    this.addType(entityClass);
   }
 
   private createColumnIfNotExists(type: 'regular' | 'primary' | 'primary-generated' | 'updated' | 'created',

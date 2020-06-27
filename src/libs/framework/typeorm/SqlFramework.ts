@@ -1,8 +1,5 @@
 import {IFramework} from '../IFramework';
 import {EntityController} from '../../EntityController';
-import {IDeleteOp} from '../IDeleteOp';
-import {IFindOp} from '../IFindOp';
-import {ISaveOp} from '../ISaveOp';
 import {ISchemaMapper} from '../ISchemaMapper';
 import {IStorageRef, StorageRef, TypeOrmStorageRef} from '@typexs/base';
 import {SchemaRef} from '../../registry/SchemaRef';
@@ -10,6 +7,9 @@ import {SqlSchemaMapper} from './SqlSchemaMapper';
 import {SqlFindOp} from './SqlFindOp';
 import {SqlSaveOp} from './SqlSaveOp';
 import {SqlDeleteOp} from './SqlDeleteOp';
+import {IDeleteOp} from '@typexs/base/libs/storage/framework/IDeleteOp';
+import {IFindOp} from '@typexs/base/libs/storage/framework/IFindOp';
+import {ISaveOp} from '@typexs/base/libs/storage/framework/ISaveOp';
 
 
 export class SqlFramework implements IFramework {
