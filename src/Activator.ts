@@ -26,9 +26,9 @@ export class Activator implements IActivator, IPermissions {
 
     const factory = Injector.get(EntityControllerFactory);
     Injector.set(EntityControllerFactory.NAME, factory);
-
-    Log.info('booting schema ...');
-    await factory.initialize();
+    //
+    // Log.info('booting schema ...');
+    // await factory.initialize();
   }
 
 
