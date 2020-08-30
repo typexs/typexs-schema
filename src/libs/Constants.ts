@@ -51,11 +51,14 @@ export const API_ENTITY_PREFIX = '/entity';
  * Metadata
  */
 
-export const _API_CTRL_ENTITY_FIND_ENTITY = `/:name`;
-export const _API_CTRL_ENTITY_GET_ENTITY = `/:name/:id`;
-export const _API_CTRL_ENTITY_SAVE_ENTITY = `/:name`;
-export const _API_CTRL_ENTITY_UPDATE_ENTITY = `/:name/:id`;
-export const _API_CTRL_ENTITY_DELETE_ENTITY = `/:name/:id`;
+export const _API_CTRL_ENTITY_FIND_ENTITY = `/find/:name`;
+export const _API_CTRL_ENTITY_AGGREGATE_ENTITY = `/aggregate/:name`;
+export const _API_CTRL_ENTITY_GET_ENTITY = `/get/:name/:id`;
+export const _API_CTRL_ENTITY_SAVE_ENTITY = `/save/:name`;
+export const _API_CTRL_ENTITY_UPDATE_ENTITY = `/update/:name/:id`;
+export const _API_CTRL_ENTITY_UPDATE_BY_CONDITION = `/update/:name`;
+export const _API_CTRL_ENTITY_DELETE_ENTITY = `/delete/:name/:id`;
+export const _API_CTRL_ENTITY_DELETE_BY_CONDITION = `/delete/:name`;
 
 export const _API_CTRL_ENTITY_METADATA = '/metadata';
 export const _API_CTRL_ENTITY_METADATA_ALL_STORES = _API_CTRL_ENTITY_METADATA + '/schemas';
@@ -65,6 +68,7 @@ export const _API_CTRL_ENTITY_METADATA_CREATE_ENTITY = _API_CTRL_ENTITY_METADATA
 export const _API_CTRL_ENTITY_METADATA_GET_ENTITY = _API_CTRL_ENTITY_METADATA + '/entity/:name';
 
 export const API_CTRL_ENTITY_FIND_ENTITY = API_ENTITY_PREFIX + _API_CTRL_ENTITY_FIND_ENTITY;
+export const API_CTRL_ENTITY_AGGREGATE_ENTITY = API_ENTITY_PREFIX + _API_CTRL_ENTITY_AGGREGATE_ENTITY;
 export const API_CTRL_ENTITY_GET_ENTITY = API_ENTITY_PREFIX + _API_CTRL_ENTITY_GET_ENTITY;
 export const API_CTRL_ENTITY_SAVE_ENTITY = API_ENTITY_PREFIX + _API_CTRL_ENTITY_SAVE_ENTITY;
 export const API_CTRL_ENTITY_UPDATE_ENTITY = API_ENTITY_PREFIX + _API_CTRL_ENTITY_UPDATE_ENTITY;

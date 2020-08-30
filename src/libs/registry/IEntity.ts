@@ -2,7 +2,7 @@ export interface IEntity {
 
   name?: string;
 
-  schema?:string;
+  schema?: string;
 
   typeorm?: any;
 

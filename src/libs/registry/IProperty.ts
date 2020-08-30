@@ -1,8 +1,8 @@
-import {JoinDesc} from "../descriptors/JoinDesc";
+import {JoinDesc} from '../descriptors/JoinDesc';
 
-import {OrderDesc} from "../descriptors/OrderDesc";
-import {JS_DATA_TYPES} from "commons-schema-api/browser";
-import {ExprDesc, KeyDesc} from "commons-expressions/browser";
+import {OrderDesc} from '../descriptors/OrderDesc';
+import {JS_DATA_TYPES} from 'commons-schema-api/browser';
+import {ExprDesc, KeyDesc} from 'commons-expressions/browser';
 
 export interface IProperty {
 
@@ -13,7 +13,7 @@ export interface IProperty {
   /**
    * rename the property for storing name
    */
-  name?: string
+  name?: string;
 
 
   sourceClass?: string | Function;
@@ -25,12 +25,12 @@ export interface IProperty {
 
 
   // @deprected
-  targetClass?: string | Function
+  targetClass?: string | Function;
 
   /**
    * size of data type
    */
-  length?: number
+  length?: number;
 
   cardinality?: number;
 
@@ -61,7 +61,8 @@ export interface IProperty {
   idKey?: KeyDesc | KeyDesc[];
 
   /**
-   * Only if id or pk is set then the type determine the id should be automatic (autoinc or uuid generation) else an id must be providen, default will be true
+   * Only if id or pk is set then the type determine the id should be automatic (autoinc or uuid generation)
+   * else an id must be providen, default will be true
    */
   auto?: boolean;
 
