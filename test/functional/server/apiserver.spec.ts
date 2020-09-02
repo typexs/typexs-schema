@@ -6,7 +6,7 @@ import {expect} from 'chai';
 import {TestHelper} from '../TestHelper';
 import {TEST_STORAGE_OPTIONS} from '../config';
 import {HttpFactory, IHttp} from 'commons-http';
-import {API_CTRL_ENTITY_GET_ENTITY, API_CTRL_ENTITY_SAVE_ENTITY} from '../../../src/libs/Constants';
+import {API_CTRL_ENTITY_FIND_ENTITY, API_CTRL_ENTITY_GET_ENTITY, API_CTRL_ENTITY_SAVE_ENTITY} from '../../../src/libs/Constants';
 
 const settingsTemplate: any = {
   storage: {
@@ -97,15 +97,16 @@ class ApiserverSpec {
 
     const url = server.url();
 
-    let res: any = await http.post(url + '/api' + API_CTRL_ENTITY_SAVE_ENTITY.replace(':name', 'book3'), {
+    const saveUrl = url + '/api' + API_CTRL_ENTITY_SAVE_ENTITY.replace(':name', 'book3');
+    let res: any = await http.post(saveUrl, {
       body: data,
       json: true,
       passBody: true
     });
     expect(res).to.deep.include({id: 1});
-    res = await http.get(url + '/api' + API_CTRL_ENTITY_GET_ENTITY
-      .replace(':name', 'book3').replace(':id', '1'),
-      {json: true, passBody: true});
+
+    const getUrl = url + '/api' + API_CTRL_ENTITY_GET_ENTITY.replace(':name', 'book3').replace(':id', '1');
+    res = await http.get(getUrl, {json: true, passBody: true});
     expect(res).to.deep.include({id: 1});
     const x = {};
     x[XS_P_URL] = 'api/entity/book_3/1';
@@ -124,25 +125,31 @@ class ApiserverSpec {
       }
     ];
 
-    res = await http.post(url + '/api/entity/book3', {body: arrData, json: true, passBody: true});
+    res = await http.post(saveUrl, {body: arrData, json: true, passBody: true});
     expect(_.map(res, r => r.id)).to.deep.eq([2, 3]);
 
-    res = await http.get(url + `/api/entity/book3/1,2,3`, {json: true, passBody: true});
+    res = await http.get(url + '/api' + API_CTRL_ENTITY_GET_ENTITY.replace(':name', 'book3').replace(':id', `1,2,3`), {
+      json: true,
+      passBody: true
+    });
     expect(res[XS_P_$COUNT]).to.eq(3);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([1, 2, 3]);
 
-    res = await http.get(url + `/api/entity/book3?query=${JSON.stringify({id: 1})}`, {json: true, passBody: true});
+    res = await http.get(url + '/api' + API_CTRL_ENTITY_FIND_ENTITY.replace(':name', 'book3')
+      + `?query=${JSON.stringify({id: 1})}`, {json: true, passBody: true});
     expect(res[XS_P_$COUNT]).to.eq(1);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([1]);
 
-    res = await http.get(url + `/api/entity/book_3?query=${JSON.stringify({label: {$like: 'Odyssee'}})}`, {
+    res = await http.get(url + '/api' + API_CTRL_ENTITY_FIND_ENTITY.replace(':name', 'book3') +
+      `?query=${JSON.stringify({label: {$like: 'Odyssee'}})}`, {
       json: true,
       passBody: true
     });
     expect(res[XS_P_$COUNT]).to.eq(1);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([3]);
 
-    res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2`, {
+    res = await http.get(url + '/api' + API_CTRL_ENTITY_FIND_ENTITY.replace(':name', 'book3') +
+      `?sort=${JSON.stringify({id: 'desc'})}&limit=2`, {
       json: true,
       passBody: true
     });
@@ -150,7 +157,8 @@ class ApiserverSpec {
     expect(res[XS_P_$LIMIT]).to.eq(2);
     expect(_.map(res.entities, r => r.id)).to.deep.eq([3, 2]);
 
-    res = await http.get(url + `/api/entity/book_3?sort=${JSON.stringify({id: 'desc'})}&limit=2&offset=1`, {
+    res = await http.get(url + '/api' + API_CTRL_ENTITY_FIND_ENTITY.replace(':name', 'book3') +
+      `?sort=${JSON.stringify({id: 'desc'})}&limit=2&offset=1`, {
       json: true,
       passBody: true
     });
@@ -170,7 +178,11 @@ class ApiserverSpec {
       firstName: 'Prinz',
       lastName: 'Heinz'
     };
-    let res = await http.post(url + '/api/entity/personnn', {body: person, json: true, passBody: true});
+    let res = await http.post(url + '/api' + API_CTRL_ENTITY_SAVE_ENTITY.replace(':name', 'personnn'), {
+      body: person,
+      json: true,
+      passBody: true
+    });
     expect(res).to.deep.include({id: 1});
 
 
@@ -179,7 +191,7 @@ class ApiserverSpec {
       author: {id: 1}
     };
 
-    res = await http.post(url + '/api/entity/bookkk', {body: data, json: true, passBody: true});
+    res = await http.post(url + '/api' + API_CTRL_ENTITY_SAVE_ENTITY.replace(':name', 'bookkk'), {body: data, json: true, passBody: true});
     expect(res).to.deep.include({id: 1});
   }
 }
