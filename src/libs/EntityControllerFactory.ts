@@ -42,7 +42,7 @@ export class EntityControllerFactory {
   }
 
   get(name: string) {
-    return this.controller.find(x => x.name.toLowerCase() === name.toLowerCase());
+    return this.controller.find(x => x.name().toLowerCase() === name.toLowerCase());
   }
 
 
