@@ -66,6 +66,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     return _.keys(condition).map(k => `${k} = '${condition[k]}'`).join(' AND ');
   }
 
+
   private hookAbortCondition: (entityDef: EntityRef,
                                propertyDef: PropertyRef,
                                results: any[],
@@ -74,6 +75,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
      results: any[], op: SqlFindOp<T>) => {
       return op.entityDepth > 0;
     }
+
 
   private hookAfterEntity: (entityDef: EntityRef, entities: any[]) => void = () => {
   }
@@ -100,18 +102,6 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       // builder.skipNull();
       builder.build(propertyRef ? {$or: sources.condition} : sources.condition);
       qb = builder.getQueryBuilder() as any;
-
-      // const builder = new TypeOrmSqlConditionsBuilder(entityDef, qb.alias);
-      // builder.skipNull();
-      // const where = builder.build(sources.condition);
-      // if (_.isEmpty(where)) {
-      //   return {next: [], abort: true};
-      // }
-      //
-      // builder.getJoins().forEach(join => {
-      //   qb.leftJoin(join.table, join.alias, join.condition);
-      // });
-      // qb.where(where);
     }
 
     const recordCount = await qb.getCount();
