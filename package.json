@@ -62,10 +62,10 @@
     "commons-expressions": "^1.0.7",
     "commons-schema-api": "^1.1.15",
     "class-validator": "^0.12.2",
-    "@typexs/server": "^1.0.7"
+    "@typexs/server": "^1.0.11"
   },
   "dependencies": {
-    "@typexs/base": "^1.2.25",
+    "@typexs/base": "^1.2.29",
     "@typexs/roles-api": "^1.0.13"
   },
   "private": true,
