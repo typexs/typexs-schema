@@ -34,12 +34,13 @@ export function Property(typeOrOptions: IProperty | Function | string = null) {
       const reflectMetadataType = Reflect && Reflect.getMetadata ? Reflect.getMetadata('design:type', source, propertyName) : undefined;
       if (reflectMetadataType) {
         const className = ClassUtils.getClassName(reflectMetadataType);
-        options.type = reflectMetadataType;
-        if (className !== 'object' && JS_PRIMATIVE_TYPES.includes(className.toLowerCase() as any)) {
+        // options.type = reflectMetadataType;
+        if (!['object', 'array'].includes(className) && JS_PRIMATIVE_TYPES.includes(className.toLowerCase() as any)) {
           options.type = className.toLowerCase();
         } else if (className === 'Array') {
           options.cardinality = 0;
-          options.type = Object;
+        } else {
+          options.type = reflectMetadataType;
         }
       } else {
         options.type = 'string';

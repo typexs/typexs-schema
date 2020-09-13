@@ -609,13 +609,17 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     // handle object as json, mark for serialization
     if (prop.dataType === 'object') {
       return <any>{
-        type: Object,
+        // type: Object,
+        type: String,
+        stringify: true,
         sourceType: 'object',
       };
     }
     if (prop.dataType === 'array') {
       return <any>{
-        type: Array,
+        type: String,
+        stringify: true,
+        // type: Array,
         sourceType: 'array'
       };
     }
