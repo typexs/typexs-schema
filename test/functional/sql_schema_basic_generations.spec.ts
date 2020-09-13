@@ -61,22 +61,22 @@ class SqlSchemaBasicGenerationsSpec {
 
     const tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\';');
     const tableNames = tables.map(x => x.name);
-    expect(tableNames).to.contain('author');
-    const data = await c.connection.query('PRAGMA table_info(\'author\')');
-    expect(data).to.have.length(3);
-    expect(_.find(data, {name: 'last_name'})).to.deep.include({name: 'last_name', type: 'text'});
+    expect(tableNames).to.contain('object_with_json');
+    const data = await c.connection.query('PRAGMA table_info(\'object_with_json\')');
+    expect(data).to.have.length(2);
+    expect(_.find(data, {name: 'json'})).to.deep.include({name: 'json', type: 'varchar'});
     await c.close();
 
     const props = [];
     const registry = TypeOrmEntityRegistry.$();
-    const entity = registry.getEntityRefByName('Author');
-    expect(entity.name).to.be.eq('Author');
+    const entity = registry.getEntityRefByName('ObjectWithJson');
+    expect(entity.name).to.be.eq('ObjectWithJson');
     const properties = entity.getPropertyRefs();
     for (const p of properties) {
       const pname = p.name;
       props.push(pname);
     }
-    expect(props).to.be.deep.eq(['id', 'firstName', 'lastName']);
+    expect(props).to.be.deep.eq(['id', 'json']);
 
   }
 

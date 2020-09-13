@@ -88,7 +88,6 @@ class ConversionSpec {
   }
 
 
-
   @test
   'check js types on embedded objects during json to object conversion'() {
     const registry = EntityRegistry.$();
@@ -104,14 +103,17 @@ class ConversionSpec {
     emt.object.date = new Date();
     // empty
 
-    emt.objects = [new MultipleTypesDeclared()];
+    emt.objects = [
+      new MultipleTypesDeclared()
+    ];
     emt.objects[0].number = 12345;
     emt.objects[0].string = 'this is a string';
     emt.objects[0].date = new Date();
     emt.objects[0].boolean = true;
 
     const stringifiedObject = JSON.stringify(emt);
-    const recreatedObject = regEntityDef.build(JSON.parse(stringifiedObject)) as EmbeddedMultipleTypesDeclared;
+    const _sObject = JSON.parse(stringifiedObject);
+    const recreatedObject = regEntityDef.build(_sObject) as EmbeddedMultipleTypesDeclared;
 
     // console.log(stringifiedObject, recreatedObject);
     expect(recreatedObject).to.deep.eq(emt);
