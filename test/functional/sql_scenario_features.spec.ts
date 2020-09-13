@@ -4,13 +4,15 @@ import {TestHelper} from './TestHelper';
 import * as _ from 'lodash';
 import {TEST_STORAGE_OPTIONS} from './config';
 import {TypeOrmConnectionWrapper} from '@typexs/base';
+import {TypeOrmEntityRegistry} from '@typexs/base/browser';
 
 
 @suite('functional/sql_scenario_features')
-class Sql_scenario_featuresSpec {
+class SqlScenarioFeaturesSpec {
 
 
   before() {
+    TypeOrmEntityRegistry.reset();
     TestHelper.resetTypeorm();
   }
 
