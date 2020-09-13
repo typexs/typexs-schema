@@ -18,7 +18,6 @@ export class EntityControllerFactory {
   controller: EntityController[] = [];
 
   async initialize() {
-
     const storages = this.storage.getNames();
     for (const storageName of storages) {
       const schemaDef = this.registry.getSchemaRefByName(storageName);
