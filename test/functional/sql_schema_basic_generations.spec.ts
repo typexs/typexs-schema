@@ -31,7 +31,7 @@ class SqlSchemaBasicGenerationsSpec {
     expect(tableNames).to.contain('author');
     const data = await c.connection.query('PRAGMA table_info(\'author\')');
     expect(data).to.have.length(3);
-    expect(_.find(data, {name: 'last_name'})).to.deep.include({name: 'last_name', type: 'text'});
+    expect(_.find(data, {name: 'last_name'})).to.deep.include({name: 'last_name', type: 'varchar'});
     await c.close();
 
     const props = [];
