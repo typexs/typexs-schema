@@ -85,7 +85,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
       this.addType(entityClass);
     }
     this.clear();
-    if (this.storageRef.getOptions().connectOnStartup) {
+    if (this.storageRef.getOptions().connectOnStartup || this.storageRef.isActive()) {
       await this.storageRef.reload();
     }
   }
