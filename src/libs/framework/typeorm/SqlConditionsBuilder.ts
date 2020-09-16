@@ -44,6 +44,8 @@ export class SqlConditionsBuilder<T> extends TypeOrmSqlConditionsBuilder<T> {
     const arrJoins = key.split('.');
     let tmp: IClassRef = this.entityRef.getClassRef();
 
+
+
     const alias = this.alias ? this.alias : this.baseQueryBuilder ? this.baseQueryBuilder.alias : null;
     let names: string[] = alias ? [alias] : [];
     let rootAlias = alias;
@@ -68,6 +70,7 @@ export class SqlConditionsBuilder<T> extends TypeOrmSqlConditionsBuilder<T> {
           _.keys(map).forEach(targetKey => {
             // let c =
             const sourceKey = /\'/.test(map[targetKey]) ? map[targetKey] : rootAlias + '.' + map[targetKey];
+            // this.baseQueryBuilder.escape()
             conditions.push([join.alias + '.' + targetKey, sourceKey].join(' = '));
           });
           join.condition = conditions.join(' AND ');
@@ -135,7 +138,7 @@ export class SqlConditionsBuilder<T> extends TypeOrmSqlConditionsBuilder<T> {
         }
 
       } else {
-        names.push(prop.storingName);
+        names.push(prop.name);
       }
     }
 
