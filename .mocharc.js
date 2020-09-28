@@ -6,14 +6,17 @@
 
 module.exports = {
   diff: true,
-  // extension: ['js'],
+  extension: ['spec.ts'],
   // package: './package.json',
-  // reporter: 'spec',
+  reporter: 'spec',
   // slow: 75,
   timeout: 20000,
   ui: 'bdd',
   recursive: true,
   require: 'ts-node/register',
-  'watch-extensions': ['ts'],
-  'watch-files': ['test/**/*.spec.ts', 'test/**/**/*.spec.ts'],
+  'watch-extensions': ['spec.ts'],
+  'watch-files': [
+    'test/**/*.spec.ts',
+    'test/**/**/*.spec.ts'
+  ]
 };

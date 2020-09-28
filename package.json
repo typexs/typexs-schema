@@ -8,8 +8,8 @@
     "doc": "docs/de"
   },
   "scripts": {
-    "test": "nyc mocha test/**/*.spec.ts test/**/**/*.spec.ts",
-    "posttest": "nyc report --reporter=json && codecov -f coverage/*.json"
+    "test": "npx nyc mocha test/**/*.spec.ts test/**/**/*.spec.ts",
+    "posttest": "npx nyc report --reporter=json && codecov -f coverage/*.json"
   },
   "repository": {
     "type": "git",
@@ -19,7 +19,9 @@
   "license": "MIT",
   "keywords": [
     "typexs",
-    "typescript"
+    "typescript",
+    "schema",
+    "entity"
   ],
   "bugs": {
     "url": "https://github.com/typexs/typexs-schema/issues"
