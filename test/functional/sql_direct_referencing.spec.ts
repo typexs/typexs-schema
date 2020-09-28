@@ -1,4 +1,4 @@
-process.env['SQL_LOG'] = '1';
+// process.env['SQL_LOG'] = '1';
 
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';

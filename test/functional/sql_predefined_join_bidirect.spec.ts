@@ -1,5 +1,5 @@
 import {inspect} from 'util';
-process.env['SQL_LOG'] = 'X';
+// process.env['SQL_LOG'] = 'X';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';

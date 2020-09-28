@@ -63,6 +63,7 @@ class ApiserverSpec {
 
 
   static async before() {
+    Bootstrap.reset();
     TestHelper.resetTypeorm();
     const settings = _.clone(settingsTemplate);
     http = await HttpFactory.create();
