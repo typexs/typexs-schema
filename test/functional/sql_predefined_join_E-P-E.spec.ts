@@ -192,7 +192,7 @@ class SqlPredefinedJoinEPESpec {
     });
 
     // save again
-    await entityController.save(lectures[0], {relationUpdateMode: 'recreate'});
+    await entityController.save(lectures[0], <any>{relationUpdateMode: 'recreate'});
 
     const values: any[] = await c.connection.query('SELECT * FROM r_belongsto;');
     expect(values).to.have.length(1);
