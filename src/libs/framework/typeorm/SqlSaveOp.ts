@@ -225,14 +225,55 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   }
 
 
+  /**
+   * Handles the E - P - E relations
+   *
+   * Two variants:
+   *    -  recreate - remove relations and recreate them again
+   *    - lookup_update - lookup for existing relations and update them
+   *
+   * @param sourceDef
+   * @param propertyDef
+   * @param targetDef
+   * @param sources
+   * @param visitResult
+   * @private
+   */
   private async handleJoinDefintionLeave(sourceDef: EntityRef | ClassRef,
                                          propertyDef: PropertyRef,
                                          targetDef: EntityRef | ClassRef,
                                          sources: ISaveData,
                                          visitResult: ISaveData): Promise<ISaveData> {
+    // Two possible variants
+
+
+    const relationUpdateMode = _.get(this.options, 'relationUpdateMode', 'lookup_update');
+    switch (relationUpdateMode) {
+      case 'recreate':
+        return this.recreateRelationsOverJoinReference(sourceDef, propertyDef, targetDef, sources, visitResult);
+      default:
+        return this.lookupAndUpdateRelationsOverJoinReference(sourceDef, propertyDef, targetDef, sources, visitResult);
+    }
+  }
+
+  /**
+   * Connect to entities by removing relations first and reconnection after
+   *
+   *
+   * @param sourceDef
+   * @param propertyDef
+   * @param targetDef
+   * @param sources
+   * @param visitResult
+   */
+  async recreateRelationsOverJoinReference(sourceDef: EntityRef | ClassRef,
+                                           propertyDef: PropertyRef,
+                                           targetDef: EntityRef | ClassRef,
+                                           sources: ISaveData,
+                                           visitResult: ISaveData): Promise<ISaveData> {
     const joinDef: JoinDesc = propertyDef.getJoin();
     const clazz = joinDef.joinRef.getClass();
-    const removeConditions = [];
+    const removeConditions: any[] = [];
     for (const source of visitResult.target) {
       if (_.has(source, PROP_KEY_LOOKUP)) {
         const lookup = source[PROP_KEY_LOOKUP];
@@ -241,12 +282,14 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       }
     }
 
-    // delete previous relations
+    const em = this.c.manager;
+
+    const promises = [];
     if (!_.isEmpty(removeConditions)) {
       const removeEntityRef = this.c.getStorageRef().getEntityRef(clazz);
-      const builder = new SqlConditionsBuilder<T>(this.c.manager, removeEntityRef, this.c.getStorageRef(), 'delete');
-      builder.build(removeConditions);
-      await builder.getQueryBuilder().execute();
+      const builder = new SqlConditionsBuilder<T>(em, removeEntityRef, this.c.getStorageRef(), 'delete');
+      builder.build(_.isArray(removeConditions) ? {$or: removeConditions} : removeConditions);
+      promises.push(builder.getQueryBuilder().execute());
     }
 
     if (!_.isEmpty(visitResult.join)) {
@@ -254,11 +297,82 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
         const target = joinObj[PROP_KEY_TARGET];
         joinDef.getTo().cond.applyReverseOn(joinObj, target);
         delete joinObj[PROP_KEY_TARGET];
-
       }
-      await this.c.manager.save(clazz, visitResult.join);
+      promises.push(em.save(clazz, visitResult.join));
     }
+
+    await Promise.all(promises);
+
     return sources;
+
+  }
+
+  /**
+   * Connect entities by fetching previous relations and updating/inserting or deleting if necessary
+   *
+   * @param sourceDef
+   * @param propertyDef
+   * @param targetDef
+   * @param sources
+   * @param visitResult
+   */
+  async lookupAndUpdateRelationsOverJoinReference(sourceDef: EntityRef | ClassRef,
+                                                  propertyDef: PropertyRef,
+                                                  targetDef: EntityRef | ClassRef,
+                                                  sources: ISaveData,
+                                                  visitResult: ISaveData): Promise<ISaveData> {
+    const joinDef: JoinDesc = propertyDef.getJoin();
+    const clazz = joinDef.joinRef.getClass();
+    const lookupConditions: any[] = [];
+    for (const source of visitResult.target) {
+      if (_.has(source, PROP_KEY_LOOKUP)) {
+        const lookup = source[PROP_KEY_LOOKUP];
+        lookupConditions.push(lookup);
+        delete source[PROP_KEY_LOOKUP];
+      }
+    }
+
+    const em = this.c.manager;
+
+
+    let previousRelations = [];
+
+    if (!_.isEmpty(lookupConditions)) {
+      const removeEntityRef = this.c.getStorageRef().getEntityRef(clazz);
+      const builder = new SqlConditionsBuilder<any>(em, removeEntityRef, this.c.getStorageRef(), 'select');
+      builder.build(_.isArray(lookupConditions) ? {$or: lookupConditions} : lookupConditions);
+      previousRelations = await (builder.getQueryBuilder() as any).getMany();
+    }
+    const promises = [];
+    if (!_.isEmpty(visitResult.join)) {
+      for (const joinObj of visitResult.join) {
+        const target = joinObj[PROP_KEY_TARGET];
+        joinDef.getTo().cond.applyReverseOn(joinObj, target);
+        delete joinObj[PROP_KEY_TARGET];
+        const fn = (x: any) => {
+          return _.keys(joinObj).filter(k => !k.startsWith('xs:')).reduce((p: boolean, k) => p && x[k] === joinObj[k], true);
+        };
+        const found = _.remove(previousRelations, fn).shift();
+        if (found) {
+          _.assign(found, joinObj);
+          _.assign(joinObj, found);
+        }
+      }
+
+
+      promises.push(em.save(clazz, visitResult.join));
+
+
+    }
+    if (previousRelations.length > 0) {
+      // remove old relations
+      promises.push(em.remove(previousRelations));
+    }
+
+    await Promise.all(promises);
+
+    return sources;
+
   }
 
   async saveEntityReference(propertyDef: PropertyRef, targetDef: EntityRef, join: any[]) {
