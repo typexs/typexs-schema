@@ -8,7 +8,7 @@
     "doc": "docs/de"
   },
   "scripts": {
-    "test": "nyc mocha --opts test/mocha.all.opts",
+    "test": "nyc mocha test/**/*.spec.ts test/**/**/*.spec.ts",
     "posttest": "nyc report --reporter=json && codecov -f coverage/*.json"
   },
   "repository": {

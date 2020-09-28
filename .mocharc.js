@@ -5,7 +5,7 @@
 // Otherwise, JSON or YAML is recommended.
 
 module.exports = {
-  // diff: true,
+  diff: true,
   // extension: ['js'],
   // package: './package.json',
   // reporter: 'spec',
@@ -14,5 +14,6 @@ module.exports = {
   ui: 'bdd',
   recursive: true,
   require: 'ts-node/register',
-  'watch-extensions': ['ts']
+  'watch-extensions': ['ts'],
+  'watch-files': ['test/**/*.spec.ts', 'test/**/**/*.spec.ts'],
 };
