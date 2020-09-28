@@ -1,6 +1,6 @@
 import {inspect} from 'util';
 process.env['SQL_LOG'] = 'X';
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 
@@ -187,9 +187,9 @@ class SqlSchemaPredefinedJoinBidirectSpec {
 
 
     const connect = await TestHelper.connect(options);
-    const xsem = connect.controller;
-    const ref = connect.ref;
-    const c = await ref.connect();
+    const entityController = connect.controller;
+    const storageRef = connect.ref;
+    const connectionWrapper = await storageRef.connect();
 
     const perm01 = new Permission();
     perm01.type = 'single';
@@ -215,59 +215,59 @@ class SqlSchemaPredefinedJoinBidirectSpec {
     role.rolename = 'admin';
     role.disabled = false;
 
-    await xsem.save(role);
-    let roles = await xsem.find(Role);
+    await entityController.save(role);
+    let roles = await entityController.find(Role);
     expect(roles).to.have.length(1);
-    let results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    let results = await connectionWrapper.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(2);
 
 
     // save the fetched again
     role = roles.shift();
-    await xsem.save(role);
-    roles = await xsem.find(Role);
+    await entityController.save(role);
+    roles = await entityController.find(Role);
     expect(roles).to.have.length(1);
-    results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    results = await connectionWrapper.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(2);
 
 
     // should happen nothing
     role.permissions = null;
-    await xsem.save(role);
-    roles = await xsem.find(Role);
+    await entityController.save(role);
+    roles = await entityController.find(Role);
     expect(roles).to.have.length(1);
-    results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    results = await connectionWrapper.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(2);
 
 
     // add new permission
     role = roles.shift();
     role.permissions.push(perm03);
-    await xsem.save(role);
-    roles = await xsem.find(Role);
+    await entityController.save(role);
+    roles = await entityController.find(Role);
     expect(roles).to.have.length(1);
-    results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    results = await connectionWrapper.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(3);
 
 
     // remove permission
     role = roles.shift();
     role.permissions.shift();
-    await xsem.save(role);
-    roles = await xsem.find(Role);
+    await entityController.save(role);
+    roles = await entityController.find(Role);
     expect(roles).to.have.length(1);
-    results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    results = await connectionWrapper.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(2);
 
 
     // should remove relation
     role.permissions = [];
-    await xsem.save(role);
-    results = await c.connection.query('SELECT * FROM r_belongsto_2;');
+    await entityController.save(role);
+    results = await connectionWrapper.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(0);
 
 
-    await c.close();
+    await connectionWrapper.close();
 
   }
 

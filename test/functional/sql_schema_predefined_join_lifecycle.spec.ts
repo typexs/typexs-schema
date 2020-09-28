@@ -1,4 +1,4 @@
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {TestHelper} from './TestHelper';
 import * as _ from 'lodash';
 import {expect} from 'chai';

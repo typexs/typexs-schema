@@ -1,4 +1,4 @@
-import {suite, test, timeout} from 'mocha-typescript';
+import {suite, test, timeout} from '@testdeck/mocha';
 import {Bootstrap, Injector, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
 import {K_ROUTE_CONTROLLER, Server, XS_P_URL} from '@typexs/server';
 import * as _ from 'lodash';

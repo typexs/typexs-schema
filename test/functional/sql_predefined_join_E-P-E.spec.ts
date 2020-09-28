@@ -1,12 +1,10 @@
-import {suite, test} from 'mocha-typescript';
+import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
 import {EntityController} from '../../src/libs/EntityController';
 import {TypeOrmConnectionWrapper} from '@typexs/base';
-import {LookupRegistry} from 'commons-schema-api';
-import {getMetadataArgsStorage} from 'typeorm';
 
 let c: TypeOrmConnectionWrapper;
 let entityController: EntityController;
@@ -122,6 +120,93 @@ class SqlPredefinedJoinEPESpec {
     });
 
   }
+
+  /**
+   * Check if on resaving of the same entity, everything keeps the same
+   */
+  @test
+  async 'update existing E-P-E entry with same data (lookup_update mode)'() {
+    // Create the entry
+    const teacher = new Teacher();
+    teacher.name = 'Siegfried';
+    const lecture = new SimpleLecture();
+    lecture.label = 'Math';
+    lecture.person = teacher;
+    await entityController.save(lecture);
+
+
+    const lectures = await entityController.find(SimpleLecture) as any[];
+    expect(lectures).to.have.length(1);
+    expect(lectures[0].person).to.exist;
+    expect(lectures[0]).to.deep.include({
+      'label': 'Math',
+      'veranstid': 1
+    });
+
+    expect(lectures[0].person).to.deep.include({
+      'name': 'Siegfried',
+      'pid': 1
+    });
+
+    // save again
+    await entityController.save(lectures[0]);
+
+    const values: any[] = await c.connection.query('SELECT * FROM r_belongsto;');
+    expect(values).to.have.length(1);
+    expect(values[0]).to.deep.include({
+      'beltoid' : 1,
+      'ownerid': 1,
+      'ownertab': 'personal',
+      'sortierung': 0,
+      'tabelle': 'veranstaltung',
+      'tabpk': 1
+    });
+  }
+
+
+  /**
+   * Check if on resaving of the same entity, everything keeps the same
+   */
+  @test
+  async 'update existing E-P-E entry with same data (recreate mode)'() {
+    // Create the entry
+    const teacher = new Teacher();
+    teacher.name = 'Siegfried';
+    const lecture = new SimpleLecture();
+    lecture.label = 'Math';
+    lecture.person = teacher;
+    await entityController.save(lecture);
+
+
+    const lectures = await entityController.find(SimpleLecture) as any[];
+    expect(lectures).to.have.length(1);
+    expect(lectures[0].person).to.exist;
+    expect(lectures[0]).to.deep.include({
+      'label': 'Math',
+      'veranstid': 1
+    });
+
+    expect(lectures[0].person).to.deep.include({
+      'name': 'Siegfried',
+      'pid': 1
+    });
+
+    // save again
+    await entityController.save(lectures[0], {relationUpdateMode: 'recreate'});
+
+    const values: any[] = await c.connection.query('SELECT * FROM r_belongsto;');
+    expect(values).to.have.length(1);
+    expect(values[0]).to.deep.include({
+      'beltoid' : 2,
+      'ownerid': 1,
+      'ownertab': 'personal',
+      'sortierung': 0,
+      'tabelle': 'veranstaltung',
+      'tabpk': 1
+    });
+  }
+
+
 
 
   /**
