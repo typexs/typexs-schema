@@ -403,7 +403,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     }
 
     if (!_.isEmpty(indexNames)) {
-      Index(indexNames)({constructor: targetClass});
+      Index(indexNames)(<any>{constructor: targetClass});
     }
     return sources;
   }
