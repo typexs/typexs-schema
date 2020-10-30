@@ -1,20 +1,17 @@
-import * as _ from '../../LoDash';
+import * as _ from 'lodash';
 import {EntityDefTreeWorker} from '../EntityDefTreeWorker';
 import {EntityController} from '../../EntityController';
-import {NotYetImplementedError, TypeOrmConnectionWrapper, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
+import {NotYetImplementedError, TypeOrmConnectionWrapper} from '@typexs/base';
 import {PropertyRef} from '../../registry/PropertyRef';
 import {EntityRef} from '../../registry/EntityRef';
-
 import {XS_P_$ABORTED, XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
 import {IDataExchange} from '../IDataExchange';
 import {SqlHelper} from './SqlHelper';
 import {JoinDesc} from '../../descriptors/JoinDesc';
-import {EntityRegistry} from '../../EntityRegistry';
 import {IFindOptions} from '../IFindOptions';
 import {OrderDesc} from '../../../libs/descriptors/OrderDesc';
 import {ClassRef} from 'commons-schema-api';
 import {classRefGet} from '../../Helper';
-import {SqlConditionsBuilder} from './SqlConditionsBuilder';
 import {IFindOp} from '@typexs/base/libs/storage/framework/IFindOp';
 
 
@@ -50,23 +47,6 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
   entityType: any;
 
 
-  static getTargetKeyMap(targetRef: EntityRef | ClassRef) {
-    const props: PropertyRef[] = targetRef instanceof EntityRef ?
-      targetRef.getPropertyRefs() : EntityRegistry.getPropertyRefsFor(targetRef);
-    return _.merge({}, ..._.map(props, p => {
-      const c = {};
-      // c[p.name] = p.storingName;
-      c[p.name] = p.name;
-      return c;
-    }));
-  }
-
-
-  private static conditionToQuery(condition: any): string {
-    return _.keys(condition).map(k => `${k} = '${condition[k]}'`).join(' AND ');
-  }
-
-
   private hookAbortCondition: (entityDef: EntityRef,
                                propertyDef: PropertyRef,
                                results: any[],
@@ -74,11 +54,11 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     (entityDef: EntityRef, propertyDef: PropertyRef,
      results: any[], op: SqlFindOp<T>) => {
       return op.entityDepth > 0;
-    }
+    };
 
 
   private hookAfterEntity: (entityDef: EntityRef, entities: any[]) => void = () => {
-  }
+  };
 
 
   visitDataProperty(propertyDef: PropertyRef,
@@ -95,49 +75,61 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     const offset = _.get(sources, 'options.offset', null);
     const sortBy = _.get(sources, 'options.sort', null);
 
-    let qb = this.connection.manager.getRepository(entityRef.object.getClass()).createQueryBuilder();
+    // let qb = this.connection.manager.getRepository(entityRef.object.getClass()).createQueryBuilder();
+    //
+    // if (sources.condition) {
+    //   const builder = new SqlConditionsBuilder<T>(qb, entityRef, this.connection.getStorageRef(), 'select');
+    //   builder.build(propertyRef ? {$or: sources.condition} : sources.condition);
+    //   qb = builder.getQueryBuilder() as any;
+    // }
+    //
+    // const recordCount = await qb.getCount();
+    //
+    // if (!_.isNull(limit) && _.isNumber(limit)) {
+    //   qb.limit(limit);
+    // }
+    //
+    // if (!_.isNull(offset) && _.isNumber(offset)) {
+    //   qb.offset(offset);
+    // }
+    //
+    // if (_.isNull(sortBy)) {
+    //   entityRef.getPropertyRefIdentifier().forEach(x => {
+    //     qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
+    //   });
+    // } else if (propertyRef && propertyRef.hasOrder()) {
+    //   const mapping = SqlHelper.getTargetKeyMap(entityRef);
+    //   propertyRef.getOrder().forEach((o: OrderDesc) => {
+    //     qb.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
+    //   });
+    // } else {
+    //   _.keys(sortBy).forEach(sortKey => {
+    //     qb.addOrderBy(qb.alias + '.' + sortKey, sortBy[sortKey].toUpperCase());
+    //   });
+    // }
+    //
+    // const results = await qb.getMany();
+    // results[XS_P_$COUNT] = recordCount;
+    // results[XS_P_$OFFSET] = offset;
+    // results[XS_P_$LIMIT] = limit;
 
-    if (sources.condition) {
-      const builder = new SqlConditionsBuilder<T>(qb, entityRef, this.connection.getStorageRef(), 'select');
-      // builder.skipNull();
-      builder.build(propertyRef ? {$or: sources.condition} : sources.condition);
-      qb = builder.getQueryBuilder() as any;
+    const opts: any = _.clone(this.options);
+    opts.orSupport = true;
+    if (limit) {
+      opts.limit = limit;
     }
-
-    const recordCount = await qb.getCount();
-
-    if (!_.isNull(limit) && _.isNumber(limit)) {
-      qb.limit(limit);
+    if (offset) {
+      opts.offset = offset;
     }
-
-    if (!_.isNull(offset) && _.isNumber(offset)) {
-      qb.offset(offset);
+    if (sortBy) {
+      opts.sortBy = sortBy;
     }
-
-    if (_.isNull(sortBy)) {
-      entityRef.getPropertyRefIdentifier().forEach(x => {
-        qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
-      });
-    } else if (propertyRef && propertyRef.hasOrder()) {
-      const mapping = SqlFindOp.getTargetKeyMap(entityRef);
-      propertyRef.getOrder().forEach((o: OrderDesc) => {
-        qb.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
-      });
-    } else {
-      _.keys(sortBy).forEach(sortKey => {
-        qb.addOrderBy(qb.alias + '.' + sortKey, sortBy[sortKey].toUpperCase());
-      });
-    }
-
-    const results = await qb.getMany();
-    results[XS_P_$COUNT] = recordCount;
-    results[XS_P_$OFFSET] = offset;
-    results[XS_P_$LIMIT] = limit;
+    const results = await SqlHelper.execQuery(this.connection, entityRef, propertyRef, sources.condition, opts);
 
     const abort = results.length === 0 || this.hookAbortCondition(entityRef, propertyRef, results, this);
     if (abort) {
       // marked as aborted
-      results.forEach(r => {
+      results.forEach((r: any) => {
         r[XS_P_$ABORTED] = true;
       });
     }
@@ -163,7 +155,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     const joinDef: JoinDesc = propertyDef.getJoin();
     // const joinProps = EntityRegistry.getPropertyRefsFor(joinDef.joinRef);
 
-    const mapping = SqlFindOp.getTargetKeyMap(joinDef.joinRef);
+    const mapping = SqlHelper.getTargetKeyMap(joinDef.joinRef);
 
     for (let x = 0; x < sources.next.length; x++) {
       const source = sources.next[x];
@@ -175,17 +167,34 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
     // const where = Sql.conditionsToString(conditions);
     if (!_.isEmpty(conditions)) {
-      const entityRef = this.connection.getStorageRef().getEntityRef(joinDef.joinRef.getClass());
-      let queryBuilder = this.connection.manager.getRepository(entityRef.getClassRef().getClass()).createQueryBuilder();
-      const builder = new SqlConditionsBuilder(queryBuilder, entityRef, this.connection.getStorageRef(), 'select');
-      builder.build({$or: conditions});
-      queryBuilder = builder.getQueryBuilder() as any;
 
-      joinDef.order.forEach(o => {
-        queryBuilder.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
-      });
 
-      results = await queryBuilder.getMany();
+      // const chunks = _.chunk(conditions, this.options.maxConditionSplitingLimit);
+      // const entityRef = this.connection.getStorageRef().getEntityRef(joinDef.joinRef.getClass());
+      // results = await Promise.all(chunks.map(chunk => {
+      //   let queryBuilder = this.connection.manager.getRepository(entityRef.getClassRef().getClass()).createQueryBuilder();
+      //   const builder = new SqlConditionsBuilder(queryBuilder, entityRef, this.connection.getStorageRef(), 'select');
+      //   builder.build({$or: chunk});
+      //   queryBuilder = builder.getQueryBuilder() as any;
+      //   return queryBuilder.getMany();
+      // }));
+      //
+      // results = _.concat([], ...results);
+      //
+      // if (results.length > 0 && joinDef.order && joinDef.order.length > 0) {
+      //   const iteree: any = [];
+      //   const orders: any = [];
+      //   joinDef.order.forEach(o => {
+      //     iteree.push(_.get(mapping, o.key.key, o.key.key));
+      //     orders.push(o.asc ? 'asc' : 'desc');
+      //   });
+      //   results = _.orderBy(results, iteree, orders);
+      // }
+
+      const opts: any = _.clone(this.options);
+      opts.orSupport = true;
+      const entityRef = this.connection.getStorageRef().getEntityRef(joinDef.joinRef.getClass()) as EntityRef;
+      results = await SqlHelper.execQuery(this.connection, entityRef, null, conditions, opts);
     }
 
     if (results.length === 0) {
@@ -206,10 +215,9 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
           lookups.push(joinDef.getTo().cond.lookup(joinResult));
         }
       } else {
-
       }
     }
-
+    conditions = _.uniqBy(conditions, x => JSON.stringify(x));
     return [conditions, lookups, results];
   }
 
@@ -260,7 +268,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     const orderBy: any[] = null;
 
     if (propertyDef.hasConditions()) {
-      const mapping = SqlFindOp.getTargetKeyMap(targetDef);
+      const mapping = SqlHelper.getTargetKeyMap(targetDef);
 
       const conditionDef = propertyDef.getCondition();
       for (const source of sources.next) {
@@ -294,7 +302,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
           condition[sourceName] = prop.get(source);
         });
 
-        const query = SqlFindOp.conditionToQuery(condition);
+        const query = SqlHelper.conditionToQuery(condition);
         if (!_.isEmpty(query)) {
           qb.orWhere(query);
         }
@@ -310,7 +318,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
       const targetIdProps = targetDef.getPropertyRefIdentifier();
       if (propertyDef.hasOrder()) {
-        const mapping = SqlFindOp.getTargetKeyMap(targetDef);
+        const mapping = SqlHelper.getTargetKeyMap(targetDef);
         propertyDef.getOrder().forEach((o: OrderDesc) => {
           qb.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
         });
@@ -546,7 +554,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         const repo = this.connection.manager.getRepository(classRef.getClass());
         const queryBuilder = repo.createQueryBuilder();
         for (const cond of conditions) {
-          const query = SqlFindOp.conditionToQuery(cond);
+          const query = SqlHelper.conditionToQuery(cond);
           if (!_.isEmpty(query)) {
             queryBuilder.orWhere(query);
           }
@@ -589,7 +597,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
             lookup[sourceId] = x.get(object);
           });
           lookups.push(lookup);
-          const query = SqlFindOp.conditionToQuery(condition);
+          const query = SqlHelper.conditionToQuery(condition);
           if (!_.isEmpty(query)) {
             queryBuilder.orWhere(query);
           }
@@ -631,7 +639,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
           condition[name] = object.id;
 
           lookups.push(lookup);
-          const query = SqlFindOp.conditionToQuery(condition);
+          const query = SqlHelper.conditionToQuery(condition);
           if (!_.isEmpty(query)) {
             queryBuilder.orWhere(query);
           }
@@ -667,7 +675,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
         lookups.push(lookup);
 
-        const query = SqlFindOp.conditionToQuery(condition);
+        const query = SqlHelper.conditionToQuery(condition);
         if (!_.isEmpty(query)) {
           queryBuilder.orWhere(query);
         }
@@ -681,7 +689,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       }
     } else if (propertyDef.hasConditions()) {
 
-      const mapping = SqlFindOp.getTargetKeyMap(classRef);
+      const mapping = SqlHelper.getTargetKeyMap(classRef);
       const conditions = [];
       // let orderByDef = propertyDef.Condition();
       const conditionDef = propertyDef.getCondition();
@@ -692,20 +700,30 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       }
 
       const repo = this.connection.manager.getRepository(classRef.getClass());
-      let queryBuilder = repo.createQueryBuilder();
+      // let queryBuilder = repo.createQueryBuilder();
 
       if (conditions) {
         const refEntityRef = this.connection.getStorageRef().getEntityRef(classRef.getClass());
-        const builder = new SqlConditionsBuilder<T>(queryBuilder, refEntityRef, this.connection.getStorageRef(), 'select');
-        // builder.skipNull();
-        builder.build({$or: conditions});
-        queryBuilder = builder.getQueryBuilder() as any;
+        // const builder = new SqlConditionsBuilder<T>(queryBuilder, refEntityRef, this.connection.getStorageRef(), 'select');
+        // // builder.skipNull();
+        // builder.build({$or: conditions});
+        // queryBuilder = builder.getQueryBuilder() as any;
+        // if (propertyDef.hasOrder()) {
+        //   propertyDef.getOrder().forEach((o: OrderDesc) => {
+        //     queryBuilder.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
+        //   });
+        // }
+        // results = await queryBuilder.getMany();
+
+        const opts: any = _.clone(this.options);
+        opts.orSupport = true;
+        opts.sortBy = {};
         if (propertyDef.hasOrder()) {
           propertyDef.getOrder().forEach((o: OrderDesc) => {
-            queryBuilder.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
+            opts.sortBy[o.key.key] = o.asc ? 'asc' : 'desc';
           });
         }
-        results = await queryBuilder.getMany();
+        results = await SqlHelper.execQuery(this.connection, refEntityRef as EntityRef, null, sources.condition, opts);
       }
 
       return {
@@ -883,7 +901,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     this.findConditions = findConditions;
     this.connection = (await this.em.storageRef.connect() as TypeOrmConnectionWrapper);
     const opts = _.clone(options) || {};
-    this.options = _.defaults(opts, {limit: 100, subLimit: 100});
+    this.options = _.defaults(opts, {limit: 100, subLimit: 100, maxConditionSplitingLimit: 100});
     this.hookAbortCondition = _.get(options, 'hooks.abortCondition', this.hookAbortCondition);
     this.hookAfterEntity = _.get(options, 'hooks.afterEntity', this.hookAfterEntity);
     const entityDef = <EntityRef>classRefGet(entityType).getEntityRef();

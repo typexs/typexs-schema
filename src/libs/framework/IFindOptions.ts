@@ -9,6 +9,11 @@ export interface IFindOptions extends _IFindOptions {
    */
   subLimit?: number;
 
+  /**
+   * Split conditions in multiple request if a this is reached
+   */
+  maxConditionSplitingLimit?: number;
+
   hooks?: {
     afterEntity?: (entityRef: IEntityRef, entities: any[]) => void
     abortCondition?: (entityRef: IEntityRef, propertyDef: IPropertyRef, results: any[], op: IFindOp<any>) => boolean

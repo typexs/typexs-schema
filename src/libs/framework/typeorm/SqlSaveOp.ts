@@ -12,7 +12,6 @@ import {EntityRegistry} from '../../EntityRegistry';
 import {ObjectsNotValidError} from '../../exceptions/ObjectsNotValidError';
 import {ClassRef} from 'commons-schema-api';
 import {SchemaUtils} from '../../SchemaUtils';
-import {SqlConditionsBuilder} from './SqlConditionsBuilder';
 import {ISaveOp} from '@typexs/base/libs/storage/framework/ISaveOp';
 
 const PROP_KEY_LOOKUP = '__lookup__';
@@ -43,15 +42,6 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
   private options: ISaveOptions;
 
-  static extractKeyableValues(data: any[]) {
-    return data.map(obj => {
-      const id: any = {};
-      _.keys(obj)
-        .filter(k => _.isString(obj[k]) || _.isNumber(obj[k]) || _.isDate(obj[k]) || _.isBoolean(obj[k]))
-        .map(k => id[k] = obj[k]);
-      return id;
-    });
-  }
 
 
   visitDataProperty(propertyDef: PropertyRef, sourceDef: PropertyRef | EntityRef | ClassRef, sources: ISaveData, targets: ISaveData): void {
@@ -287,9 +277,14 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
     const promises = [];
     if (!_.isEmpty(removeConditions)) {
       const removeEntityRef = this.c.getStorageRef().getEntityRef(clazz);
-      const builder = new SqlConditionsBuilder<T>(em, removeEntityRef, this.c.getStorageRef(), 'delete');
-      builder.build(_.isArray(removeConditions) ? {$or: removeConditions} : removeConditions);
-      promises.push(builder.getQueryBuilder().execute());
+      // const builder = new SqlConditionsBuilder<T>(em, removeEntityRef, this.c.getStorageRef(), 'delete');
+      // builder.build(_.isArray(removeConditions) ? {$or: removeConditions} : removeConditions);
+
+      const opts: any = _.clone(this.options);
+      opts.orSupport = _.isArray(removeConditions);
+      opts.mode = 'delete'
+      const execDelete =  SqlHelper.execQuery(this.c, removeEntityRef as EntityRef, null, removeConditions, opts);
+      promises.push(execDelete);
     }
 
     if (!_.isEmpty(visitResult.join)) {
@@ -339,9 +334,14 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
     if (!_.isEmpty(lookupConditions)) {
       const removeEntityRef = this.c.getStorageRef().getEntityRef(clazz);
-      const builder = new SqlConditionsBuilder<any>(em, removeEntityRef, this.c.getStorageRef(), 'select');
-      builder.build(_.isArray(lookupConditions) ? {$or: lookupConditions} : lookupConditions);
-      previousRelations = await (builder.getQueryBuilder() as any).getMany();
+      // const builder = new SqlConditionsBuilder<any>(em, removeEntityRef, this.c.getStorageRef(), 'select');
+      // builder.build(_.isArray(lookupConditions) ? {$or: lookupConditions} : lookupConditions);
+      // previousRelations = await (builder.getQueryBuilder() as any).getMany();
+
+      const opts: any = _.clone(this.options);
+      opts.orSupport = _.isArray(lookupConditions);
+      previousRelations = await SqlHelper.execQuery(this.c, removeEntityRef as EntityRef, null, lookupConditions, opts);
+
     }
     const promises = [];
     if (!_.isEmpty(visitResult.join)) {
@@ -377,7 +377,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
   async saveEntityReference(propertyDef: PropertyRef, targetDef: EntityRef, join: any[]) {
     const klass = propertyDef.joinRef.getClass();
-    const ids = SqlSaveOp.extractKeyableValues(join);
+    const ids = SqlHelper.extractKeyableValues(join);
 
     // find previous results
     let previous: any[] = [];
