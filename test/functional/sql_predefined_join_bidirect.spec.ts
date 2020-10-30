@@ -1,11 +1,8 @@
-import {inspect} from 'util';
 // process.env['SQL_LOG'] = 'X';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-
 import {TestHelper} from './TestHelper';
-
 import {TEST_STORAGE_OPTIONS} from './config';
 import {TypeOrmConnectionWrapper} from '@typexs/base';
 // import {Permission} from "./schemas/role_permissions/Permission";
@@ -142,7 +139,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
-    const c = await ref.connect()  as TypeOrmConnectionWrapper;
+    const c = await ref.connect() as TypeOrmConnectionWrapper;
 
 
     // create empty role
@@ -319,6 +316,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
 
 
     const f = await xsem.find(ContentHolder, {id: 1});
+    expect(f).to.have.length(1);
     const f01 = f[0];
     expect(f01).to.deep.eq({
       value: 'Hallo',
@@ -330,4 +328,107 @@ class SqlSchemaPredefinedJoinBidirectSpec {
 
   }
 
+
+  @test
+  async 'mass processing E-P-E[] over predefined join tables with one-to-many connection'() {
+    const Role = require('./schemas/role_permissions/Role').Role;
+    const Permission = require('./schemas/role_permissions/Permission').Permission;
+
+    const options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'role_permissions';
+
+    const connect = await TestHelper.connect(options);
+    const entityController = connect.controller;
+    const storageRef = connect.ref;
+    const connectionWrapper = await storageRef.connect();
+
+    const perms = [];
+    for (const p of _.range(0, 1000)) {
+      const perm01 = new Permission();
+      perm01.type = 'single ';
+      perm01.module = 'duo';
+      perm01.disabled = false;
+      perm01.permission = 'allow everything ' + p;
+      perms.push(perm01);
+    }
+
+    const role = new Role();
+    role.displayName = 'Admin';
+    role.permissions = perms;
+    role.rolename = 'admin';
+    role.disabled = false;
+    await entityController.save(role);
+
+    const results = await connectionWrapper.connection.query('SELECT * FROM r_belongsto_2;');
+    const permissions = await entityController.find(Permission, null, {limit: 0});
+
+    await connectionWrapper.close();
+    expect(results).to.have.length(1000);
+    expect(permissions).to.have.length(1000);
+    const ids: number[] = [];
+    // @ts-ignore
+    expect(permissions.map(x => {
+      // @ts-ignore
+      ids.push(...x.roles.map(r => r.id));
+      // @ts-ignore
+      return (<any[]>x.roles).length;
+    })).to.have.length(1000);
+    expect(_.uniq(ids)).to.have.length(1);
+    for (const r of permissions) {
+      // @ts-ignore
+      expect(r.roles[0].id).to.be.eq(role.id);
+    }
+  }
+
+
+  @test
+  async 'mass processing E-P-E[] over predefined join tables with one-to-one connection'() {
+    const Role = require('./schemas/role_permissions/Role').Role;
+    const Permission = require('./schemas/role_permissions/Permission').Permission;
+
+    const options = _.clone(TEST_STORAGE_OPTIONS);
+    (<any>options).name = 'role_permissions';
+
+    const connect = await TestHelper.connect(options);
+    const entityController = connect.controller;
+    const storageRef = connect.ref;
+    const connectionWrapper = await storageRef.connect();
+
+    const roles = [];
+    for (const p of _.range(0, 1000)) {
+      const perms = [];
+      const perm01 = new Permission();
+      perm01.type = 'single ';
+      perm01.module = 'duo';
+      perm01.disabled = false;
+      perm01.permission = 'allow everything ' + p;
+      perms.push(perm01);
+      const role = new Role();
+      role.displayName = 'Admin' + p;
+      role.permissions = perms;
+      role.rolename = 'admin' + p;
+      role.disabled = false;
+      roles.push(role);
+    }
+    await entityController.save(roles);
+
+
+    const results = await connectionWrapper.connection.query('SELECT * FROM r_belongsto_2;');
+    const permissions = await entityController.find(Permission, null, {limit: 0});
+
+    await connectionWrapper.close();
+    expect(results).to.have.length(1000);
+    expect(permissions).to.have.length(1000);
+    // @ts-ignore
+    expect(permissions.map(x => (<any[]>x.roles).length)).to.have.length(1000);
+    for (const r of permissions) {
+      // @ts-ignore
+      expect(r.id).to.be.eq(r.roles[0].id);
+    }
+  }
+
+  @test.skip
+  async 'E-P-E[] create sub elements'() {
+
+  }
 }
