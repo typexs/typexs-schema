@@ -59,18 +59,25 @@ export class SqlHelper {
     const multipart = queue.length > 1;
     let recordCount = 0;
 
+    const promises = [];
+
     while (queue.length > 0) {
       const cond = queue.shift();
-      let qb = connection.manager.getRepository(entityRef.object.getClass()).createQueryBuilder();
+      let qb: any = null;
       if (cond) {
-        const builder = new SqlConditionsBuilder<T>(qb, entityRef, connection.getStorageRef(), mode);
+        const builder = new SqlConditionsBuilder<T>(connection.manager, entityRef, connection.getStorageRef(), mode);
         builder.build(opts.orSupport && _.isArray(cond) ? {$or: cond} : cond);
         qb = builder.getQueryBuilder() as any;
+      } else {
+        qb = connection.manager.getRepository(entityRef.object.getClass()).createQueryBuilder();
       }
-      const _recordCount = await qb.getCount();
-      recordCount = recordCount + _recordCount;
 
-      if (!multipart) {
+      if (mode !== 'delete') {
+        const _recordCount = await qb.getCount();
+        recordCount = recordCount + _recordCount;
+      }
+
+      if (!multipart && mode !== 'delete') {
         if (!_.isNull(limit) && _.isNumber(limit)) {
           qb.limit(limit);
         }
@@ -98,8 +105,17 @@ export class SqlHelper {
 
         // check limit reach
       }
-      const _results = await qb.getMany();
-      queryResults = _.concat(queryResults, _results);
+
+      if (mode === 'delete') {
+        promises.push(qb.execute());
+      } else {
+        const _results = await qb.getMany();
+        queryResults = _.concat(queryResults, _results);
+      }
+    }
+
+    if (mode === 'delete') {
+      return Promise.all(promises);
     }
 
     if (multipart) {
