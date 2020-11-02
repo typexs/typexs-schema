@@ -87,7 +87,7 @@ export class SqlHelper {
         }
 
         if (_.isNull(sortBy)) {
-          entityRef.getPropertyRefIdentifier().forEach(x => {
+          entityRef.getPropertyRefs().filter(x => !!x.identifier).forEach(x => {
             qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
           });
         } else if (propertyRef && propertyRef.hasOrder()) {
@@ -96,9 +96,11 @@ export class SqlHelper {
             qb.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
           });
         } else {
-          _.keys(sortBy).forEach(sortKey => {
-            qb.addOrderBy(qb.alias + '.' + sortKey, sortBy[sortKey].toUpperCase());
-          });
+          if (_.isObjectLike(sortBy) && !_.isEmpty(sortBy)) {
+            _.keys(sortBy).forEach(sortKey => {
+              qb.addOrderBy(qb.alias + '.' + sortKey, sortBy[sortKey].toUpperCase());
+            });
+          }
         }
       } else {
         // offset + limit
