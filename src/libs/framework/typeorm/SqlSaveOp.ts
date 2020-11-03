@@ -43,7 +43,6 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   private options: ISaveOptions;
 
 
-
   visitDataProperty(propertyDef: PropertyRef, sourceDef: PropertyRef | EntityRef | ClassRef, sources: ISaveData, targets: ISaveData): void {
   }
 
@@ -280,10 +279,10 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       // const builder = new SqlConditionsBuilder<T>(em, removeEntityRef, this.c.getStorageRef(), 'delete');
       // builder.build(_.isArray(removeConditions) ? {$or: removeConditions} : removeConditions);
 
-      const opts: any = _.clone(this.options);
+      const opts: any = {}; // _.clone(this.options);
       opts.orSupport = _.isArray(removeConditions);
       opts.mode = 'delete';
-      const execDelete =  SqlHelper.execQuery(this.c, removeEntityRef as EntityRef, null, removeConditions, opts);
+      const execDelete = SqlHelper.execQuery(this.c, removeEntityRef as EntityRef, null, removeConditions, opts);
       promises.push(execDelete);
     }
 
@@ -338,7 +337,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       // builder.build(_.isArray(lookupConditions) ? {$or: lookupConditions} : lookupConditions);
       // previousRelations = await (builder.getQueryBuilder() as any).getMany();
 
-      const opts: any = _.clone(this.options);
+      const opts: any = {}; // _.clone(this.options);
       opts.orSupport = _.isArray(lookupConditions);
       previousRelations = await SqlHelper.execQuery(this.c, removeEntityRef as EntityRef, null, lookupConditions, opts);
 

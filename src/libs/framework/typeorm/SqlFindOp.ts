@@ -75,54 +75,19 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     const offset = _.get(sources, 'options.offset', null);
     const sortBy = _.get(sources, 'options.sort', null);
 
-    // let qb = this.connection.manager.getRepository(entityRef.object.getClass()).createQueryBuilder();
-    //
-    // if (sources.condition) {
-    //   const builder = new SqlConditionsBuilder<T>(qb, entityRef, this.connection.getStorageRef(), 'select');
-    //   builder.build(propertyRef ? {$or: sources.condition} : sources.condition);
-    //   qb = builder.getQueryBuilder() as any;
-    // }
-    //
-    // const recordCount = await qb.getCount();
-    //
-    // if (!_.isNull(limit) && _.isNumber(limit)) {
-    //   qb.limit(limit);
-    // }
-    //
-    // if (!_.isNull(offset) && _.isNumber(offset)) {
-    //   qb.offset(offset);
-    // }
-    //
-    // if (_.isNull(sortBy)) {
-    //   entityRef.getPropertyRefIdentifier().forEach(x => {
-    //     qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
-    //   });
-    // } else if (propertyRef && propertyRef.hasOrder()) {
-    //   const mapping = SqlHelper.getTargetKeyMap(entityRef);
-    //   propertyRef.getOrder().forEach((o: OrderDesc) => {
-    //     qb.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
-    //   });
-    // } else {
-    //   _.keys(sortBy).forEach(sortKey => {
-    //     qb.addOrderBy(qb.alias + '.' + sortKey, sortBy[sortKey].toUpperCase());
-    //   });
-    // }
-    //
-    // const results = await qb.getMany();
-    // results[XS_P_$COUNT] = recordCount;
-    // results[XS_P_$OFFSET] = offset;
-    // results[XS_P_$LIMIT] = limit;
-
-    const opts: any = _.clone(this.options);
+    const opts: IFindOptions & any = {
+      maxConditionSplitingLimit: this.options.maxConditionSplitingLimit,
+      subLimit: this.options.subLimit
+    };
     opts.orSupport = true;
-    if (limit) {
+    if (_.isNumber(limit) && !propertyRef) {
       opts.limit = limit;
     }
-    if (offset) {
+    if (_.isNumber(offset) && !propertyRef) {
       opts.offset = offset;
     }
-    if (sortBy) {
-      opts.sortBy = sortBy;
+    if (!!sortBy && !propertyRef) {
+      opts.sort = sortBy;
     }
     const results = await SqlHelper.execQuery(this.connection, entityRef, propertyRef, sources.condition, opts);
 
@@ -191,7 +156,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       //   results = _.orderBy(results, iteree, orders);
       // }
 
-      const opts: any = _.clone(this.options);
+      const opts: any = {maxConditionSplitingLimit: this.options.maxConditionSplitingLimit};
       opts.orSupport = true;
       const entityRef = this.connection.getStorageRef().getEntityRef(joinDef.joinRef.getClass()) as EntityRef;
       results = await SqlHelper.execQuery(this.connection, entityRef, null, conditions, opts);
@@ -699,28 +664,17 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         conditions.push(conditionDef.for(source, mapping));
       }
 
-      const repo = this.connection.manager.getRepository(classRef.getClass());
-      // let queryBuilder = repo.createQueryBuilder();
-
       if (conditions) {
         const refEntityRef = this.connection.getStorageRef().getEntityRef(classRef.getClass());
-        // const builder = new SqlConditionsBuilder<T>(queryBuilder, refEntityRef, this.connection.getStorageRef(), 'select');
-        // // builder.skipNull();
-        // builder.build({$or: conditions});
-        // queryBuilder = builder.getQueryBuilder() as any;
-        // if (propertyDef.hasOrder()) {
-        //   propertyDef.getOrder().forEach((o: OrderDesc) => {
-        //     queryBuilder.addOrderBy(_.get(mapping, o.key.key, o.key.key), o.asc ? 'ASC' : 'DESC');
-        //   });
-        // }
-        // results = await queryBuilder.getMany();
-
-        const opts: any = _.clone(this.options);
+        const opts: any = {
+          maxConditionSplitingLimit: this.options.maxConditionSplitingLimit
+        };
         opts.orSupport = true;
-        opts.sortBy = {};
+
         if (propertyDef.hasOrder()) {
+          opts.sort = {};
           propertyDef.getOrder().forEach((o: OrderDesc) => {
-            opts.sortBy[o.key.key] = o.asc ? 'asc' : 'desc';
+            opts.sort[o.key.key] = o.asc ? 'asc' : 'desc';
           });
         }
         results = await SqlHelper.execQuery(this.connection, refEntityRef as EntityRef, null, sources.condition, opts);
