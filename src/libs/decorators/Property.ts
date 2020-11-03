@@ -30,7 +30,7 @@ export function Property(typeOrOptions: IProperty | Function | string = null) {
     options.sourceClass = source.constructor;
     options.propertyName = propertyName;
 
-    if (!options.type || _.isEmpty(options.type)) {
+    if (!options.type || options.type === null || options.type === undefined) {
       const reflectMetadataType = Reflect && Reflect.getMetadata ? Reflect.getMetadata('design:type', source, propertyName) : undefined;
       if (reflectMetadataType) {
         const className = ClassUtils.getClassName(reflectMetadataType);
