@@ -1,6 +1,6 @@
 {
   "name": "@typexs/schema",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "Schema for typexs",
   "main": "index.js",
   "browser": "browser.js",
