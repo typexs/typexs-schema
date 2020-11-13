@@ -677,7 +677,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
             opts.sort[o.key.key] = o.asc ? 'asc' : 'desc';
           });
         }
-        results = await SqlHelper.execQuery(this.connection, refEntityRef as EntityRef, null, sources.condition, opts);
+        results = await SqlHelper.execQuery(this.connection, refEntityRef as EntityRef, null, conditions, opts);
       }
 
       return {

@@ -82,12 +82,16 @@ export const API_CTRL_ENTITY_METADATA_CREATE_ENTITY = API_ENTITY_PREFIX + _API_C
 export const API_CTRL_ENTITY_METADATA_GET_ENTITY = API_ENTITY_PREFIX + _API_CTRL_ENTITY_METADATA_GET_ENTITY;
 
 export const PERMISSION_ALLOW_ACCESS_ENTITY_METADATA = 'allow access entity metadata';
+
 export const PERMISSION_ALLOW_ACCESS_ENTITY = 'allow access entity';
 export const PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN = 'allow access entity :name';
+
 export const PERMISSION_ALLOW_CREATE_ENTITY = 'allow create entity';
 export const PERMISSION_ALLOW_CREATE_ENTITY_PATTERN = 'allow create entity :name';
+
 export const PERMISSION_ALLOW_UPDATE_ENTITY = 'allow update entity';
 export const PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN = 'allow update entity :name';
+
 export const PERMISSION_ALLOW_DELETE_ENTITY = 'allow delete entity';
 export const PERMISSION_ALLOW_DELETE_ENTITY_PATTERN = 'allow delete entity :name';
 
