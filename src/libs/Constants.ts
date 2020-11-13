@@ -41,7 +41,7 @@ export const XS_P_PREV_ID = 'prevId';
 
 // export const XS_P_URL = ;
 // export const XS_P_LABEL = '_label_';
-export const XS_P_$ABORTED = '$aborted';
+export const XS_P_ABORTED = '__aborted__';
 
 
 export const API_ENTITY_PREFIX = '/entity';

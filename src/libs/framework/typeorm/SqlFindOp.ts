@@ -4,7 +4,7 @@ import {EntityController} from '../../EntityController';
 import {NotYetImplementedError, TypeOrmConnectionWrapper} from '@typexs/base';
 import {PropertyRef} from '../../registry/PropertyRef';
 import {EntityRef} from '../../registry/EntityRef';
-import {XS_P_$ABORTED, XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
+import {XS_P_ABORTED, XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
 import {IDataExchange} from '../IDataExchange';
 import {SqlHelper} from './SqlHelper';
 import {JoinDesc} from '../../descriptors/JoinDesc';
@@ -95,7 +95,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     if (abort) {
       // marked as aborted
       results.forEach((r: any) => {
-        r[XS_P_$ABORTED] = true;
+        r[XS_P_ABORTED] = true;
       });
     }
     return {next: results, abort: abort};

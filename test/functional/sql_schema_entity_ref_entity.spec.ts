@@ -3,7 +3,7 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
-import {XS_P_$ABORTED} from '../../src/libs/Constants';
+import {XS_P_ABORTED} from '../../src/libs/Constants';
 
 
 const FINDOPT = {
@@ -86,7 +86,7 @@ class SqlSchemaEntityRefEntitySpec {
     expect(trai_find_01).to.have.length(1);
 
     const find_str_01 = JSON.parse(JSON.stringify(trai_find_01.shift()));
-    delete find_str_01.trainer.address[XS_P_$ABORTED];
+    delete find_str_01.trainer.address[XS_P_ABORTED];
     expect(find_str_01).to.deep.eq(saved_str_01);
 
 
