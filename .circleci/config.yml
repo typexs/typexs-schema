@@ -1,0 +1,46 @@
+version: 2.1
+jobs:
+  test:
+#    docker:
+#      - image: circleci/node:14
+    machine:
+      image: ubuntu-2004:202010-01
+    working_directory: ~/app
+
+    steps:
+      - run:
+          name: NVM
+          command: |
+            nvm install 14 && nvm use 14 && nvm alias default 14
+            node -v
+            npm -v
+
+      - checkout
+
+      - run:
+          name: Update npm
+          command: npm install -g npm@latest
+
+      - run:
+          name: Install npm wee
+          command: npm install
+
+      - run:
+          name: Start container
+          command: |
+            set -x
+            docker-compose -f docker/testing/docker-compose.yml up -d
+      - run:
+          name: Wait for containers to start
+          command: |
+            set -x
+            sleep 60
+      - run:
+          name: Test
+          command: npm test
+
+# Orchestrate our job run sequence
+workflows:
+  test:
+    jobs:
+      - test
