@@ -25,16 +25,17 @@ jobs:
           name: Install npm wee
           command: npm install
 
-      - run:
-          name: Start container
-          command: |
-            set -x
-            docker-compose -f docker/testing/docker-compose.yml up -d
-      - run:
-          name: Wait for containers to start
-          command: |
-            set -x
-            sleep 60
+#      - run:
+#          name: Start container
+#          command: |
+#            set -x
+#            docker-compose -f docker/testing/docker-compose.yml up -d
+#      - run:
+#          name: Wait for containers to start
+#          command: |
+#            set -x
+#            sleep 60
+
       - run:
           name: Test
           command: npm test
