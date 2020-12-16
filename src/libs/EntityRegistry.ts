@@ -16,6 +16,7 @@ import {
   LookupRegistry,
   SchemaUtils,
   XS_DEFAULT_SCHEMA,
+  XS_TYPE,
   XS_TYPE_CLASS_REF,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY,
@@ -255,6 +256,11 @@ export class EntityRegistry implements ILookupRegistry {
         return x.object.id() === entity.id();
       });
     }
+  }
+
+  list<X>(type: XS_TYPE, filter: (x: any) => boolean): X[] {
+    // @ts-ignore
+    return this._lookup.list(type, filter);
   }
 
 
