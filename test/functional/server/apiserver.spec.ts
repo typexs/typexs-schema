@@ -110,7 +110,7 @@ class ApiserverSpec {
     res = await http.get(getUrl, {responseType: 'json', passBody: true});
     expect(res).to.deep.include({id: 1});
     const x = {};
-    x[XS_P_$URL] = 'api/entity/book_3/1';
+    x[XS_P_$URL] = '/entity/book_3/1';
 
     expect(res).to.deep.include(x);
     expect(res).to.deep.include(data);
