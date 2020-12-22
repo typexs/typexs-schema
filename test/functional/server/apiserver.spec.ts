@@ -1,6 +1,6 @@
 import {suite, test, timeout} from '@testdeck/mocha';
 import {Bootstrap, Injector, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
-import {K_ROUTE_CONTROLLER, Server, XS_P_URL} from '@typexs/server';
+import {K_ROUTE_CONTROLLER, Server, XS_P_$URL} from '@typexs/server';
 import * as _ from 'lodash';
 import {expect} from 'chai';
 import {TestHelper} from '../TestHelper';
@@ -110,7 +110,7 @@ class ApiserverSpec {
     res = await http.get(getUrl, {responseType: 'json', passBody: true});
     expect(res).to.deep.include({id: 1});
     const x = {};
-    x[XS_P_URL] = 'api/entity/book_3/1';
+    x[XS_P_$URL] = 'api/entity/book_3/1';
 
     expect(res).to.deep.include(x);
     expect(res).to.deep.include(data);
