@@ -1,7 +1,7 @@
 import {Body, ContentType, CurrentUser, Delete, Get, JsonController, Param, Post, QueryParam} from 'routing-controllers';
 
 import {Inject} from 'typedi';
-import {Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base/browser';
+import {__CLASS__, __REGISTRY__, Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base/browser';
 
 import {Access, C_API, ContextGroup, XS_P_$LABEL, XS_P_$URL} from '@typexs/server';
 import {EntityRegistry} from '../libs/EntityRegistry';
@@ -52,7 +52,7 @@ export class EntityAPIController {
 
   static _afterEntity(entityDef: EntityRef, entity: any[]): void {
     entity.forEach(e => {
-      this.addMeta(entityDef, e);
+      EntityAPIController.addMeta(entityDef, e);
     });
   }
 
@@ -61,6 +61,8 @@ export class EntityAPIController {
     const url = `${API_ENTITY_PREFIX}/${entityRef.machineName}/${idStr}`;
     e[XS_P_$URL] = url;
     e[XS_P_$LABEL] = entityRef.label(e);
+    e[__CLASS__] = entityRef.name;
+    e[__REGISTRY__] = entityRef.getLookupRegistry().getName();
   }
 
 
