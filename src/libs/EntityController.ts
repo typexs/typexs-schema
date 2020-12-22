@@ -6,7 +6,7 @@ import {INameResolver} from './framework/INameResolver';
 import {IFramework} from './framework/IFramework';
 import {ISaveOptions, IStorageRef, NotSupportedError} from '@typexs/base';
 import {IFindOptions} from './framework/IFindOptions';
-import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api/browser';
+import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
 import {IEntityController, NotYetImplementedError} from '@typexs/base/browser';
 import {IAggregateOptions} from '@typexs/base/libs/storage/framework/IAggregateOptions';
 import {IUpdateOptions} from '@typexs/base/libs/storage/framework/IUpdateOptions';
@@ -108,7 +108,7 @@ export class EntityController implements IEntityController {
    throw new NotYetImplementedError();
   }
 
-  forClass(cls: CLS_DEF<any> | IClassRef): IEntityRef {
+  forClass<T>(cls: CLS_DEF<T> | IClassRef): IEntityRef {
     throw new NotYetImplementedError();
   }
 

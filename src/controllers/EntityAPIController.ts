@@ -3,7 +3,7 @@ import {Body, ContentType, CurrentUser, Delete, Get, JsonController, Param, Post
 import {Inject} from 'typedi';
 import {Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base/browser';
 
-import {Access, C_API, ContextGroup, XS_P_LABEL, XS_P_URL} from '@typexs/server';
+import {Access, C_API, ContextGroup, XS_P_$LABEL, XS_P_$URL} from '@typexs/server';
 import {EntityRegistry} from '../libs/EntityRegistry';
 import {EntityRef} from '../libs/registry/EntityRef';
 import {EntityControllerFactory} from '../libs/EntityControllerFactory';
@@ -33,6 +33,7 @@ import {
 } from '../libs/Constants';
 import {ObjectsNotValidError} from './../libs/exceptions/ObjectsNotValidError';
 import {EntityControllerApi} from '../api/entity.controller.api';
+import {IEntityRef} from 'commons-schema-api/browser';
 
 
 @ContextGroup(C_API)
@@ -51,11 +52,15 @@ export class EntityAPIController {
 
   static _afterEntity(entityDef: EntityRef, entity: any[]): void {
     entity.forEach(e => {
-      const idStr = entityDef.buildLookupConditions(e);
-      const url = `api${API_ENTITY_PREFIX}/${entityDef.machineName}/${idStr}`;
-      e[XS_P_URL] = url;
-      e[XS_P_LABEL] = entityDef.label(e);
+      this.addMeta(entityDef, e);
     });
+  }
+
+  private static addMeta(entityRef: EntityRef, e: any) {
+    const idStr = entityRef.buildLookupConditions(e);
+    const url = `${API_ENTITY_PREFIX}/${entityRef.machineName}/${idStr}`;
+    e[XS_P_$URL] = url;
+    e[XS_P_$LABEL] = entityRef.label(e);
   }
 
 

@@ -1,13 +1,14 @@
 import {PropertyRef} from './PropertyRef';
 import {IEntity} from './IEntity';
 import * as _ from 'lodash';
+import {XS_P_$LABEL} from '@typexs/server/libs/Constants';
 
 import {
   AbstractRef,
   ClassRef,
   IBuildOptions,
-  IEntityRef, IValidationMetadataArgs,
-  LookupRegistry,
+  IEntityRef,
+  IValidationMetadataArgs,
   SchemaUtils,
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
@@ -16,8 +17,7 @@ import {ClassUtils} from 'commons-base/browser';
 import {REGISTRY_TXS_SCHEMA} from '../Constants';
 import {Expressions} from 'commons-expressions/browser';
 import {lookupRegistry} from '../Helper';
-import {getFromContainer, getMetadataStorage, MetadataStorage} from 'class-validator';
-import {XS_P_LABEL} from '@typexs/server';
+import {getMetadataStorage} from 'class-validator';
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true
@@ -171,8 +171,8 @@ export class EntityRef extends AbstractRef implements IEntityRef {
       } else {
         return entity.label;
       }
-    } else if (Reflect.has(entity, XS_P_LABEL)) {
-      return entity[XS_P_LABEL];
+    } else if (Reflect.has(entity, XS_P_$LABEL)) {
+      return entity[XS_P_$LABEL];
     } else {
       // create label from data
       const label: string[] = [];

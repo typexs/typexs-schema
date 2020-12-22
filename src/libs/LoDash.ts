@@ -1,8 +1,34 @@
 import {
-  find, filter, has, get, set, capitalize, isString,
-  isFunction, isArray, isEmpty, clone, remove, isNull, keys,
-  snakeCase, merge, isNumber, isObject, isBoolean, isUndefined,
-  map, defaults, first, last, assign, isSet, orderBy, uniq, concat,cloneDeep
+  assign,
+  capitalize,
+  clone,
+  cloneDeep,
+  concat,
+  defaults,
+  filter,
+  find,
+  first,
+  get,
+  has,
+  isArray,
+  isBoolean,
+  isEmpty,
+  isFunction,
+  isNull,
+  isNumber,
+  isObject,
+  isSet,
+  isString,
+  isUndefined,
+  keys,
+  last,
+  map,
+  merge,
+  orderBy,
+  remove,
+  set,
+  snakeCase,
+  uniq
 } from 'lodash';
 
 export {
@@ -10,7 +36,7 @@ export {
   isFunction, isArray, isEmpty, clone, remove, isNull, keys,
   snakeCase, merge, isNumber, isObject, isBoolean, isUndefined,
   map, defaults, first, last, assign, isSet, orderBy, uniq, concat
-  ,cloneDeep
+  , cloneDeep
 };
 
 /*
