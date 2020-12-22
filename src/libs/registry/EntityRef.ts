@@ -18,6 +18,7 @@ import {REGISTRY_TXS_SCHEMA} from '../Constants';
 import {Expressions} from 'commons-expressions/browser';
 import {lookupRegistry} from '../Helper';
 import {getMetadataStorage} from 'class-validator';
+import {__CLASS__} from '@typexs/base/browser';
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true
@@ -106,6 +107,16 @@ export class EntityRef extends AbstractRef implements IEntityRef {
 
   id() {
     return this.getSourceRef().id().toLowerCase();
+  }
+
+  isOf(instance: any): boolean {
+    const name = ClassUtils.getClassName(instance);
+    if (name && name === this.name) {
+      return true;
+    } else if (instance[__CLASS__] && instance[__CLASS__] === this.name) {
+      return true;
+    }
+    return false;
   }
 
   resolveId(instance: any) {
