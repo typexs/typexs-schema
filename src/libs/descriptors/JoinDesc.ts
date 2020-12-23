@@ -4,9 +4,8 @@ import {EntityRegistry} from '../EntityRegistry';
 import * as _ from 'lodash';
 import {OrderDesc} from './OrderDesc';
 import {ConditionValidationError} from '../exceptions/ConditionValidationError';
-import {IExpr, ExprDesc, And} from 'commons-expressions/browser';
+import {And, ExprDesc, IExpr} from 'commons-expressions/browser';
 import {ClassRef} from 'commons-schema-api/browser';
-import {REGISTRY_TXS_SCHEMA} from '../Constants';
 import {classRefGet} from '../Helper';
 
 export type KeyMapType = 'from' | 'to';
@@ -55,7 +54,9 @@ export class JoinDesc implements IExpr {
 
   validate(sourceDef: ClassRef, propertyDef: PropertyRef, targetDef: ClassRef, throwing: boolean = true) {
     const registry = EntityRegistry.$();
-    this.condition.validate(registry, this.joinRef);
+    if (this.condition) {
+      this.condition.validate(registry, this.joinRef);
+    }
     this.getFrom().cond.validate(registry, this.joinRef, sourceDef);
     this.getTo().cond.validate(registry, targetDef, this.joinRef);
     const props = EntityRegistry.getPropertyRefsFor(this.joinRef).map(p => p.name);
