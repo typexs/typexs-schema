@@ -45,7 +45,6 @@
     "@typexs/base": "^1.3.3",
     "@typexs/server": "^1.1.0",
     "chai": "^4.3.0",
-    "class-validator": "^0.10.2",
     "codecov": "^3.8.1",
     "codelyzer": "^6.0.1",
     "del": "^6.0.0",
