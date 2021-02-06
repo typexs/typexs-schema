@@ -24,12 +24,6 @@ Allgemeines Löschen implementieren.
 
 
 *@ISSUE {counter:task} 20180928* +
-Abbruchbedingung definieren, Standard ist die nicht Verfolgung von
-Referenzen, die von einer  referenzierten Entität weiter ausgehen.
-
-
-
-*@ISSUE {counter:task} 20180928* +
 MongoDB Implementierung: Schema(Indexing), Save, Find, Delete
 
 
@@ -39,5 +33,28 @@ Abfrage der Objekte implementieren mit:
 * "Offset" und "limit"
 * conditions
 * sort
+
+
+*@ISSUE {counter:task} 20201223* +
+Als separates StorageRef mit eigenem Entitycontroller deinieren
+
+*@ISSUE {counter:task} 20201223* +
+Multiple Entitäten für eine Tabelle erlauben bzw. neuen Typ definieren
+
+*@ISSUE {counter:task} 20201223* +
+Join Bedingung über schon eingebundene Klasse bzw. ermöglicht Übergabe per string
+oder Funktion. Zyklische imports prüfen.
+```
+@Property(
+type: ModulVersion
+)
+versions: ModulVersion
+
+
+@Property(
+ join: Join(ModulVersion ...)
+)
+refOver: ModulVersionABC
+```
 
 

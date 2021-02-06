@@ -13,6 +13,7 @@
     "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
+    "skipLibCheck": true,
     "preserveConstEnums": true,
     "pretty": true,
     "declaration": true,
