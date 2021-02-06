@@ -1,4 +1,4 @@
-import {MinLength,IsEmail} from 'class-validator';
+import {IsEmail, MinLength} from 'class-validator';
 import {Schema} from '../../../../src/libs/decorators/Schema';
 import {Entity} from '../../../../src/libs/decorators/Entity';
 import {Property} from '../../../../src/libs/decorators/Property';
