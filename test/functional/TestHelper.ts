@@ -51,7 +51,7 @@ export class TestHelper {
 
     const e: string[] = ['SystemNodeInfo', 'TaskLog'];
     _.keys(getMetadataArgsStorage()).forEach(x => {
-      _.remove(getMetadataArgsStorage()[x], y => y['target'] && e.indexOf(y['target'].name) == -1);
+      _.remove(getMetadataArgsStorage()[x], y => y['target'] && e.indexOf(y['target'].name) === -1);
     });
   }
 
@@ -67,7 +67,7 @@ export class TestHelper {
           const r = fn();
           if (r) {
             clearInterval(i);
-            resolve();
+            resolve(null);
           }
         } catch (err) {
           clearInterval(i);

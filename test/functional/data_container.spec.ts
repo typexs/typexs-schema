@@ -5,8 +5,9 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {ValidPerson} from './schemas/validation/ValidPerson';
 import {DataContainer} from '@typexs/base';
-import {TreeUtils, WalkValues} from 'commons-base/browser';
+import {TreeUtils} from '@allgemein/base';
 import {EntityRegistry} from '../../src/libs/EntityRegistry';
+import {WalkValues} from '@typexs/server/libs/Helper';
 
 
 const registry = EntityRegistry.$();

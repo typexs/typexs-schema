@@ -25,7 +25,6 @@ class EntitiesToJsonSpec {
       'propertyName': 'label',
       'validationOptions': {
         'groups': [],
-        'always': false,
         'each': false
       }
     });
