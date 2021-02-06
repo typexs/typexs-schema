@@ -5,7 +5,7 @@ import {IDataExchange} from '../IDataExchange';
 import {EntityController} from '../../EntityController';
 import * as _ from '../../LoDash';
 import {XS_P_PREV_ID} from '../../Constants';
-import {ClassRef, ClassType} from 'commons-schema-api';
+import {ClassRef, ClassType} from 'commons-schema-api/browser';
 import {NotSupportedError, TypeOrmConnectionWrapper} from '@typexs/base';
 import {IDeleteOp} from '@typexs/base/libs/storage/framework/IDeleteOp';
 import {IDeleteOptions} from '@typexs/base/libs/storage/framework/IDeleteOptions';
@@ -109,7 +109,7 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
   }
 
 
-  async run(object: T | T[]): Promise<T | T[]> {
+  async run(object: T | T[]): Promise<T | T[] | number | any> {
     const isArray = _.isArray(object);
 
     this.objects = this.prepare(object);
@@ -153,7 +153,7 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
   }
 
   // TODO
-  getRemovable(): T[] | ClassType<T> | T {
+  getRemovable(): any {
     throw new NotSupportedError('removeing by single class');
   }
 

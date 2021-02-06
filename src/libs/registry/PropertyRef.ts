@@ -262,7 +262,7 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     }
   }
 
-
+  // @ts-ignore
   get storingName() {
     let name = this.getOptions('name', null);
     if (!name) {

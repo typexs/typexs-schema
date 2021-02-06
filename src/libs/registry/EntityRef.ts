@@ -219,7 +219,7 @@ export class EntityRef extends AbstractRef implements IEntityRef {
     }
 
     const storage = getMetadataStorage();
-    const metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null);
+    const metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null, true, false);
 
     metadata.forEach(m => {
       const prop = _.find(o.properties, p => p.name === m.propertyName);
