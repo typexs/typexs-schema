@@ -1,7 +1,7 @@
 import {Body, ContentType, CurrentUser, Delete, Get, JsonController, Param, Post, QueryParam} from 'routing-controllers';
 
 import {Inject} from 'typedi';
-import {__CLASS__, __REGISTRY__, Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base/browser';
+import {__CLASS__, __REGISTRY__, Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
 
 import {Access, C_API, ContextGroup, XS_P_$LABEL, XS_P_$URL} from '@typexs/server';
 import {EntityRegistry} from '../libs/EntityRegistry';

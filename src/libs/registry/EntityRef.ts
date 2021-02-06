@@ -13,12 +13,12 @@ import {
   XS_TYPE_ENTITY,
   XS_TYPE_PROPERTY
 } from 'commons-schema-api/browser';
-import {ClassUtils} from 'commons-base/browser';
+import {ClassUtils} from '@allgemein/base';
 import {REGISTRY_TXS_SCHEMA} from '../Constants';
 import {Expressions} from 'commons-expressions/browser';
 import {lookupRegistry} from '../Helper';
 import {getMetadataStorage} from 'class-validator';
-import {__CLASS__} from '@typexs/base/browser';
+import {__CLASS__} from '@typexs/base';
 
 const DEFAULT_OPTIONS: IEntity = {
   storeable: true

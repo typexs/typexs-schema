@@ -29,7 +29,7 @@ import {ExprDesc} from 'commons-expressions';
 import {EntityRegistry} from '../../EntityRegistry';
 import {classRefGet} from '../../Helper';
 import {ILookupRegistry} from 'commons-schema-api/browser';
-import {TypeOrmEntityRegistry} from '@typexs/base/browser';
+import {TypeOrmEntityRegistry} from '@typexs/base';
 
 
 export interface XContext extends IDataExchange<Function> {

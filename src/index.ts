@@ -3,26 +3,26 @@
 export * from './browser';
 
 // API
-export * from './api/entity.api';
-export * from './api/IEntityApi';
-export * from './api/entity.controller.api';
-export * from './api/IEntityControllerApi';
+export {EntityApi} from './api/entity.api';
+export {IEntityApi} from './api/IEntityApi';
+export {EntityControllerApi} from './api/entity.controller.api';
+export {IEntityControllerApi} from './api/IEntityControllerApi';
 
 
-export * from './libs/exceptions/ObjectsNotValidError';
-export * from './libs/exceptions/HttpObjectsNotValidError';
-export * from './libs/exceptions/ConditionValidationError';
+export {ObjectsNotValidError} from './libs/exceptions/ObjectsNotValidError';
+export {HttpObjectsNotValidError} from './libs/exceptions/HttpObjectsNotValidError';
+export {ConditionValidationError} from './libs/exceptions/ConditionValidationError';
 
 
-export * from './libs/EntityController';
-export * from './libs/EntityControllerFactory';
-export * from './libs/EntityRegistry';
+export {EntityController} from './libs/EntityController';
+export {EntityControllerFactory} from './libs/EntityControllerFactory';
+export {EntityRegistry} from './libs/EntityRegistry';
 
 
-export * from './libs/framework/EntityDefTreeWorker';
-export * from './libs/framework/FrameworkFactory';
-export * from './libs/framework/IDataExchange';
-export * from './libs/framework/IFindOptions';
-export * from './libs/framework/IFramework';
-export * from './libs/framework/INameResolver';
-export * from './libs/framework/ISchemaMapper';
+export {EntityDefTreeWorker} from './libs/framework/EntityDefTreeWorker';
+export {FrameworkFactory} from './libs/framework/FrameworkFactory';
+export {IDataExchange} from './libs/framework/IDataExchange';
+export {IFindOptions} from './libs/framework/IFindOptions';
+export {IFramework} from './libs/framework/IFramework';
+export {INameResolver} from './libs/framework/INameResolver';
+export {ISchemaMapper} from './libs/framework/ISchemaMapper';

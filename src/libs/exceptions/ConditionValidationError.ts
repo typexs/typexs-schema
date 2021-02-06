@@ -1,4 +1,4 @@
-import {NestedException} from "commons-base/libs/exceptions/NestedException";
+import {NestedException} from "@allgemein/base/libs/exceptions/NestedException";
 
 export class ConditionValidationError extends NestedException {
 

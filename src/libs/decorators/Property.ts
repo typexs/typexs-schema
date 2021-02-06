@@ -2,7 +2,7 @@ import {EntityRegistry} from '../EntityRegistry';
 import {IProperty} from '../registry/IProperty';
 import * as _ from 'lodash';
 import {JS_DATA_TYPES, JS_PRIMATIVE_TYPES} from 'commons-schema-api/browser';
-import {ClassUtils} from 'commons-base/browser';
+import {ClassUtils} from '@allgemein/base';
 
 export function Property(typeOrOptions: IProperty | Function | string = null) {
   return function (source: any, propertyName: string) {

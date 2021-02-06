@@ -4,10 +4,10 @@ import {EntityRef} from './EntityRef';
 import * as moment from 'moment';
 
 import {AbstractRef, ClassRef, IBuildOptions, IPropertyRef, JS_PRIMATIVE_TYPES, XS_TYPE_PROPERTY} from 'commons-schema-api/browser';
-import {NotSupportedError, NotYetImplementedError} from '@typexs/base/browser';
+import {NotSupportedError, NotYetImplementedError} from '@typexs/base';
 import {ExprDesc} from 'commons-expressions/browser';
 import {OrderDesc} from '../../libs/descriptors/OrderDesc';
-import {ClassUtils} from 'commons-base/browser';
+import {ClassUtils} from '@allgemein/base';
 import {REGISTRY_TXS_SCHEMA} from '../Constants';
 import {classRefGet} from '../Helper';
 

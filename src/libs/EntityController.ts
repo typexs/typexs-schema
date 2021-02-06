@@ -7,7 +7,7 @@ import {IFramework} from './framework/IFramework';
 import {ISaveOptions, IStorageRef, NotSupportedError} from '@typexs/base';
 import {IFindOptions} from './framework/IFindOptions';
 import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
-import {IEntityController, NotYetImplementedError} from '@typexs/base/browser';
+import {IEntityController, NotYetImplementedError} from '@typexs/base';
 import {IAggregateOptions} from '@typexs/base/libs/storage/framework/IAggregateOptions';
 import {IUpdateOptions} from '@typexs/base/libs/storage/framework/IUpdateOptions';
 

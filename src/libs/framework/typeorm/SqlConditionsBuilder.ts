@@ -1,7 +1,7 @@
 import {SelectQueryBuilder} from 'typeorm';
 import * as _ from 'lodash';
 import {NameResolver} from '../../../libs/framework/typeorm/NameResolver';
-import {NotYetImplementedError} from '@typexs/base/browser';
+import {NotYetImplementedError} from '@typexs/base';
 import {ClassRef, IClassRef} from 'commons-schema-api/browser';
 import {TypeOrmSqlConditionsBuilder} from '@typexs/base/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder';
 import {PropertyRef} from '../../registry/PropertyRef';

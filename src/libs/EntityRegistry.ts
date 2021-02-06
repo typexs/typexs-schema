@@ -22,8 +22,8 @@ import {
   XS_TYPE_PROPERTY,
   XS_TYPE_SCHEMA
 } from 'commons-schema-api/browser';
-import {NotYetImplementedError} from '@typexs/base/browser';
-import {ClassUtils} from 'commons-base/browser';
+import {NotYetImplementedError} from '@typexs/base';
+import {ClassUtils} from '@allgemein/base';
 import {REGISTRY_TXS_SCHEMA} from './Constants';
 import {classRefGet} from './Helper';
 import {ValidationMetadata} from '@typexs/base/libs/class-validator/ValidationMetadata';

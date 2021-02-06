@@ -1,4 +1,4 @@
-import {NotYetImplementedError} from '@typexs/base/browser';
+import {NotYetImplementedError} from '@typexs/base';
 import {PropertyRef} from '../registry/PropertyRef';
 import {EntityRegistry} from '../EntityRegistry';
 import * as _ from 'lodash';
@@ -84,7 +84,7 @@ export class JoinDesc implements IExpr {
 }
 
 
-export function Join(base: Function, keyMaps: KeyMapDesc[], conditions?: ExprDesc, order?: OrderDesc | OrderDesc[]) {
+export function Join(base: string | Function, keyMaps: KeyMapDesc[], conditions?: ExprDesc, order?: OrderDesc | OrderDesc[]) {
   return new JoinDesc(base, keyMaps, conditions, order);
 }
 

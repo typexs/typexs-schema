@@ -2,7 +2,7 @@ import {PropertyRef} from '../../registry/PropertyRef';
 import {XS_REL_SOURCE_PREFIX, XS_REL_TARGET_PREFIX} from '../../Constants';
 import * as _ from '../../LoDash';
 import {INameResolver} from './../INameResolver';
-import {NotSupportedError} from '@typexs/base/browser';
+import {NotSupportedError} from '@typexs/base';
 
 export class NameResolver implements INameResolver {
 

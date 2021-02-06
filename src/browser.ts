@@ -3,28 +3,27 @@
 
 export * from './libs/Constants';
 
-export * from './libs/exceptions/ObjectsNotValidError';
-export * from './libs/exceptions/HttpObjectsNotValidError';
-export * from './libs/exceptions/ConditionValidationError';
+export {ObjectsNotValidError} from './libs/exceptions/ObjectsNotValidError';
+export {HttpObjectsNotValidError} from './libs/exceptions/HttpObjectsNotValidError';
+export {ConditionValidationError} from './libs/exceptions/ConditionValidationError';
 
-export * from './libs/decorators/CObject';
-export * from './libs/decorators/Entity';
-export * from './libs/decorators/Property';
-export * from './libs/decorators/PropertyOf';
-export * from './libs/decorators/Schema';
+export {CObject} from './libs/decorators/CObject';
+export {Entity} from './libs/decorators/Entity';
+export {Property} from './libs/decorators/Property';
+export {PropertyOf} from './libs/decorators/PropertyOf';
+export {Schema} from './libs/decorators/Schema';
 
 // conditions
-export * from './libs/descriptors/JoinDesc';
-export * from './libs/descriptors/OrderDesc';
+export {JoinDesc, From, Join, KeyMapDesc, KeyMapType, To} from './libs/descriptors/JoinDesc';
+export {OrderDesc, Asc, Desc} from './libs/descriptors/OrderDesc';
 
 
-
-export * from './libs/registry/EntityRef';
-export * from './libs/registry/IEntity';
-export * from './libs/registry/IObject';
-export * from './libs/registry/IProperty';
-export * from './libs/registry/ISchema';
-export * from './libs/registry/PropertyRef';
-export * from './libs/registry/SchemaRef';
-export * from './libs/EntityRegistry';
+export {EntityRef} from './libs/registry/EntityRef';
+export {IEntity} from './libs/registry/IEntity';
+export {IObject} from './libs/registry/IObject';
+export {IProperty} from './libs/registry/IProperty';
+export {ISchema} from './libs/registry/ISchema';
+export {PropertyRef} from './libs/registry/PropertyRef';
+export {SchemaRef} from './libs/registry/SchemaRef';
+export {EntityRegistry} from './libs/EntityRegistry';
 
