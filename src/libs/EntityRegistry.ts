@@ -25,9 +25,8 @@ import {
 import {NotYetImplementedError} from '@typexs/base';
 import {ClassUtils} from '@allgemein/base';
 import {REGISTRY_TXS_SCHEMA} from './Constants';
-import {classRefGet} from './Helper';
+import {classRefGet, getMetadataStorage} from './Helper';
 import {ValidationMetadata} from '@typexs/base/libs/class-validator/ValidationMetadata';
-import {getMetadataStorage} from 'class-validator';
 
 
 export class EntityRegistry implements ILookupRegistry {
