@@ -1,5 +1,4 @@
-import {Body, ContentType, CurrentUser, Delete, Get, JsonController, Param, Post, QueryParam} from 'routing-controllers';
-
+import {Body, ContentType, CurrentUser, Delete, Get, JsonController, Param, Post, QueryParam} from '@typexs/server';
 import {Inject} from 'typedi';
 import {__CLASS__, __REGISTRY__, Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
 
@@ -33,7 +32,6 @@ import {
 } from '../libs/Constants';
 import {ObjectsNotValidError} from './../libs/exceptions/ObjectsNotValidError';
 import {EntityControllerApi} from '../api/entity.controller.api';
-import {IEntityRef} from 'commons-schema-api/browser';
 
 
 @ContextGroup(C_API)
