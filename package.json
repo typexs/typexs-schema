@@ -81,23 +81,6 @@
     "@typexs/base": "^1.4.0"
   },
   "private": true,
-  "nyc": {
-    "extension": [
-      ".ts",
-      ".tsx"
-    ],
-    "exclude": [
-      "**/*.d.ts",
-      "tmp/",
-      "build/"
-    ],
-    "require": [
-      "ts-node/register"
-    ],
-    "sourceMap": true,
-    "instrument": true,
-    "cache": false
-  },
   "typexs": {
     "name": "typexs-schema"
   }
