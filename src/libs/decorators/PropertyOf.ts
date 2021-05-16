@@ -1,26 +1,35 @@
-import {EntityRegistry} from '../EntityRegistry';
+import './register';
 import {IProperty} from '../registry/IProperty';
+import {PropertyOf as _PropertyOf} from '@allgemein/schema-api';
 
-import * as _ from '../LoDash';
 
+/**
+ * @deprecated
+ *
+ * @param propertyName
+ * @param entityOrOptions
+ * @param options
+ * @constructor
+ */
 export function PropertyOf(propertyName: string, entityOrOptions: IProperty | string | Function, options: IProperty = null) {
   return function (object: any) {
-    if (!options) {
-      options = {propertyName: null, sourceClass: null};
-    }
-
-    if (_.isString(entityOrOptions) || _.isFunction(entityOrOptions)) {
-      options.sourceClass = entityOrOptions;
-    } else {
-      options = <IProperty>entityOrOptions;
-    }
-
-    options.propertyClass = object;
-    if (propertyName) {
-      options.propertyName = propertyName;
-    }
-
-    const xsDef = EntityRegistry.createProperty(options);
-    EntityRegistry.register(xsDef);
+    _PropertyOf(propertyName, entityOrOptions, options)(object);
+    // if (!options) {
+    //   options = {propertyName: null, sourceClass: null};
+    // }
+    //
+    // if (isString(entityOrOptions) || isFunction(entityOrOptions)) {
+    //   options.sourceClass = entityOrOptions;
+    // } else {
+    //   options = <IProperty>entityOrOptions;
+    // }
+    //
+    // options.propertyClass = object;
+    // if (propertyName) {
+    //   options.propertyName = propertyName;
+    // }
+    //
+    // const xsDef = EntityRegistry.createProperty(options);
+    // EntityRegistry.register(xsDef);
   };
 }

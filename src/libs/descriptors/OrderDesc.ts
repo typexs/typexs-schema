@@ -1,4 +1,4 @@
-import {IExpr, KeyDesc} from 'commons-expressions/browser';
+import {IExpr, KeyDesc} from '@allgemein/expressions';
 
 export class OrderDesc implements IExpr {
   readonly type: string = 'order';

@@ -10,9 +10,9 @@ import {SqlHelper} from './SqlHelper';
 import {JoinDesc} from '../../descriptors/JoinDesc';
 import {IFindOptions} from '../IFindOptions';
 import {OrderDesc} from '../../../libs/descriptors/OrderDesc';
-import {ClassRef} from 'commons-schema-api';
-import {classRefGet} from '../../Helper';
+import {ClassRef, METATYPE_ENTITY} from '@allgemein/schema-api';
 import {IFindOp} from '@typexs/base/libs/storage/framework/IFindOp';
+import {EntityRegistry} from '../../EntityRegistry';
 
 
 interface IFindData extends IDataExchange<any[]> {
@@ -120,7 +120,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     const joinDef: JoinDesc = propertyDef.getJoin();
     // const joinProps = EntityRegistry.getPropertyRefsFor(joinDef.joinRef);
 
-    const mapping = SqlHelper.getTargetKeyMap(joinDef.joinRef);
+    const mapping = SqlHelper.getTargetKeyMap(joinDef.getJoinRef());
 
     for (let x = 0; x < sources.next.length; x++) {
       const source = sources.next[x];
@@ -158,7 +158,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
 
       const opts: any = {maxConditionSplitingLimit: this.options.maxConditionSplitingLimit};
       opts.orSupport = true;
-      const entityRef = this.connection.getStorageRef().getEntityRef(joinDef.joinRef.getClass()) as EntityRef;
+      const entityRef = this.connection.getStorageRef().getEntityRef(joinDef.getJoinRef().getClass()) as EntityRef;
       results = await SqlHelper.execQuery(this.connection, entityRef, null, conditions, opts);
     }
 
@@ -722,7 +722,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
           for (const attachObj of attachObjs) {
             const seqNr = attachObj[sourceSeqNrId];
 
-            const newObject = classRef.new();
+            const newObject = classRef.create(false);
             classProp.forEach(p => {
               newObject[p.name] = p.get(attachObj);
             });
@@ -753,7 +753,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
           for (const attachObj of attachObjs) {
             const seqNr = attachObj[sourceSeqNrId];
 
-            const newObject = classRef.new();
+            const newObject = classRef.create(false);
             classProp.forEach(p => {
               newObject[p.name] = p.get(attachObj);
             });
@@ -833,7 +833,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
         if (propertyDef.isCollection()) {
           throw new NotYetImplementedError();
         } else {
-          const target = classRef.new();
+          const target = classRef.create(false);
           targetProps.forEach(prop => {
             const [id, name] = this.em.nameResolver().for(propertyDef.machineName, prop);
             target[prop.name] = join[id];
@@ -858,7 +858,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     this.options = _.defaults(opts, {limit: 100, subLimit: 100, maxConditionSplitingLimit: 100});
     this.hookAbortCondition = _.get(options, 'hooks.abortCondition', this.hookAbortCondition);
     this.hookAfterEntity = _.get(options, 'hooks.afterEntity', this.hookAfterEntity);
-    const entityDef = <EntityRef>classRefGet(entityType).getEntityRef();
+    const entityDef = EntityRegistry.$().getClassRefFor(entityType, METATYPE_ENTITY).getEntityRef() as EntityRef;
     const result = await this.onEntity(entityDef, null, <IFindData>{
       next: null,
       condition: findConditions,

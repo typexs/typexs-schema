@@ -1,8 +1,20 @@
-import {Body, ContentType, CurrentUser, Delete, Get, JsonController, Param, Post, QueryParam} from '@typexs/server';
-import {Inject} from 'typedi';
-import {__CLASS__, __REGISTRY__, Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
-
-import {Access, C_API, ContextGroup, XS_P_$LABEL, XS_P_$URL} from '@typexs/server';
+import {
+  Access,
+  Body,
+  C_API,
+  ContentType,
+  ContextGroup,
+  CurrentUser,
+  Delete,
+  Get,
+  JsonController,
+  Param,
+  Post,
+  QueryParam,
+  XS_P_$LABEL,
+  XS_P_$URL
+} from '@typexs/server';
+import {__CLASS__, __REGISTRY__, Inject, Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
 import {EntityRegistry} from '../libs/EntityRegistry';
 import {EntityRef} from '../libs/registry/EntityRef';
 import {EntityControllerFactory} from '../libs/EntityControllerFactory';
@@ -59,8 +71,13 @@ export class EntityAPIController {
     const url = `${API_ENTITY_PREFIX}/${entityRef.machineName}/${idStr}`;
     e[XS_P_$URL] = url;
     e[XS_P_$LABEL] = entityRef.label(e);
-    e[__CLASS__] = entityRef.name;
-    e[__REGISTRY__] = entityRef.getLookupRegistry().getName();
+    if (!e[__CLASS__]) {
+      e[__CLASS__] = entityRef.name;
+    }
+    if (!e[__REGISTRY__]) {
+      e[__REGISTRY__] = entityRef.getNamespace();
+    }
+
   }
 
 
@@ -80,7 +97,7 @@ export class EntityAPIController {
   @Get(_API_CTRL_ENTITY_METADATA_ALL_STORES)
   @ContentType('application/json')
   async schemas(@CurrentUser() user: any): Promise<any> {
-    return this.registry.listSchemas().map(x => x.toJson(true, false));
+    // return this.registry.listSchemas().map(x => x.toJson(true, false));
   }
 
   /**
@@ -90,12 +107,12 @@ export class EntityAPIController {
   @Get(_API_CTRL_ENTITY_METADATA_GET_STORE)
   @ContentType('application/json')
   async schema(@Param('name') schemaName: string, @CurrentUser() user: any) {
-    const schema = this.registry.getSchemaRefByName(schemaName);
-    if (schema) {
-      return schema.toJson();
-    } else {
-      throw new Error('no schema ' + schemaName + ' found');
-    }
+    // const schema = this.registry.getSchemaRefByName(schemaName);
+    // if (schema) {
+    //   return schema.toJson();
+    // } else {
+    //   throw new Error('no schema ' + schemaName + ' found');
+    // }
   }
 
 
@@ -106,7 +123,7 @@ export class EntityAPIController {
   @Get(_API_CTRL_ENTITY_METADATA_ALL_ENTITIES)
   @ContentType('application/json')
   async entities(@CurrentUser() user: any) {
-    return this.registry.listEntities().map(x => x.toJson());
+    // return this.registry.listEntities().map(x => x.toJson());
   }
 
 
@@ -117,14 +134,14 @@ export class EntityAPIController {
   @Get(_API_CTRL_ENTITY_METADATA_GET_ENTITY)
   @ContentType('application/json')
   async entity(@Param('name') entityName: string, @CurrentUser() user: any) {
-    const entity = this.registry.getEntityRefByName(entityName);
-    if (entity) {
-      const json = entity.toJson();
-      json.properties = entity.getPropertyRefs().map(x => x.toJson());
-      return json;
-    } else {
-      throw new Error('no entity found for ' + entityName);
-    }
+    // const entity = this.registry.getEntityRefByName(entityName);
+    // if (entity) {
+    //   const json = entity.toJson();
+    //   json.properties = entity.getPropertyRefs().map(x => x.toJson());
+    //   return json;
+    // } else {
+    //   throw new Error('no entity found for ' + entityName);
+    // }
   }
 
 
@@ -182,7 +199,9 @@ export class EntityAPIController {
       limit: limit,
       offset: offset,
       sort: sortBy,
-      hooks: {afterEntity: EntityAPIController._afterEntity}
+      hooks: {
+        afterEntity: EntityAPIController._afterEntity
+      }
     });
 
     return {
@@ -206,7 +225,9 @@ export class EntityAPIController {
     let result = null;
     if (_.isArray(conditions)) {
       result = await controller.find(entityDef.getClass(), {$or: conditions}, {
-        hooks: {afterEntity: EntityAPIController._afterEntity}
+        hooks: {
+          afterEntity: EntityAPIController._afterEntity
+        }
       });
       const results = {
         entities: result,
@@ -295,11 +316,15 @@ export class EntityAPIController {
 
   private getControllerForEntityName(name: string): [EntityRef, EntityController] {
     const entityDef = this.getEntityDef(name);
-    const schema = entityDef.getClassRef().getSchema();
+    const schema = entityDef.getSchemaRefs();
     if (!_.isArray(schema)) {
-      return [entityDef, this.getController(schema)];
+      return [entityDef, this.getController(schema.name)];
     } else {
-      throw new Error('multiple schemas for this entity, select one');
+      if (schema.length === 1) {
+        return [entityDef, this.getController(_.first(schema).name)];
+      } else {
+        throw new Error('multiple schemas for this entity, select one');
+      }
     }
   }
 

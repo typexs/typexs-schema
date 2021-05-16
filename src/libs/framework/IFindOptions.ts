@@ -1,6 +1,6 @@
 import {IFindOptions as _IFindOptions} from '@typexs/base/libs/storage/framework/IFindOptions';
 import {IFindOp} from '@typexs/base/libs/storage/framework/IFindOp';
-import {IEntityRef, IPropertyRef} from 'commons-schema-api/browser';
+import {IEntityRef, IPropertyRef} from '@allgemein/schema-api';
 
 export interface IFindOptions extends _IFindOptions {
 

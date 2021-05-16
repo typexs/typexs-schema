@@ -1,6 +1,6 @@
-export interface IEntity {
+import {IEntityOptions} from '@allgemein/schema-api';
 
-  name?: string;
+export interface IEntity extends IEntityOptions {
 
   schema?: string;
 

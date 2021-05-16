@@ -1,8 +1,8 @@
 /*
 export const XS_TYPE_SCHEMA = 'schema';
-export const XS_TYPE_ENTITY = 'entity';
+export const METATYPE_ENTITY = 'entity';
 export const XS_TYPE_CLASS_REF = 'class_ref';
-export const XS_TYPE_PROPERTY = 'property';
+export const METATYPE_PROPERTY = 'property';
 export const XS_TYPE_BINDING_SCHEMA_ENTITY = 'schema_entity';
 export const XS_TYPE_BINDING_SCHEMA_CLASS_REF = 'schema_class_ref';
 
@@ -22,10 +22,23 @@ export const XS_ID_SEPARATOR = '--';
 export const XS_DEFAULT_SCHEMA = 'default';
 */
 
-export const REGISTRY_TXS_SCHEMA = 'txs-entities';
+
+
+export const NAMESPACE_BUILT_ENTITY = 'built-entity';
+
+/**
+ * @deprecated
+ */
+export const REGISTRY_TXS_SCHEMA = NAMESPACE_BUILT_ENTITY;
 
 export const XS_LINK_VARIANT = 'linkVariant';
 export const XS_RELATION_TYPE_GLOBAL = 'global';
+
+/**
+ * Options keys
+ */
+export const K_STORABLE = 'storable';
+export const K_NULLABLE = 'nullable';
 
 export const XS_REL_SOURCE_PREFIX = 'source';
 export const XS_REL_TARGET_PREFIX = 'target';
@@ -36,7 +49,8 @@ export const XS_P_SEQ_NR = 'seqNr';
 export const XS_P_PROPERTY = 'property';
 export const XS_P_PROPERTY_ID = 'propertyId';
 
-
+export const __ID__ = 'xs:entity_id';
+export const __PROPERTY__ = '__property__';
 export const XS_P_PREV_ID = 'prevId';
 
 // export const XS_P_URL = ;
@@ -44,7 +58,11 @@ export const XS_P_PREV_ID = 'prevId';
 export const XS_P_ABORTED = '__aborted__';
 
 
+
+
+
 export const API_ENTITY_PREFIX = '/entity';
+
 
 
 /**

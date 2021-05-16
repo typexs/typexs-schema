@@ -1,12 +1,10 @@
 import {JoinDesc} from '../descriptors/JoinDesc';
-
 import {OrderDesc} from '../descriptors/OrderDesc';
-import {JS_DATA_TYPES} from 'commons-schema-api/browser';
-import {ExprDesc, KeyDesc} from 'commons-expressions/browser';
+import {IPropertyOptions, JS_DATA_TYPES} from '@allgemein/schema-api';
+import {ExprDesc, KeyDesc} from '@allgemein/expressions';
 
-export interface IProperty {
+export interface IProperty extends IPropertyOptions {
 
-  propertyName?: string;
 
   storeable?: boolean;
 
@@ -24,15 +22,13 @@ export interface IProperty {
   type?: string | JS_DATA_TYPES | 'date:created' | 'date:updated' | Function;
 
 
-  // @deprected
-  targetClass?: string | Function;
+  // // @deprected
+  // targetClass?: string | Function;
 
   /**
    * size of data type
    */
   length?: number;
-
-  cardinality?: number;
 
 
   propertyClass?: string | Function;

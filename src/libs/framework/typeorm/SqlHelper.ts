@@ -5,9 +5,10 @@ import {SqlConditionsBuilder} from './SqlConditionsBuilder';
 import {TypeOrmConnectionWrapper, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
 import {EntityRef} from '../../../libs/registry/EntityRef';
 import {IFindOptions} from '../IFindOptions';
-import {ClassRef} from 'commons-schema-api';
-import {EntityRegistry} from '../../EntityRegistry';
-import {OrderDesc} from '../../..';
+import {__CLASS__, __NS__, IClassRef} from '@allgemein/schema-api';
+import {OrderDesc} from '../../descriptors/OrderDesc';
+
+const ignoreKeys = [__NS__, __CLASS__].map(x => x.toLowerCase());
 
 export class SqlHelper {
 
@@ -141,9 +142,9 @@ export class SqlHelper {
 
   }
 
-  static getTargetKeyMap(targetRef: EntityRef | ClassRef) {
+  static getTargetKeyMap(targetRef: EntityRef | IClassRef) {
     const props: PropertyRef[] = targetRef instanceof EntityRef ?
-      targetRef.getPropertyRefs() : EntityRegistry.getPropertyRefsFor(targetRef);
+      targetRef.getPropertyRefs() : targetRef.getRegistry().getPropertyRefsFor(targetRef) as PropertyRef[];
     return _.merge({}, ..._.map(props, p => {
       const c = {};
       // c[p.name] = p.storingName;
@@ -161,6 +162,7 @@ export class SqlHelper {
     return data.map(obj => {
       const id: any = {};
       _.keys(obj)
+        .filter(k => !ignoreKeys.includes(k.toLowerCase()))
         .filter(k => _.isString(obj[k]) || _.isNumber(obj[k]) || _.isDate(obj[k]) || _.isBoolean(obj[k]))
         .map(k => id[k] = obj[k]);
       return id;

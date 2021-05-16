@@ -1,267 +1,262 @@
+import {defaults, isEmpty, keys, snakeCase} from 'lodash';
 import {SchemaRef} from './registry/SchemaRef';
 import {PropertyRef} from './registry/PropertyRef';
 import {EntityRef} from './registry/EntityRef';
 import {IProperty} from './registry/IProperty';
 import {IEntity} from './registry/IEntity';
 import {ISchema} from './registry/ISchema';
-import * as _ from './LoDash';
 import {
-  AbstractRef,
-  Binding,
   ClassRef,
-  IClassRefMetadata,
-  IEntityRefMetadata,
-  ILookupRegistry,
-  IPropertyRefMetadata,
-  LookupRegistry,
-  SchemaUtils,
-  XS_DEFAULT_SCHEMA,
-  XS_TYPE,
-  XS_TYPE_CLASS_REF,
-  XS_TYPE_ENTITY,
-  XS_TYPE_PROPERTY,
-  XS_TYPE_SCHEMA
-} from 'commons-schema-api/browser';
+  DefaultNamespacedRegistry,
+  IClassRef,
+  IEntityRef,
+  IJsonSchema,
+  IJsonSchemaSerializeOptions,
+  IJsonSchemaUnserializeOptions,
+  ISchemaRef,
+  METADATA_TYPE,
+  MetadataRegistry,
+  METATYPE_CLASS_REF,
+  METATYPE_EMBEDDABLE,
+  METATYPE_ENTITY,
+  METATYPE_PROPERTY,
+  METATYPE_SCHEMA,
+  RegistryFactory,
+  XS_DEFAULT_SCHEMA
+} from '@allgemein/schema-api';
 import {NotYetImplementedError} from '@typexs/base';
-import {ClassUtils} from '@allgemein/base';
-import {REGISTRY_TXS_SCHEMA} from './Constants';
-import {classRefGet, getMetadataStorage} from './Helper';
-import {ValidationMetadata} from '@typexs/base/libs/class-validator/ValidationMetadata';
+import {NAMESPACE_BUILT_ENTITY} from './Constants';
+import {IObject} from './registry/IObject';
 
 
-export class EntityRegistry implements ILookupRegistry {
+export class EntityRegistry extends DefaultNamespacedRegistry /*AbstractRegistry*/ implements IJsonSchema {
 
 
-  private constructor() {
-    this._lookup = LookupRegistry.$(REGISTRY_TXS_SCHEMA);
-    const defaultSchema = new SchemaRef({name: 'default'});
-    this._lookup.add(XS_TYPE_SCHEMA, defaultSchema);
+  constructor(namespace: string) {
+    super(namespace);
+    // this = LookupRegistry.$(NAMESPACE_BUILT_ENTITY);
+    // const defaultSchema = new SchemaRef({name: 'default'});
+    // this.add(METATYPE_SCHEMA, defaultSchema);
   }
 
   static NAME = 'EntityRegistry';
 
   private static _self: EntityRegistry; // = new Registry();
 
-  private _lookup: LookupRegistry;
-
 
   static $() {
     if (!this._self) {
-      this._self = new EntityRegistry();
+      this._self = RegistryFactory.get(NAMESPACE_BUILT_ENTITY) as EntityRegistry;
     }
     return this._self;
   }
 
-
-  static getLookupRegistry() {
-    return LookupRegistry.$(REGISTRY_TXS_SCHEMA);
-  }
-
-
-  static getSchema(name: string): SchemaRef {
-    return this.getLookupRegistry().find(XS_TYPE_SCHEMA, {name: name});
-  }
-
-
-  static register(xsdef: AbstractRef | Binding): AbstractRef | Binding {
-    if (xsdef instanceof EntityRef) {
-      return this.$()._lookup.add(XS_TYPE_ENTITY, xsdef);
-    } else if (xsdef instanceof PropertyRef) {
-      return this.$()._lookup.add(XS_TYPE_PROPERTY, xsdef);
-    } else if (xsdef instanceof SchemaRef) {
-      return this.$()._lookup.add(XS_TYPE_SCHEMA, xsdef);
-    } else if (xsdef instanceof Binding) {
-      return this.$()._lookup.add(xsdef.bindingType, xsdef);
-    } else {
-      throw new NotYetImplementedError();
-    }
-  }
-
-
-  static createSchema(fn: Function, options: ISchema): SchemaRef {
-    let schema = <SchemaRef>this.$()._lookup.find(XS_TYPE_SCHEMA, {name: options.name});
+  prepare() {
+    const schema = this.find(METATYPE_SCHEMA, (x: ISchemaRef) => x.name === XS_DEFAULT_SCHEMA);
     if (!schema) {
-      schema = new SchemaRef(options);
-      schema = this.$()._lookup.add(XS_TYPE_SCHEMA, schema);
+      const defaultSchema = this.create(METATYPE_SCHEMA, {name: XS_DEFAULT_SCHEMA});
+      this.add(METATYPE_SCHEMA, defaultSchema);
     }
-    const cRef = classRefGet(fn);
-    const binding = Binding.create(XS_TYPE_SCHEMA, schema.name, XS_TYPE_CLASS_REF, cRef);
-    this.$()._lookup.remove(binding.bindingType,
-      (b: Binding) => b.source === XS_DEFAULT_SCHEMA && b.target.id() === cRef.id());
-    this.register(binding);
-    cRef.setSchema(schema.name);
-    return schema;
+    super.prepare();
   }
 
-
-  static fromJson(json: IEntityRefMetadata): EntityRef {
-    return this.$().fromJson(json);
-  }
-
-
-  private static _fromJsonProperty(property: IPropertyRefMetadata, clsRef: ClassRef) {
-    const options = _.clone(property.options);
-    options.sourceClass = clsRef;
-
-    if (property.targetRef) {
-      const _classRef = this._fromJsonClassRef(property.targetRef);
-      options.type = _classRef.getClass(true);
-    }
-
-    if (property.propertyRef) {
-      const _classRef = this._fromJsonClassRef(property.propertyRef);
-      options.propertyClass = _classRef.getClass(true);
-    }
-
-    if (property.validator) {
-      property.validator.forEach(m => {
-        const _m = _.clone(m);
-        _m.target = clsRef.getClass(true);
-        const vma = new ValidationMetadata(_m);
-        getMetadataStorage().addValidationMetadata(vma);
+  reload(entries?: Function[]) {
+    this.clear();
+    if (isEmpty(entries)) {
+      MetadataRegistry.$().getMetadata().filter(x => x.namespace === this.namespace &&
+        [METATYPE_ENTITY, METATYPE_EMBEDDABLE, METATYPE_CLASS_REF, METATYPE_SCHEMA].includes(x.metaType)).forEach(x => {
+        this.onAdd(x.metaType as METADATA_TYPE, x);
       });
-    }
-
-    const prop = this.createProperty(options);
-    this.register(prop);
-  }
-
-
-  private static _fromJsonClassRef(classRefMetadata: IClassRefMetadata) {
-    const clsRef = classRefGet(classRefMetadata.className);
-    clsRef.setSchemas(_.isArray(classRefMetadata.schema) ?
-      classRefMetadata.schema : [classRefMetadata.schema]);
-
-    if (classRefMetadata.properties) {
-      classRefMetadata.properties.forEach(property => {
-        this._fromJsonProperty(property, clsRef);
-      });
-    }
-
-    return clsRef;
-  }
-
-
-  static createEntity(fn: Function | ClassRef, options: IEntity = {}): EntityRef {
-    return new EntityRef(fn, options);
-  }
-
-
-  static createProperty(options: IProperty): PropertyRef {
-    return new PropertyRef(options);
-  }
-
-  static getEntityRefFor(instance: Object | string): EntityRef {
-    let cName = null;
-    if (_.isString(instance)) {
-      cName = instance;
     } else {
-      cName = instance.constructor.name;
+      MetadataRegistry.$().getMetadata().filter(x => x.namespace === this.namespace &&
+        [METATYPE_ENTITY, METATYPE_EMBEDDABLE, METATYPE_CLASS_REF, METATYPE_SCHEMA].includes(x.metaType) &&
+        entries.includes(x.target as Function)).forEach(x => {
+        this.onAdd(x.metaType as METADATA_TYPE, x);
+      });
     }
-    return this.$()._lookup.find(XS_TYPE_ENTITY, {name: cName});
+  }
+
+  /**
+   * React when schema, entity, property or propertyof are annontated on classes.
+   *
+   * Act on following cases:
+   * 1. An annotated entity loaded by import, only process when namespace is present.
+   *    Properties should already be loaded in MetadataRegistry and are accessible.
+   * 2. A property which is added after an entity is present.
+   * 3. schema
+   *
+   * @param context
+   * @param options
+   */
+  onAdd(context: METADATA_TYPE, options: IEntity | IProperty | ISchema | IObject) {
+    if (options.namespace) {
+      if (options.namespace !== this.namespace) {
+        // skip not my namespace
+        return;
+      }
+    } else {
+      // if namespace not present skipping
+      if (context !== METATYPE_PROPERTY) {
+        // only properties should be pass and check if entity already exists
+        return;
+      }
+    }
+
+    const entityRef = options.target ? this.find(METATYPE_ENTITY, (x: EntityRef) => x.getClass() === options.target) as IEntityRef : null;
+    if (context === METATYPE_ENTITY) {
+      if (!entityRef) {
+        const target = options.target;
+        this.create(METATYPE_ENTITY, options as IEntity);
+
+        const properties = MetadataRegistry.$()
+          .getByContextAndTarget(METATYPE_PROPERTY,
+            options.target, 'merge') as IProperty[];
+        for (const property of properties) {
+          this.onAdd(METATYPE_PROPERTY, property);
+        }
+      }
+    } else if (context === METATYPE_SCHEMA) {
+      let find: ISchemaRef = this.find(context,
+        (c: ISchemaRef) => c.name === (<ISchema>options).name
+      );
+      if (!find) {
+        find = this.create(context, options);
+      }
+      if (entityRef && find) {
+        this.addSchemaToEntityRef(find, entityRef, {override: true, onlyDefault: true});
+      }
+    } else if (context === METATYPE_PROPERTY) {
+      // check if already processed and
+      if (entityRef) {
+        const propertyRef = this.find(context, (x: EntityRef) => x.getClass() === options.target && x.name === options.propertyName);
+        if (!propertyRef) {
+          const properties = MetadataRegistry.$()
+            .getByContextAndTarget(METATYPE_PROPERTY,
+              options.target, 'merge', options.propertyName) as IProperty[];
+          for (const property of properties) {
+            this.create(METATYPE_PROPERTY, property);
+
+          }
+        }
+      }
+    } else if (context === METATYPE_EMBEDDABLE) {
+      const find = this.find(METATYPE_CLASS_REF, (c: IClassRef) =>
+        c.getClass() === options.target
+      ) as IClassRef;
+      if (!find) {
+        this.create(context, options);
+      } else {
+        const refOptions = find.getOptions();
+        defaults(refOptions, options);
+      }
+    }
   }
 
 
-  static getPropertyRefsFor(entity: EntityRef | ClassRef) {
-    return this.$().getPropertyRefsFor(entity);
-  }
-
-  static reset() {
-    LookupRegistry.reset();
-    this._self = null;
-
+  onUpdate() {
+    super.onUpdate();
   }
 
 
-  listProperties() {
-    return this._lookup.list(XS_TYPE_PROPERTY);
+  onRemove(context: METADATA_TYPE, entries: (IEntity | IProperty | ISchema | IObject)[]) {
+    super.onRemove(context, entries);
   }
 
 
-  listEntities() {
-    return this._lookup.list(XS_TYPE_ENTITY);
+  /**
+   * Create default property reference
+   *
+   * @param options
+   */
+  createPropertyForOptions(options: IProperty): PropertyRef {
+    if (keys(options).length === 0) {
+      throw new Error('can\'t create property for empty options');
+    }
+    options.namespace = this.namespace;
+    const prop = new PropertyRef(options);
+    return this.add(prop.metaType, prop);
   }
 
+
+  /**
+   * Create default entity reference
+   *
+   * @param options
+   */
+  createEntityForOptions(options: IEntity): EntityRef {
+    options.namespace = this.namespace;
+    if (!options.name) {
+      options.name = ClassRef.getClassName(options.target);
+    }
+    const entityRef = new EntityRef(options);
+    const retRef = this.add(entityRef.metaType, entityRef);
+    const metaSchemaOptionsForEntity = MetadataRegistry.$()
+      .getByContextAndTarget(METATYPE_SCHEMA, entityRef.getClass()) as ISchema[];
+    if (metaSchemaOptionsForEntity.length > 0) {
+      for (const schemaOptions of metaSchemaOptionsForEntity) {
+        this.addSchemaToEntityRef(schemaOptions.name, entityRef as IEntityRef, {override: true, onlyDefault: true});
+      }
+    } else {
+      // no schema options add to 'default'
+      this.addSchemaToEntityRef(XS_DEFAULT_SCHEMA, entityRef as IEntityRef);
+    }
+    return retRef;
+  }
+
+  /**
+   * Create default schema reference
+   *
+   * @param options
+   */
+  createSchemaForOptions(options: ISchema): SchemaRef {
+    options.namespace = this.namespace;
+    const schemaRef = new SchemaRef(options);
+    return this.add(schemaRef.metaType, schemaRef);
+  }
 
   listClassRefs() {
-    return this._lookup.list(XS_TYPE_CLASS_REF);
+    return this.list(METATYPE_CLASS_REF);
   }
 
 
   listSchemas() {
-    return this._lookup.list(XS_TYPE_SCHEMA);
+    return this.list(METATYPE_SCHEMA);
   }
-
-
-  fromJson(json: IEntityRefMetadata): EntityRef {
-    let clsRef = ClassRef.find(json.name, REGISTRY_TXS_SCHEMA);
-    if (!clsRef) {
-      clsRef = classRefGet(SchemaUtils.clazz(json.name));
-    }
-    clsRef.setSchema(json.schema);
-
-    let entity = EntityRegistry.$().getEntityRefByName(json.name);
-    if (!entity) {
-      entity = EntityRegistry.createEntity(clsRef, json.options);
-      EntityRegistry.register(entity);
-
-      json.properties.forEach(property => {
-        EntityRegistry._fromJsonProperty(property, clsRef);
-      });
-    }
-    return entity;
-  }
-
 
   getSchemaRefByName(name: string): SchemaRef {
-    return this._lookup.find(XS_TYPE_SCHEMA, (e: EntityRef) => {
-      return e.machineName === _.snakeCase(name);
+    return this.find(METATYPE_SCHEMA, (e: SchemaRef) => {
+      return e.machineName === snakeCase(name);
     });
   }
 
+  getEntityRefFor(fn: string | object | Function, skipNsCheck?: boolean): EntityRef {
+    return super.getEntityRefFor(fn, skipNsCheck) as EntityRef;
+  }
 
   getEntityRefByName(name: string): EntityRef {
-    return this._lookup.find(XS_TYPE_ENTITY, (e: EntityRef) => {
-      return e.machineName === _.snakeCase(name);
+    return this.find(METATYPE_ENTITY, (e: EntityRef) => {
+      return e.machineName === snakeCase(name);
     });
   }
 
-  /*
-
-    getPropertyDefsFor(entity: EntityRef | ClassRef): PropertyRef[] {
-      if (entity instanceof EntityRef) {
-        return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => x.object.id() === entity.getClassRef().id());
-      } else {
-        return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => {
-          return x.object.id() === entity.id()
-        });
-      }
-    }
-  */
-  private find(instance: any): EntityRef {
-    const cName = ClassUtils.getClassName(instance);
-    return this._lookup.find(XS_TYPE_ENTITY, {name: cName});
-  }
-
-  getEntityRefFor(instance: Object | string): EntityRef {
-    return this.find(instance);
-  }
-
-  getPropertyRefsFor(entity: EntityRef | ClassRef): PropertyRef[] {
+  getPropertyRefsFor(entity: EntityRef | IClassRef): PropertyRef[] {
     if (entity instanceof EntityRef) {
-      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => x.object.id() === entity.getClassRef().id());
+      return this.filter(METATYPE_PROPERTY, (x: PropertyRef) => x.object.id() === entity.getClassRef().id());
     } else {
-      return this._lookup.filter(XS_TYPE_PROPERTY, (x: PropertyRef) => {
+      return this.filter(METATYPE_PROPERTY, (x: PropertyRef) => {
         return x.object.id() === entity.id();
       });
     }
   }
 
-  list<X>(type: XS_TYPE, filter: (x: any) => boolean): X[] {
-    // @ts-ignore
-    return this._lookup.list(type, filter);
+
+  toJsonSchema(options?: IJsonSchemaSerializeOptions): Promise<any> {
+    throw new NotYetImplementedError('todo');
   }
 
+  fromJsonSchema(data: any, options?: IJsonSchemaUnserializeOptions): Promise<IClassRef | IEntityRef> {
+    throw new NotYetImplementedError('todo');
+  }
 
 }
 

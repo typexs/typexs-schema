@@ -1,8 +1,8 @@
 import {PropertyRef} from '../../registry/PropertyRef';
 import {XS_REL_SOURCE_PREFIX, XS_REL_TARGET_PREFIX} from '../../Constants';
-import * as _ from '../../LoDash';
 import {INameResolver} from './../INameResolver';
 import {NotSupportedError} from '@typexs/base';
+import {capitalize, isString, snakeCase} from 'lodash';
 
 export class NameResolver implements INameResolver {
 
@@ -23,19 +23,19 @@ export class NameResolver implements INameResolver {
   for(prefix: PropertyRef | string, property?: PropertyRef | string): [string, string] {
     let sourceId, sourceName;
     if (prefix && property) {
-      if (_.isString(property)) {
-        sourceId = prefix + _.capitalize(property);
-        sourceName = prefix + '_' + _.snakeCase(property);
+      if (isString(property)) {
+        sourceId = prefix + capitalize(property);
+        sourceName = prefix + '_' + snakeCase(property);
       } else {
-        sourceId = prefix + _.capitalize(property.name);
+        sourceId = prefix + capitalize(property.name);
         sourceName = prefix + '_' + property.machineName;
       }
       return [sourceId, sourceName];
     } else if (prefix && !property) {
       property = prefix;
-      if (_.isString(property)) {
+      if (isString(property)) {
         sourceId = property;
-        sourceName = _.snakeCase(property);
+        sourceName = snakeCase(property);
       } else {
         sourceId = property.name;
         sourceName = property.machineName;

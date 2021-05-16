@@ -3,14 +3,14 @@ import {EntityDefTreeWorker} from '../EntityDefTreeWorker';
 import {EntityController} from '../../EntityController';
 import {PropertyRef} from '../../registry/PropertyRef';
 import {EntityRef} from '../../registry/EntityRef';
-import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
+import {__PROPERTY__, XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
 import * as _ from 'lodash';
 import {IDataExchange} from '../IDataExchange';
 import {SqlHelper} from './SqlHelper';
 import {JoinDesc} from '../../descriptors/JoinDesc';
 import {EntityRegistry} from '../../EntityRegistry';
 import {ObjectsNotValidError} from '../../exceptions/ObjectsNotValidError';
-import {ClassRef} from 'commons-schema-api';
+import {ClassRef, IClassRef} from '@allgemein/schema-api';
 import {SchemaUtils} from '../../SchemaUtils';
 import {ISaveOp} from '@typexs/base/libs/storage/framework/ISaveOp';
 
@@ -43,7 +43,10 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   private options: ISaveOptions;
 
 
-  visitDataProperty(propertyDef: PropertyRef, sourceDef: PropertyRef | EntityRef | ClassRef, sources: ISaveData, targets: ISaveData): void {
+  visitDataProperty(propertyDef: PropertyRef,
+                    sourceDef: PropertyRef | EntityRef | IClassRef,
+                    sources: ISaveData,
+                    targets: ISaveData): void {
   }
 
 
@@ -145,7 +148,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
         for (const target of targets) {
           // if (!target) continue;
-          const joinObj = propertyDef.joinRef.new();
+          const joinObj = propertyDef.joinRef.create(false);
           joinObjs.push(joinObj);
           let [id, name] = this.entityController.nameResolver().forSource(XS_P_TYPE);
           joinObj[id] = sourceEntityDef.machineName;
@@ -175,12 +178,14 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
   }
 
 
-  private handleJoinDefintionVisit(sourceDef: EntityRef | ClassRef,
-                                   propertyDef: PropertyRef, targetDef: EntityRef | ClassRef, sources: ISaveData) {
+  private handleJoinDefintionVisit(sourceDef: EntityRef | IClassRef,
+                                   propertyDef: PropertyRef,
+                                   targetDef: EntityRef | IClassRef,
+                                   sources: ISaveData) {
     const joinObjs: any[] = [];
 
     const joinDef: JoinDesc = propertyDef.getJoin();
-    const joinProps = EntityRegistry.$().getPropertyRefsFor(joinDef.joinRef);
+    const joinProps = EntityRegistry.$().getPropertyRefsFor(joinDef.getJoinRef());
     const seqNrProp = joinProps.find(p => p.isSequence());
     for (let x = 0; x < sources.next.length; x++) {
       const source = sources.next[x];
@@ -200,7 +205,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       source[PROP_KEY_LOOKUP] = lookup;
 
       for (const joinTarget of joinTargets) {
-        const joinObj = joinDef.joinRef.new();
+        const joinObj = joinDef.getJoinRef().create(false);
         joinObjs.push(joinObj);
         joinObj[PROP_KEY_TARGET] = joinTarget;
         //  joinObj[PROP_KEY_LOOKUP] = lookup;
@@ -261,7 +266,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
                                            sources: ISaveData,
                                            visitResult: ISaveData): Promise<ISaveData> {
     const joinDef: JoinDesc = propertyDef.getJoin();
-    const clazz = joinDef.joinRef.getClass();
+    const clazz = joinDef.getJoinRef().getClass();
     const removeConditions: any[] = [];
     for (const source of visitResult.target) {
       if (_.has(source, PROP_KEY_LOOKUP)) {
@@ -316,7 +321,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
                                                   sources: ISaveData,
                                                   visitResult: ISaveData): Promise<ISaveData> {
     const joinDef: JoinDesc = propertyDef.getJoin();
-    const clazz = joinDef.joinRef.getClass();
+    const clazz = joinDef.getJoinRef().getClass();
     const lookupConditions: any[] = [];
     for (const source of visitResult.target) {
       if (_.has(source, PROP_KEY_LOOKUP)) {
@@ -559,7 +564,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           }
 
           for (const target of _targetObjects) {
-            const joinObj = propertyDef.joinRef.new();
+            const joinObj = propertyDef.joinRef.create(false);
             joinObjs.push(joinObj);
             let [id, name] = this.entityController.nameResolver().forSource(XS_P_TYPE);
             joinObj[id] = sourceDef.machineName;
@@ -616,8 +621,8 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
           const targets = propertyDef.get(join);
 
           for (const target of targets) {
-            const joinObj = propertyDef.joinRef.new();
-            joinObj['__property__'] = join;
+            const joinObj = propertyDef.joinRef.create(false);
+            joinObj[__PROPERTY__] = join;
             joinObjs.push(joinObj);
 
             let [id, name] = this.entityController.nameResolver().forSource(XS_P_TYPE);
@@ -773,8 +778,8 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
 
   private async saveByEntityDef<T>(entityName: string | EntityRef, objects: T[]): Promise<T[]> {
-    const entityDef = _.isString(entityName) ? this.entityController.schema().getEntity(entityName) : entityName;
-    return await this.walk(entityDef, objects);
+    const entityDef = _.isString(entityName) ? this.entityController.schema().getEntityRefFor(entityName) : entityName;
+    return await this.walk(entityDef as EntityRef, objects);
   }
 
 
@@ -810,7 +815,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
 
     if (objectsValid) {
-      const resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
+      const resolveByEntityDef = this.entityController.resolveByEntityDef(this.objects);
       const entityNames = Object.keys(resolveByEntityDef);
       this.c = await this.entityController.storageRef.connect() as TypeOrmConnectionWrapper;
 

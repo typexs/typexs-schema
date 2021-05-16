@@ -1,7 +1,9 @@
+import {get, isArray, isString, isUndefined, set, isNull} from 'lodash';
 import {SchemaRef} from './registry/SchemaRef';
 import {EntityRef} from './registry/EntityRef';
-import * as _ from './LoDash';
 import {PropertyRef} from './registry/PropertyRef';
+import {IEntity} from './registry/IEntity';
+import {IEntityRef} from '../../../../node-commons/allgemein-schema-api/build/package';
 
 export class SchemaUtils {
 
@@ -9,7 +11,7 @@ export class SchemaUtils {
     const y: Y[] = [];
     for (const object of objects) {
       if (object) {
-        const values = _.get(object, property, null);
+        const values = get(object, property, null);
         y.push(values);
       } else {
         y.push(null);
@@ -19,9 +21,9 @@ export class SchemaUtils {
   }
 
   static resolve(schemaDef: SchemaRef, entityName: string | EntityRef) {
-    let entityDef: EntityRef = <EntityRef>entityName;
-    if (_.isString(entityName)) {
-      entityDef = schemaDef.getEntity(entityName);
+    let entityDef: IEntityRef = <EntityRef>entityName;
+    if (isString(entityName)) {
+      entityDef = schemaDef.getEntityRefFor(entityName);
     }
     return entityDef;
   }
@@ -34,9 +36,9 @@ export class SchemaUtils {
     const flattenObjects: any[] = [];
     for (let i = 0; i < innerObjects.length; i++) {
       const obj = innerObjects[i];
-      if (!_.isUndefined(obj) && !_.isNull(obj)) {
+      if (!isUndefined(obj) && !isNull(obj)) {
         // ignoring null and undefined values
-        if (_.isArray(obj)) {
+        if (isArray(obj)) {
           for (let j = 0; j < obj.length; j++) {
             map.push([i, j]);
             flattenObjects.push(obj[j]);
@@ -63,9 +65,9 @@ export class SchemaUtils {
           objects[sourceIdx][propName] = [];
         }
         const posIdx = mapping[1];
-        _.set(<any>objects[sourceIdx], propName + '[' + posIdx + ']', flattenObjects[i]);
+        set(<any>objects[sourceIdx], propName + '[' + posIdx + ']', flattenObjects[i]);
       } else {
-        _.set(<any>objects[sourceIdx], propName, flattenObjects[i]);
+        set(<any>objects[sourceIdx], propName, flattenObjects[i]);
       }
 
     }

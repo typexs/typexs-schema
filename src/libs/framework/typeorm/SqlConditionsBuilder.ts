@@ -1,10 +1,10 @@
-import {SelectQueryBuilder} from 'typeorm';
 import * as _ from 'lodash';
 import {NameResolver} from '../../../libs/framework/typeorm/NameResolver';
 import {NotYetImplementedError} from '@typexs/base';
-import {ClassRef, IClassRef} from 'commons-schema-api/browser';
+import {ClassRef, IClassRef} from '@allgemein/schema-api';
 import {TypeOrmSqlConditionsBuilder} from '@typexs/base/libs/storage/framework/typeorm/TypeOrmSqlConditionsBuilder';
 import {PropertyRef} from '../../registry/PropertyRef';
+import {SelectQueryBuilder} from 'typeorm';
 //
 // export interface IConditionJoin {
 //   alias: string;
@@ -43,7 +43,6 @@ export class SqlConditionsBuilder<T> extends TypeOrmSqlConditionsBuilder<T> {
     const joins = [];
     const arrJoins = key.split('.');
     let tmp: IClassRef = this.entityRef.getClassRef();
-
 
 
     const alias = this.alias ? this.alias : this.baseQueryBuilder ? this.baseQueryBuilder.alias : null;
@@ -142,9 +141,11 @@ export class SqlConditionsBuilder<T> extends TypeOrmSqlConditionsBuilder<T> {
       }
     }
 
-    for (const _join of joins) {
-      if (this.baseQueryBuilder instanceof SelectQueryBuilder) {
-        this.baseQueryBuilder.leftJoin(_join.table, _join.alias, _join.condition);
+    if (this.type === 'select') {
+      for (const _join of joins) {
+        // if (this.baseQueryBuilder instanceof SelectQueryBuilder) {
+        (this.baseQueryBuilder as SelectQueryBuilder<any>).leftJoin(_join.table, _join.alias, _join.condition);
+        // }
       }
     }
 

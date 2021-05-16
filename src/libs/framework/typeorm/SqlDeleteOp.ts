@@ -1,11 +1,11 @@
+import {isArray, isString} from 'lodash';
 import {EntityDefTreeWorker} from '../EntityDefTreeWorker';
 import {EntityRef} from '../../registry/EntityRef';
 import {PropertyRef} from '../../registry/PropertyRef';
 import {IDataExchange} from '../IDataExchange';
 import {EntityController} from '../../EntityController';
-import * as _ from '../../LoDash';
 import {XS_P_PREV_ID} from '../../Constants';
-import {ClassRef, ClassType} from 'commons-schema-api/browser';
+import {ClassRef} from '@allgemein/schema-api';
 import {NotSupportedError, TypeOrmConnectionWrapper} from '@typexs/base';
 import {IDeleteOp} from '@typexs/base/libs/storage/framework/IDeleteOp';
 import {IDeleteOptions} from '@typexs/base/libs/storage/framework/IDeleteOptions';
@@ -94,7 +94,7 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
 
   private prepare(object: T | T[]): T[] {
     let objs: T[] = [];
-    if (_.isArray(object)) {
+    if (isArray(object)) {
       objs = object;
     } else {
       objs.push(object);
@@ -104,17 +104,17 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
 
 
   private async deleteByEntityDef<T>(entityName: string | EntityRef, objects: T[]): Promise<T[]> {
-    const entityDef = _.isString(entityName) ? this.em.schema().getEntity(entityName) : entityName;
-    return await this.walk(entityDef, objects);
+    const entityDef = isString(entityName) ? this.em.schema().getEntityRefFor(entityName) : entityName;
+    return await this.walk(entityDef as EntityRef, objects);
   }
 
 
   async run(object: T | T[]): Promise<T | T[] | number | any> {
-    const isArray = _.isArray(object);
+    const _isArray = isArray(object);
 
     this.objects = this.prepare(object);
 
-    const resolveByEntityDef = EntityController.resolveByEntityDef(this.objects);
+    const resolveByEntityDef = this.em.resolveByEntityDef(this.objects);
     const entityNames = Object.keys(resolveByEntityDef);
     this.c = (await this.em.storageRef.connect() as TypeOrmConnectionWrapper);
     try {
@@ -135,7 +135,7 @@ export class SqlDeleteOp<T> extends EntityDefTreeWorker implements IDeleteOp<T> 
       await this.c.close();
     }
 
-    if (!isArray) {
+    if (!_isArray) {
       return this.objects.shift();
     }
     return this.objects;

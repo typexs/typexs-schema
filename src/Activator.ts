@@ -1,11 +1,12 @@
 import {BasicPermission, IPermissionDef, IPermissions} from '@typexs/roles-api';
-import { IActivator, Injector, Log} from '@typexs/base';
+import {IActivator, Injector} from '@typexs/base';
 import {EntityRegistry} from './libs/EntityRegistry';
 import {EntityControllerFactory} from './libs/EntityControllerFactory';
 import {
+  NAMESPACE_BUILT_ENTITY,
   PERMISSION_ALLOW_ACCESS_ENTITY,
-  PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN,
   PERMISSION_ALLOW_ACCESS_ENTITY_METADATA,
+  PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN,
   PERMISSION_ALLOW_CREATE_ENTITY,
   PERMISSION_ALLOW_CREATE_ENTITY_PATTERN,
   PERMISSION_ALLOW_DELETE_ENTITY,
@@ -14,13 +15,18 @@ import {
   PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN
 } from './libs/Constants';
 import {EntityRef} from './libs/registry/EntityRef';
+import './libs/decorators/register';
+import {RegistryFactory} from '../../../node-commons/allgemein-schema-api/build/package';
+
+// create ones
+const registry: EntityRegistry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
 
 
 export class Activator implements IActivator, IPermissions {
 
 
   async startup(): Promise<void> {
-    const registry = EntityRegistry.$();
+
     Injector.set(EntityRegistry, registry);
     Injector.set(EntityRegistry.NAME, registry);
 
@@ -43,7 +49,7 @@ export class Activator implements IActivator, IPermissions {
 
     const registry = EntityRegistry.$();
     registry.listEntities().map((e: EntityRef) => {
-      if (e.isStoreable()) {
+      if (e.isStorable()) {
         permissions.push(new BasicPermission(PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN.replace(':name', e.machineName)));
         permissions.push(new BasicPermission(PERMISSION_ALLOW_CREATE_ENTITY_PATTERN.replace(':name', e.machineName)));
         permissions.push(new BasicPermission(PERMISSION_ALLOW_UPDATE_ENTITY_PATTERN.replace(':name', e.machineName)));

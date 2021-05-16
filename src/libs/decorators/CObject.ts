@@ -1,10 +1,13 @@
+import './register';
 import {IObject} from '../registry/IObject';
-import {classRefGet} from '../Helper';
-
+import {Embeddable as _Embeddable} from '@allgemein/schema-api';
+import {NAMESPACE_BUILT_ENTITY} from '../Constants';
+import {defaults} from 'lodash';
 
 export function CObject(options: IObject = {}) {
   return function (object: Function) {
-    classRefGet(object).setOptions(options);
+    _Embeddable(defaults(options, {namespace: NAMESPACE_BUILT_ENTITY}))(object);
+    // classRefGet
   };
 }
 

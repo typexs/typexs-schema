@@ -1,12 +1,11 @@
 import {NotYetImplementedError} from '@typexs/base';
 import {PropertyRef} from '../registry/PropertyRef';
-import {EntityRegistry} from '../EntityRegistry';
 import * as _ from 'lodash';
 import {OrderDesc} from './OrderDesc';
 import {ConditionValidationError} from '../exceptions/ConditionValidationError';
-import {And, ExprDesc, IExpr} from 'commons-expressions/browser';
-import {ClassRef} from 'commons-schema-api/browser';
-import {classRefGet} from '../Helper';
+import {And, ExprDesc, IExpr} from '@allgemein/expressions';
+import {IClassRef, METATYPE_CLASS_REF, RegistryFactory} from '@allgemein/schema-api';
+import {NAMESPACE_BUILT_ENTITY} from '../Constants';
 
 export type KeyMapType = 'from' | 'to';
 
@@ -22,7 +21,9 @@ export class KeyMapDesc implements IExpr {
 
 export class JoinDesc implements IExpr {
   readonly type: string = 'join';
-  readonly joinRef: ClassRef;
+
+  readonly base: string | Function;
+  // readonly joinRef: IClassRef;
 
   readonly keyMaps: KeyMapDesc[] = [];
 
@@ -34,14 +35,17 @@ export class JoinDesc implements IExpr {
     if (_.isString(base)) {
       throw new NotYetImplementedError();
     }
-    this.joinRef = classRefGet(base);
+    this.base = base;
     this.keyMaps = keyMaps;
     this.condition = conditions;
     if (order) {
       this.order = !_.isArray(order) ? [order] : order;
     }
+  }
 
 
+  getJoinRef() {
+    return RegistryFactory.get(NAMESPACE_BUILT_ENTITY).getClassRefFor(this.base, METATYPE_CLASS_REF);
   }
 
   getFrom() {
@@ -52,14 +56,14 @@ export class JoinDesc implements IExpr {
     return _.find(this.keyMaps, k => k.type === 'to');
   }
 
-  validate(sourceDef: ClassRef, propertyDef: PropertyRef, targetDef: ClassRef, throwing: boolean = true) {
-    const registry = EntityRegistry.$();
+  validate(sourceDef: IClassRef, propertyDef: PropertyRef, targetDef: IClassRef, throwing: boolean = true) {
+    const registry = sourceDef.getRegistry();
     if (this.condition) {
-      this.condition.validate(registry, this.joinRef);
+      this.condition.validate(registry, this.getJoinRef());
     }
-    this.getFrom().cond.validate(registry, this.joinRef, sourceDef);
-    this.getTo().cond.validate(registry, targetDef, this.joinRef);
-    const props = EntityRegistry.getPropertyRefsFor(this.joinRef).map(p => p.name);
+    this.getFrom().cond.validate(registry, this.getJoinRef(), sourceDef);
+    this.getTo().cond.validate(registry, targetDef, this.getJoinRef());
+    const props = sourceDef.getRegistry().getPropertyRefsFor(this.getJoinRef()).map(p => p.name);
     this.order.forEach(o => {
       if (props.indexOf(o.key.key) === -1) {
         throw new ConditionValidationError('no property with order key ' + o.key.key + ' found.');

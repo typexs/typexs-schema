@@ -1,23 +1,23 @@
 import {PropertyRef} from './PropertyRef';
 import {IEntity} from './IEntity';
 import * as _ from 'lodash';
+import {assign, defaults} from 'lodash';
 import {XS_P_$LABEL} from '@typexs/server/libs/Constants';
 
 import {
-  AbstractRef,
-  ClassRef,
-  IBuildOptions,
-  IEntityRef,
-  IValidationMetadataArgs,
-  SchemaUtils,
-  XS_TYPE_ENTITY,
-  XS_TYPE_PROPERTY
-} from 'commons-schema-api/browser';
+  DefaultEntityRef,
+  IClassRef, IEntityRef,
+  IJsonSchemaSerializeOptions,
+  ILookupRegistry,
+  JsonSchema,
+  METADATA_TYPE,
+  METATYPE_ENTITY,
+  METATYPE_PROPERTY,
+  RegistryFactory
+} from '@allgemein/schema-api';
 import {ClassUtils} from '@allgemein/base';
-import {REGISTRY_TXS_SCHEMA} from '../Constants';
-import {Expressions} from 'commons-expressions/browser';
-import {getMetadataStorage, lookupRegistry} from '../Helper';
-// import {getMetadataStorage} from 'class-validator/metadata/MetadataStorage';
+import {K_STORABLE, NAMESPACE_BUILT_ENTITY} from '../Constants';
+import {Expressions} from '@allgemein/expressions';
 import {__CLASS__} from '@typexs/base';
 
 const DEFAULT_OPTIONS: IEntity = {
@@ -30,49 +30,21 @@ const REGEX_ID_G = /(([\w_]+)=((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\'),?)/g;
 const REGEX_ID_K = /((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\',?)/;
 const REGEX_ID_KG = /((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\',?)/g;
 
-export class EntityRef extends AbstractRef implements IEntityRef {
+export class EntityRef extends DefaultEntityRef/*AbstractRef implements IEntityRef*/ {
 
 
-  constructor(fn: ClassRef | Function, options: IEntity = {}) {
-    super('entity', fn instanceof ClassRef ? fn.className : fn.name, fn, REGISTRY_TXS_SCHEMA);
+  constructor(/*fn: ClassRef | Function,*/ options: IEntity = {}) {
+    super(defaults(assign(options, {metaType: METATYPE_ENTITY}), DEFAULT_OPTIONS));
+    // super(METATYPE_ENTITY, fn instanceof ClassRef ? fn.className : fn.name, fn, NAMESPACE_BUILT_ENTITY);
     // OptionsHelper.merge(this.object, options);
-    this.object.isEntity = true;
-    options = _.defaults(options, DEFAULT_OPTIONS);
-    this.setOptions(options);
+
+    // options = _.defaults(options, DEFAULT_OPTIONS);
+    // this.setOptions(options);
   }
 
 
-  static resolveId(instance: any) {
-    if (_.has(instance, 'xs:entity_id')) {
-      return _.get(instance, 'xs:entity_id');
-    }
-    return null;
-  }
-
-  static resolveName(instance: any): string {
-    if (_.has(instance, 'xs:entity_name')) {
-      return _.get(instance, 'xs:entity_name');
-    } else {
-
-      const className = ClassUtils.getClassName(instance);
-      const xsdef: EntityRef = lookupRegistry().find(XS_TYPE_ENTITY, (x: EntityRef) => {
-        return x.name === className;
-      });
-
-      if (xsdef) {
-        return xsdef.name;
-      } else {
-        throw new Error('resolveName not found for instance: ' + JSON.stringify(instance));
-      }
-    }
-  }
-
-  static resolve(instance: any) {
-    const id = this.resolveId(instance);
-    if (id) {
-      return lookupRegistry().find(XS_TYPE_ENTITY, (e: EntityRef) => e.id() === id);
-    }
-    return null;
+  static resolve(instance: any, namespace: string = NAMESPACE_BUILT_ENTITY) {
+    return RegistryFactory.get(namespace).getEntityRefFor(instance);
   }
 
 
@@ -81,17 +53,17 @@ export class EntityRef extends AbstractRef implements IEntityRef {
     return false;
   }
 
-  isStoreable() {
-    return this.getOptions('storeable');
+  isStorable() {
+    return this.getOptions(K_STORABLE, true);
   }
 
 
   getPropertyRefs(): PropertyRef[] {
-    return this.getLookupRegistry().filter(XS_TYPE_PROPERTY, (e: PropertyRef) => e.getSourceRef().getClass() === this.getClass());
+    return this.getRegistry().getPropertyRefs(this as IEntityRef) as PropertyRef[];
   }
 
   getPropertyRef(name: string): PropertyRef {
-    return this.getPropertyRefs().find(p => p.name === name);
+    return this.getPropertyRefs().find(p => p.name === name) as PropertyRef;
   }
 
   /**
@@ -100,13 +72,13 @@ export class EntityRef extends AbstractRef implements IEntityRef {
    * @returns {any[]}
    */
   getPropertyRefIdentifier(): PropertyRef[] {
-    return this.getLookupRegistry().filter(XS_TYPE_PROPERTY, (e: PropertyRef) =>
+    return this.getRegistry().filter(METATYPE_PROPERTY, (e: PropertyRef) =>
       e.getSourceRef().getClass() === this.getClass() && e.isIdentifier());
-    // return LookupRegistry.$().filter(XS_TYPE_PROPERTY, (e: PropertyDef) => e.entityName === this.name && e.identifier);
+    // return LookupRegistry.$().filter(METATYPE_PROPERTY, (e: PropertyDef) => e.entityName === this.name && e.identifier);
   }
 
   id() {
-    return this.getSourceRef().id().toLowerCase();
+    return this.getClassRef().id();
   }
 
   isOf(instance: any): boolean {
@@ -135,23 +107,25 @@ export class EntityRef extends AbstractRef implements IEntityRef {
     return this.resolveId(instance);
   }
 
-  create<T>(): T {
-    return this.new();
-  }
-
-  new<T>(): T {
-    const instance = <T>this.object.new();
-    const id = this.id();
-    // TODO make constant of xs:entity_id
-    Reflect.defineProperty(<any>instance, 'xs:entity_id', {
-      value: id,
-      writable: false,
-      enumerable: false,
-      configurable: false
-    });
-    return instance;
-
-  }
+  // create<T>(): T {
+  //   return this.new();
+  // }
+  //
+  // new<T>(addinfo: boolean = true): T {
+  //   const instance = <T>this.object.create(addinfo);
+  //   // const id = this.id();
+  //   // // TODO make constant of xs:entity_id
+  //   // if (addinfo) {
+  //   //   Reflect.defineProperty(<any>instance, __ID__, {
+  //   //     value: id,
+  //   //     writable: false,
+  //   //     enumerable: true,
+  //   //     configurable: false
+  //   //   });
+  //   // }
+  //   return instance;
+  //
+  // }
 
   buildLookupConditions(data: any | any[]) {
     return Expressions.buildLookupConditions(this, data);
@@ -162,17 +136,17 @@ export class EntityRef extends AbstractRef implements IEntityRef {
     return Expressions.parseLookupConditions(this, id);
   }
 
-  getClass() {
-    return this.getClassRef().getClass();
-  }
+  // getClass() {
+  //   return this.getClassRef().getClass();
+  // }
+  //
+  // getClassRef() {
+  //   return this.object;
+  // }
 
-  getClassRef() {
-    return this.object;
-  }
-
-  build<T>(data: any, options: IBuildOptions = {}): T {
-    return <T>SchemaUtils.transform(this, data, options);
-  }
+  // build<T>(data: any, options: IBuildOptions = {}): T {
+  //   return <T>SchemaUtils.transform(this, data, options);
+  // }
 
 
   label(entity: any, sep: string = ' ', max: number = 1024): string {
@@ -211,45 +185,57 @@ export class EntityRef extends AbstractRef implements IEntityRef {
   }
 
 
-  toJson(withProperties: boolean = true) {
-    const o = super.toJson();
-    o.schema = this.object.getSchema();
-    if (withProperties) {
-      o.properties = this.getPropertyRefs().map(p => p.toJson());
-    }
-
-    const storage = getMetadataStorage();
-    const metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null, true, false);
-
-    metadata.forEach(m => {
-      const prop = _.find(o.properties, p => p.name === m.propertyName);
-      if (prop) {
-        if (!prop.validator) {
-          prop.validator = [];
-        }
-
-        const args: IValidationMetadataArgs = {
-          type: m.type,
-          target: this.object.className,
-          propertyName: m.propertyName,
-          constraints: m.constraints,
-          constraintCls: m.constraintCls,
-          validationTypeOptions: m.validationTypeOptions,
-          validationOptions: {
-            // TODO since 0.9.1 context: m.context,
-            message: m.message,
-            groups: m.groups,
-            always: m.always,
-            each: m.each,
-          }
-        };
-
-
-        prop.validator.push(args);
-      }
-    });
-
-    return o;
+  // toJson(withProperties: boolean = true) {
+  //   const o = super.toJson();
+  //   o.schema = this.object.getSchema();
+  //   if (withProperties) {
+  //     o.properties = this.getPropertyRefs().map(p => p.toJson());
+  //   }
+  //
+  //   const storage = getMetadataStorage();
+  //   const metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null, true, false);
+  //
+  //   metadata.forEach(m => {
+  //     const prop = _.find(o.properties, p => p.name === m.propertyName);
+  //     if (prop) {
+  //       if (!prop.validator) {
+  //         prop.validator = [];
+  //       }
+  //
+  //       const args: IValidationMetadataArgs = {
+  //         type: m.type,
+  //         target: this.object.className,
+  //         propertyName: m.propertyName,
+  //         constraints: m.constraints,
+  //         constraintCls: m.constraintCls,
+  //         validationTypeOptions: m.validationTypeOptions,
+  //         validationOptions: {
+  //           // TODO since 0.9.1 context: m.context,
+  //           message: m.message,
+  //           groups: m.groups,
+  //           always: m.always,
+  //           each: m.each,
+  //         }
+  //       };
+  //
+  //
+  //       prop.validator.push(args);
+  //     }
+  //   });
+  //
+  //   return o;
+  // }
+  toJsonSchema(options: IJsonSchemaSerializeOptions = {}) {
+    options = options || {};
+    return JsonSchema.serialize(this, {...options, namespace: this.namespace, allowKeyOverride: true});
   }
 
+
+  getRegistry(): ILookupRegistry {
+    return RegistryFactory.get(this.namespace);
+  }
+
+  getClassRefFor(object: string | Function | IClassRef, type: METADATA_TYPE): IClassRef {
+    return this.getRegistry().getClassRefFor(object, type);
+  }
 }

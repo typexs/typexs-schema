@@ -1,30 +1,27 @@
 import {IProperty} from './IProperty';
 import * as _ from 'lodash';
+import {assign} from 'lodash';
 import {EntityRef} from './EntityRef';
 import * as moment from 'moment';
 
-import {AbstractRef, ClassRef, IBuildOptions, IPropertyRef, JS_PRIMATIVE_TYPES, XS_TYPE_PROPERTY} from 'commons-schema-api/browser';
+import {DefaultPropertyRef, IBuildOptions, IClassRef, JS_PRIMATIVE_TYPES, METATYPE_PROPERTY} from '@allgemein/schema-api';
 import {NotSupportedError, NotYetImplementedError} from '@typexs/base';
-import {ExprDesc} from 'commons-expressions/browser';
+import {ExprDesc} from '@allgemein/expressions';
 import {OrderDesc} from '../../libs/descriptors/OrderDesc';
-import {ClassUtils} from '@allgemein/base';
-import {REGISTRY_TXS_SCHEMA} from '../Constants';
-import {classRefGet} from '../Helper';
+import {K_NULLABLE, K_STORABLE} from '../Constants';
 
 
-export class PropertyRef extends AbstractRef implements IPropertyRef {
+export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPropertyRef*/ {
 
-  readonly cardinality: number = 1;
+  // readonly cardinality: number = 1;
 
-  readonly entityName: string;
+  // readonly dataType: string;
 
-  readonly dataType: string;
+  // readonly targetRef: IClassRef = null;
 
-  readonly targetRef: ClassRef = null;
+  // readonly propertyRef: IClassRef = null;
 
-  readonly propertyRef: ClassRef = null;
-
-  joinRef: ClassRef = null;
+  joinRef: IClassRef = null;
 
   readonly identifier: boolean;
 
@@ -33,19 +30,22 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   readonly embed: boolean;
 
 
-  constructor(options: IProperty) {
-    super('property', options.propertyName, options.sourceClass, REGISTRY_TXS_SCHEMA);
-    this.setOptions(options);
-    this.entityName = this.object.className;
+  get entityName() {
+    return this.getClassRef().name;
+  }
 
+  constructor(options: IProperty) {
+    super(assign(options, {metaType: METATYPE_PROPERTY}));
+    let targetRef = null;
     if (!options.type && !options.propertyClass) {
       throw new NotSupportedError(`property ${this.name} has no defined type nor property class`);
     } else if (_.isString(options.type)) {
       const found_primative = _.find(JS_PRIMATIVE_TYPES, t => (new RegExp('^' + t + ':?')).test((<string>options.type).toLowerCase()));
       if (found_primative || options.type.toLowerCase() === options.type) {
-        this.dataType = options.type;
+        // this.dataType = options.type;
       } else {
-        this.targetRef = classRefGet(options.type);
+        targetRef = this.getTargetRef();
+        // this.targetRef = this.getClassRefFor(options.type);
       }
     }
 
@@ -55,12 +55,13 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
 
     if (_.isFunction(options.type) || _.isFunction(options.targetClass)) {
       const targetClass = options.type || options.targetClass;
-      this.targetRef = classRefGet(targetClass);
-    } else if (_.isFunction(options.propertyClass)) {
-      this.propertyRef = classRefGet(options.propertyClass);
+      // this.targetRef = this.getClassRefFor(targetClass);
+      targetRef = this.getTargetRef();
+      // } else if (_.isFunction(options.propertyClass)) {
+      //   this.propertyRef = this.getClassRefFor(options.propertyClass, METATYPE_CLASS_REF);
     }
 
-    if (!this.targetRef && !this.dataType && !this.propertyRef) {
+    if (!targetRef && !this.dataType /*&& !this.propertyRef*/) {
       throw new NotSupportedError('No primative or complex data type given: ' + JSON.stringify(options));
     }
 
@@ -87,25 +88,16 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   id() {
-    return [this.getSourceRef().id(), this.name].join('--').toLowerCase();
-  }
-
-  /*
-    get schemaName() {
-      return this.object.schema;
-    }
-  */
-  isReference(): boolean {
-    return this.targetRef != null;
+    return [this.getClassRef().id(), this.name].join('--').toLowerCase();
   }
 
   isSequence(): boolean {
     return this.getOptions('sequence', false);
   }
 
-  isInternal(): boolean {
-    return this.propertyRef === null;
-  }
+  // isInternal(): boolean {
+  //   return this.propertyRef === null;
+  // }
 
   isEntityReference(): boolean {
     if (this.isReference()) {
@@ -172,19 +164,19 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   }
 
   getTargetClass() {
-
     if (this.isReference()) {
       return this.targetRef.getClass();
     }
     throw new NotSupportedError('no  target class');
   }
 
-  getSubPropertyRef(): PropertyRef[] {
-    if (!this.propertyRef) {
-      return [];
-    }
-    return this.getLookupRegistry().filter(XS_TYPE_PROPERTY, {entityName: this.propertyRef.className});
-  }
+  //
+  // getSubPropertyRef(): PropertyRef[] {
+  //   if (!this.propertyRef) {
+  //     return [];
+  //   }
+  //   return this.getRegistry().filter(METATYPE_PROPERTY, {entityName: this.propertyRef.name});
+  // }
 
 
   isOutOfSize(x: number): boolean {
@@ -202,6 +194,12 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     return this.cardinality === 0 || this.cardinality > 1;
   }
 
+  get dataType() {
+    if (!this.isReference()) {
+      return this.getType();
+    }
+    return undefined;
+  }
 
   convert(data: any, options?: IBuildOptions): any {
     const [baseType, variant] = this.dataType.split(':');
@@ -266,10 +264,12 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
   get storingName() {
     let name = this.getOptions('name', null);
     if (!name) {
-      const prefix = this.object.isEntity ? 'p' : 'i'; // + _.snakeCase(this.object.className);
+      const prefix = this.getClassRef().hasEntityRef() ? 'p' : 'i'; // + _.snakeCase(this.object.className);
 
-      if (this.isReference() && !this.isEmbedded()) {
-        name = [prefix, this.getSourceRef().machineName, this.machineName].join('_');
+      if (this.isReference() && this.isAppended()) {
+        name = [prefix, _.snakeCase(this.name)].join('_');
+      } else if (this.isReference() && !this.isEmbedded()) {
+        name = [prefix, this.getClassRef().machineName, this.machineName].join('_');
         /*
         if (this.isEntityReference()) {
           if (this.object.isEntity) {
@@ -284,8 +284,8 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
             name = [prefix, this.object.machineName(), this.targetRef.machineName()].join('_');
           }
         }*/
-      } else if (this.propertyRef) {
-        name = [prefix, _.snakeCase(this.name)].join('_');
+        // } else if (this.propertyRef) {
+        //   name = [prefix, _.snakeCase(this.name)].join('_');
       } else {
         name = _.snakeCase(this.name);
       }
@@ -295,24 +295,11 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
 
 
   isNullable() {
-    return this.getOptions('nullable', false);
+    return this.getOptions(K_NULLABLE, false);
   }
 
-  isStoreable() {
-    return this.getOptions('storeable', true);
-  }
-
-
-  /**
-   * retrieve propetry from an instance
-   * @param instance
-   */
-  get(instance: any) {
-    if (instance) {
-      return _.get(instance, this.name, null);
-    } else {
-      return null;
-    }
+  isStorable() {
+    return this.getOptions(K_STORABLE, true);
   }
 
 
@@ -330,52 +317,75 @@ export class PropertyRef extends AbstractRef implements IPropertyRef {
     return label;
   }
 
-  getType() {
-    if (this.dataType) {
-      return this.dataType;
-    } else if (this.targetRef) {
-      return ClassUtils.getClassName(this.targetRef.getClass());
-    }
-    return null;
-
-  }
-
-  toJson(withSubProperties: boolean = true) {
-    const o = super.toJson();
-    o.schema = this.object.getSchema();
-    o.entityName = this.entityName;
-    o.label = this.label();
-    o.dataType = this.dataType;
-    o.generated = this.generated;
-    o.identifier = this.identifier;
-    o.cardinality = this.cardinality;
-    delete o.options['sourceClass'];
-
-    if (this.targetRef) {
-      o.targetRef = this.targetRef.toJson(!this.isEntityReference());
-    }
-
-    if (this.propertyRef) {
-      o.propertyRef = this.propertyRef.toJson();
-    }
-
-    if (withSubProperties && this.isReference()) {
-      o.embedded = this.getSubPropertyRef().map(x => x.toJson());
-    }
-
-    return o;
-  }
-
   getEntityRef(): EntityRef {
-    return this.isEntityReference() ? <EntityRef><any>this.getTargetRef().getEntityRef() : null;
-  }
-
-  getTargetRef(): ClassRef {
-    return this.targetRef;
+    return this.isEntityReference() ? this.getTargetRef().getEntityRef() as EntityRef : null;
   }
 
   isIdentifier(): boolean {
     return this.identifier;
   }
+
+  isGenerated(): boolean {
+    return this.generated;
+  }
+
+  /*
+    get schemaName() {
+      return this.object.schema;
+    }
+  */
+  // isReference(): boolean {
+  //   return this.targetRef != null;
+  // }
+
+  // getType(): any {
+  //   if (this.dataType) {
+  //     return super.getType();
+  //   } else if (this.targetRef) {
+  //     return this.targetRef.getClass().name;
+  //   }
+  //   return null;
+  // }
+
+  // toJson(withSubProperties: boolean = true) {
+  //   const o = super.toJson();
+  //   o.schema = this.object.getSchema();
+  //   o.entityName = this.entityName;
+  //   o.label = this.label();
+  //   o.dataType = this.dataType;
+  //   o.generated = this.generated;
+  //   o.identifier = this.identifier;
+  //   o.cardinality = this.cardinality;
+  //   delete o.options['sourceClass'];
+  //
+  //   if (this.targetRef) {
+  //     o.targetRef = this.targetRef.toJson(!this.isEntityReference());
+  //   }
+  //
+  //   if (this.propertyRef) {
+  //     o.propertyRef = this.propertyRef.toJson();
+  //   }
+  //
+  //   if (withSubProperties && this.isReference()) {
+  //     o.embedded = this.getSubPropertyRef().map(x => x.toJson());
+  //   }
+  //
+  //   return o;
+  // }
+
+
+  // getTargetRef(): ClassRef {
+  //   return this.targetRef;
+  // }
+
+
+  //
+  // getRegistry(): ILookupRegistry {
+  //   return RegistryFactory.get(this.namespace);
+  // }
+  //
+  // getClassRefFor(object: string | Function | IClassRef): IClassRef {
+  //   return this.getRegistry().getClassRefFor(object, METATYPE_PROPERTY);
+  // }
 
 }

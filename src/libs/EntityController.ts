@@ -1,13 +1,11 @@
 import * as _ from 'lodash';
 import {SchemaRef} from './registry/SchemaRef';
-import {EntityRef} from './registry/EntityRef';
 import {ISchemaMapper} from './framework/ISchemaMapper';
 import {INameResolver} from './framework/INameResolver';
 import {IFramework} from './framework/IFramework';
-import {ISaveOptions, IStorageRef, NotSupportedError} from '@typexs/base';
+import {IEntityController, ISaveOptions, IStorageRef, NotSupportedError, NotYetImplementedError} from '@typexs/base';
 import {IFindOptions} from './framework/IFindOptions';
-import {ClassType, IClassRef, IEntityRef} from 'commons-schema-api';
-import {IEntityController, NotYetImplementedError} from '@typexs/base';
+import {ClassRef, ClassType, IClassRef, IEntityRef, ISchemaRef, METATYPE_CLASS_REF} from '@allgemein/schema-api';
 import {IAggregateOptions} from '@typexs/base/libs/storage/framework/IAggregateOptions';
 import {IUpdateOptions} from '@typexs/base/libs/storage/framework/IUpdateOptions';
 
@@ -15,7 +13,7 @@ export type CLS_DEF<T> = ClassType<T> | Function | string;
 
 export class EntityController implements IEntityController {
 
-  constructor(name: string, schema: SchemaRef = null, storageRef: IStorageRef = null, framework: IFramework = null) {
+  constructor(name: string, schema: ISchemaRef = null, storageRef: IStorageRef = null, framework: IFramework = null) {
     this._name = name;
     this.storageRef = storageRef;
     this.schemaDef = schema;
@@ -28,7 +26,7 @@ export class EntityController implements IEntityController {
   // revision support
   readonly storageRef: IStorageRef;
 
-  readonly schemaDef: SchemaRef;
+  readonly schemaDef: ISchemaRef;
 
   readonly mapper: ISchemaMapper;
 
@@ -36,18 +34,30 @@ export class EntityController implements IEntityController {
 
   readonly framework: IFramework;
 
-  static resolveByEntityDef<T>(objs: T[]) {
+  resolveByEntityDef<T>(objs: T[]) {
     const resolved: { [entityType: string]: T[] } = {};
     for (const obj of objs) {
-      const entityName = EntityRef.resolveName(obj);
-      if (!resolved[entityName]) {
-        resolved[entityName] = [];
+      // const entityName = EntityRef.resolveName(obj);
+      const className = ClassRef.getClassName(obj);
+      const classRef: IClassRef = this.getRegistry().find(METATYPE_CLASS_REF, (x: IClassRef) => x.name === className);
+      if (classRef) {
+        const entityName = classRef.name;
+        if (!resolved[entityName]) {
+          resolved[entityName] = [];
+        }
+        resolved[entityName].push(obj);
+      } else {
+        throw new Error('resolveName not found for instance: ' + JSON.stringify(obj));
       }
-      resolved[entityName].push(obj);
 
     }
     return resolved;
   }
+
+  getRegistry() {
+    return this.schemaDef.getRegistry();
+  }
+
 
   name() {
     return this._name;
@@ -61,7 +71,7 @@ export class EntityController implements IEntityController {
   }
 
   schema(): SchemaRef {
-    return this.schemaDef;
+    return this.schemaDef as SchemaRef;
   }
 
   async initialize() {
@@ -105,7 +115,7 @@ export class EntityController implements IEntityController {
   }
 
   aggregate<T>(baseClass: CLS_DEF<T>, pipeline: any[], options?: IAggregateOptions): Promise<any[]> {
-   throw new NotYetImplementedError();
+    throw new NotYetImplementedError();
   }
 
   forClass<T>(cls: CLS_DEF<T> | IClassRef): IEntityRef {

@@ -5,12 +5,13 @@ import {IStorageRef} from '@typexs/base/libs/storage/IStorageRef';
 import {IFindOp} from '@typexs/base/libs/storage/framework/IFindOp';
 import {IDeleteOp} from '@typexs/base/libs/storage/framework/IDeleteOp';
 import {ISaveOp} from '@typexs/base/libs/storage/framework/ISaveOp';
+import {ISchemaRef} from '../../../../../node-commons/allgemein-schema-api/build/package';
 
 export interface IFramework {
 
   on(storageRef: IStorageRef): boolean;
 
-  getSchemaMapper(storageRef: IStorageRef, schemaDef: SchemaRef): ISchemaMapper;
+  getSchemaMapper(storageRef: IStorageRef, schemaDef: ISchemaRef): ISchemaMapper;
 
   getFindOp<T>(entityController: EntityController): IFindOp<T>;
 
