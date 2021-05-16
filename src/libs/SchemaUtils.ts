@@ -3,7 +3,7 @@ import {SchemaRef} from './registry/SchemaRef';
 import {EntityRef} from './registry/EntityRef';
 import {PropertyRef} from './registry/PropertyRef';
 import {IEntity} from './registry/IEntity';
-import {IEntityRef} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {IEntityRef} from '@allgemein/schema-api';
 
 export class SchemaUtils {
 

@@ -16,7 +16,7 @@ import {
 } from './libs/Constants';
 import {EntityRef} from './libs/registry/EntityRef';
 import './libs/decorators/register';
-import {RegistryFactory} from '../../../node-commons/allgemein-schema-api/build/package';
+import {RegistryFactory} from '@allgemein/schema-api';
 
 // create ones
 const registry: EntityRegistry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
