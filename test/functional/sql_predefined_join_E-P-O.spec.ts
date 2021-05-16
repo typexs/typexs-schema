@@ -6,7 +6,7 @@ import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
 import {TypeOrmConnectionWrapper} from '@typexs/base';
 import {EntityController} from '../../src/libs/EntityController';
-import {ILookupRegistry, RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {ILookupRegistry, RegistryFactory} from '@allgemein/schema-api';
 import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 
 

@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
-import {RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {RegistryFactory} from '@allgemein/schema-api';
 import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 import {EntityRegistry} from '../../src/libs/EntityRegistry';
 

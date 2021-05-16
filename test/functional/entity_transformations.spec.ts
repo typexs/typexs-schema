@@ -3,7 +3,7 @@ import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {EntityRegistry} from '../../src/libs/EntityRegistry';
-import {RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {RegistryFactory} from '@allgemein/schema-api';
 import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 
 let registry: EntityRegistry;

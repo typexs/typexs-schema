@@ -11,7 +11,7 @@ import {Permission} from './schemas/role_permissions/Permission';
 import {Role} from './schemas/role_permissions/Role';
 import {RBelongsTo2} from './schemas/role_permissions/RBelongsTo2';
 import {TEST_STORAGE_OPTIONS} from './config';
-import {RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {RegistryFactory} from '@allgemein/schema-api';
 import {EntityRegistry, NAMESPACE_BUILT_ENTITY, REGISTRY_TXS_SCHEMA} from '../../src';
 
 

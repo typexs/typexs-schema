@@ -6,7 +6,7 @@ import 'reflect-metadata';
 import {NoEntity} from './schemas/reflection/NoEntity';
 import {SomeEntity} from './schemas/reflection/SomeEntity';
 import {EntityRegistry} from '../../src/libs/EntityRegistry';
-import {RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {RegistryFactory} from '@allgemein/schema-api';
 import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 import {EntityRef} from '../../src/libs/registry/EntityRef';
 
