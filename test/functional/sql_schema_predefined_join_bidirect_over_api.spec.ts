@@ -1,19 +1,18 @@
+import '../../src/libs/decorators/register';
 import {EntityAPIController} from '../../src/controllers/EntityAPIController';
-// process.env['SQL_LOG'] = 'X';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
-
 import {Injector, IRuntimeLoaderOptions, TypeOrmEntityRegistry} from '@typexs/base';
 import {Bootstrap} from '@typexs/base/Bootstrap';
-
 import {TestHelper} from './TestHelper';
-
 import {K_ROUTE_CONTROLLER, Server} from '@typexs/server';
 import {Permission} from './schemas/role_permissions/Permission';
 import {Role} from './schemas/role_permissions/Role';
 import {RBelongsTo2} from './schemas/role_permissions/RBelongsTo2';
 import {TEST_STORAGE_OPTIONS} from './config';
+import {RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {EntityRegistry, NAMESPACE_BUILT_ENTITY, REGISTRY_TXS_SCHEMA} from '../../src';
 
 
 const settingsTemplate: any = {
@@ -36,14 +35,14 @@ const settingsTemplate: any = {
     ],
 
     libs: [{
-      topic: 'entities.role_permissions',
-      refs: [__dirname + '/schema/role_permissions']
+      topic: 'entity.role_permissions',
+      refs: [__dirname + '/schemas/role_permissions']
     }]
   },
 
 
   logging: {
-    enable: false,
+    enable: true,
     level: 'debug',
     transports: [{console: {name: 'sql_schema_predefined_join_bidirect_over_api'}}],
   },
@@ -78,6 +77,7 @@ class SqlSchemaPredefinedJoinBidirectOverApiSpec {
     TestHelper.resetTypeorm();
     const settings = _.clone(settingsTemplate);
     Bootstrap.reset();
+    (RegistryFactory.get(NAMESPACE_BUILT_ENTITY) as EntityRegistry).reload([Permission, Role, RBelongsTo2]);
 
     bootstrap = Bootstrap.setConfigSources([{type: 'system'}])
       .configure(settings)
@@ -87,6 +87,8 @@ class SqlSchemaPredefinedJoinBidirectOverApiSpec {
     await bootstrap.prepareRuntime();
     await bootstrap.activateStorage();
     await bootstrap.startup();
+
+    const registry = RegistryFactory.get(REGISTRY_TXS_SCHEMA);
 
     server = Injector.get('server.default');
     await server.start();

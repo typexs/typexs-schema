@@ -1,3 +1,4 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
@@ -5,6 +6,9 @@ import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
 import {EntityController} from '../../src/libs/EntityController';
 import {TypeOrmConnectionWrapper} from '@typexs/base';
+import {ILookupRegistry, RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
 
 let c: TypeOrmConnectionWrapper;
 let entityController: EntityController;
@@ -12,16 +16,27 @@ let entityController: EntityController;
 let Teacher: any;
 let RBelongsTo: any;
 let SimpleLecture: any;
+let registry: EntityRegistry;
 
 @suite('functional/sql_predefined_join E-P-E')
 class SqlPredefinedJoinEPESpec {
 
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
 
   async before() {
     TestHelper.resetTypeorm();
+
     Teacher = require('./schemas/join/Teacher').Teacher;
     RBelongsTo = require('./schemas/join/RBelongsTo').RBelongsTo;
     SimpleLecture = require('./schemas/join/SimpleLecture').SimpleLecture;
+
+    registry.reload();
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'join';

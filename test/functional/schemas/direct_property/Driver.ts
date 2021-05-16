@@ -11,7 +11,7 @@ export class Driver {
   @Property({type: 'string'})
   nickName: string;
 
-  @Property({targetClass: Skil})
+  @Property({type: Skil})
   skill: Skil;
 
 

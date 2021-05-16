@@ -1,3 +1,4 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
@@ -5,6 +6,8 @@ import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
 import {TypeOrmConnectionWrapper} from '@typexs/base';
 import {EntityController} from '../../src/libs/EntityController';
+import {ILookupRegistry, RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 
 
 let c: TypeOrmConnectionWrapper;
@@ -13,9 +16,17 @@ let entityController: EntityController;
 let Candidate: any;
 let IdentityRole: any;
 let Identity: any;
-
+let registry: ILookupRegistry;
 @suite('functional/sql_predefined_join E-P-O')
 class SqlPredefinedJoinEPOSpec {
+
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
 
 
   async before() {

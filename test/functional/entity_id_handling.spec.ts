@@ -1,11 +1,25 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {EntityRegistry} from '../../src/libs/EntityRegistry';
+import {RegistryFactory} from '@allgemein/schema-api';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
+import {EntityRef} from '../../src/libs/registry/EntityRef';
 
+let registry: EntityRegistry;
 
 @suite('functional/entities_id_handling')
 class EntityIdHandlingSpec {
+
+
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY) as EntityRegistry;
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
 
 
   @test
@@ -13,8 +27,7 @@ class EntityIdHandlingSpec {
     require('./schemas/default/Author');
     require('./schemas/default/ComplexIdsKeys');
 
-    const registry = EntityRegistry.$();
-    const entityDef = registry.getEntityRefByName('author');
+    const entityDef = registry.getEntityRefByName('author') as EntityRef;
 
     let conditions = entityDef.createLookupConditions('1');
     expect(_.has(conditions, 'id')).to.be.true;
@@ -37,7 +50,7 @@ class EntityIdHandlingSpec {
     expect(conditions).to.have.length(3);
     expect(conditions).to.be.deep.eq([{id: 1}, {id: 2}, {id: 3}]);
 
-    const entityDefPKs = registry.getEntityRefByName('ComplexIdsKeys');
+    const entityDefPKs = registry.getEntityRefFor('ComplexIdsKeys');
 
     // conditions = entityDefPKs.createLookupConditions('inc=1,code=\'test\'');
     // expect(conditions).to.be.deep.eq({inc: 1, code: 'test'});
@@ -59,7 +72,6 @@ class EntityIdHandlingSpec {
     require('./schemas/default/Author');
     require('./schemas/default/ComplexIdsKeys');
 
-    const registry = EntityRegistry.$();
     const entityDef = registry.getEntityRefByName('author');
 
     let str = entityDef.buildLookupConditions({id: 1});

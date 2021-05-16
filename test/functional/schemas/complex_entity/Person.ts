@@ -13,7 +13,7 @@ export class Person {
   @Property({type: 'string'})
   name: string;
 
-  @Property({targetClass: Job, cardinality: 0})
+  @Property({type: Job, cardinality: 0})
   jobs: Job[];
 
 }

@@ -1,25 +1,36 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
-import {DateType} from './schemas/default/DateType';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
+import {RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 
+let registry: EntityRegistry;
 
 @suite('functional/sql_schema_types')
 class SqlSchemaTypesSpec {
 
 
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
+
   before() {
     TestHelper.resetTypeorm();
   }
 
-
   @test
   async 'date type with created and updated variant'() {
 
-    require('./schemas/default/DateType').DateType;
-
+    const DateType = require('./schemas/default/DateType').DateType;
+    registry.reload([DateType]);
     const options = _.clone(TEST_STORAGE_OPTIONS);
 
     const connect = await TestHelper.connect(options);

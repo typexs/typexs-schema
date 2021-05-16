@@ -1,6 +1,6 @@
 import {ConditionObjectHolder} from './ConditionObjectHolder';
 import {Property} from '../../../../src/libs/decorators/Property';
-import {And, Eq, Key, Value} from 'commons-expressions';
+import {And, Eq, Key, Value} from '@allgemein/expressions';
 import {CObject} from '../../../../src/libs/decorators/CObject';
 
 

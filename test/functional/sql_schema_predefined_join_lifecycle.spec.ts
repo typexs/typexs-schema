@@ -1,10 +1,15 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {TestHelper} from './TestHelper';
 import * as _ from 'lodash';
 import {expect} from 'chai';
 import {TEST_STORAGE_OPTIONS} from './config';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
+import {RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 
 
+let registry: EntityRegistry;
 const FINDOPT = {
   hooks: {
     abortCondition: (entityRef: any, propertyDef: any, results: any, op: any) => {
@@ -15,18 +20,29 @@ const FINDOPT = {
 
 
 @suite('functional/sql_schema_predefined_join_lifecycle')
-class Sql_schema_predefined_join_lifecycleSpec {
+class SqlSchemaPredefinedJoinLifecycleSpec {
 
+
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
 
   before() {
     TestHelper.resetTypeorm();
   }
+
 
   @test
   async 'E-P-E[] over defined join'() {
     const Lecture = require('./schemas/join/Lecture').Lecture;
     const RBelongsTo = require('./schemas/join/RBelongsTo').RBelongsTo;
     const Teacher = require('./schemas/join/Teacher').Teacher;
+
+    registry.reload([Lecture, RBelongsTo, Teacher]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'join';

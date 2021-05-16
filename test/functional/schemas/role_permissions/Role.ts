@@ -1,6 +1,6 @@
 import {RBelongsTo2} from './RBelongsTo2';
 import {Permission} from './Permission';
-import {And, Eq, Key, Value} from 'commons-expressions';
+import {And, Eq, Key, Value} from '@allgemein/expressions';
 import {Schema} from '../../../../src/libs/decorators/Schema';
 import {Entity} from '../../../../src/libs/decorators/Entity';
 import {Property} from '../../../../src/libs/decorators/Property';

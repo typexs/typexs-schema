@@ -1,23 +1,62 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
-import {TypeOrmEntityRegistry} from '@typexs/base/browser';
+import {RegistryFactory} from '@allgemein/schema-api';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
 
+
+let registry: EntityRegistry;
 
 @suite('functional/sql_schema_basic_generations')
 class SqlSchemaBasicGenerationsSpec {
 
 
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
+
   before() {
-    TypeOrmEntityRegistry.reset();
     TestHelper.resetTypeorm();
   }
 
+  //
+  // static before() {
+  //   RegistryFactory.register(REGISTRY_TYPEORM, TypeOrmEntityRegistry);
+  //   RegistryFactory.register(/^typeorm\..*/, TypeOrmEntityRegistry);
+  //
+  //   // TypeOrmEntityRegistry.reset();
+  //   // TestHelper.resetTypeorm();
+  //
+  //
+  // }
+  //
+  // static after() {
+  //   RegistryFactory.reset();
+  // }
+  //
+  //
+  // before() {
+  //   TestHelper.resetTypeorm();
+  //   registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  // }
+  //
+  // after() {
+  //   RegistryFactory.reset();
+  // }
+
   @test
   async 'simple schema with one entity'() {
-    require('./schemas/default/Author');
+    const Author = require('./schemas/default/Author').Author;
+
+    registry.reload([Author]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
@@ -35,10 +74,11 @@ class SqlSchemaBasicGenerationsSpec {
     await c.close();
 
     const props = [];
-    const registry = TypeOrmEntityRegistry.$();
-    const entity = registry.getEntityRefByName('Author');
+    const entity = ref.getClassRef('Author');
+    // const entity = registry.getEntityRefByName('Author');
     expect(entity.name).to.be.eq('Author');
     const properties = entity.getPropertyRefs();
+    expect(properties).to.have.length(3);
     for (const p of properties) {
       const pname = p.name;
       props.push(pname);
@@ -50,7 +90,9 @@ class SqlSchemaBasicGenerationsSpec {
 
   @test
   async 'simple schema with one entity and json properties'() {
-    require('./schemas/default/ObjectWithJson');
+    const ObjectWithJson = require('./schemas/default/ObjectWithJson').ObjectWithJson;
+
+    registry.reload([ObjectWithJson]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
@@ -68,10 +110,11 @@ class SqlSchemaBasicGenerationsSpec {
     await c.close();
 
     const props = [];
-    const registry = TypeOrmEntityRegistry.$();
-    const entity = registry.getEntityRefByName('ObjectWithJson');
+    const entity = ref.getClassRef('ObjectWithJson');
+    // const entity = registry.getEntityRefByName('ObjectWithJson');
     expect(entity.name).to.be.eq('ObjectWithJson');
     const properties = entity.getPropertyRefs();
+    expect(properties).to.have.length(2);
     for (const p of properties) {
       const pname = p.name;
       props.push(pname);
@@ -81,11 +124,11 @@ class SqlSchemaBasicGenerationsSpec {
   }
 
 
-
   @test
   async 'simple schema with one entity but use other names'() {
 
-    require('./schemas/default/AuthorRename');
+    const AuthorRename = require('./schemas/default/AuthorRename').AuthorRename;
+    registry.reload([AuthorRename]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
@@ -110,8 +153,10 @@ class SqlSchemaBasicGenerationsSpec {
   @test
   async 'entity referencing property E-P-E (2 entities over join table)'() {
 
-    require('./schemas/default/Author');
-    require('./schemas/default/Book');
+    const Author = require('./schemas/default/Author').Author;
+    const Book = require('./schemas/default/Book').Book;
+
+    registry.reload([Author, Book]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
@@ -139,9 +184,9 @@ class SqlSchemaBasicGenerationsSpec {
   @test
   async 'entity referencing property E-P-E (2 entities over embedded id)'() {
 
-    require('./schemas/default/Course');
-    require('./schemas/default/Periode');
-
+    const Course = require('./schemas/default/Course').Course;
+    const Periode = require('./schemas/default/Periode').Periode;
+    registry.reload([Course, Periode]);
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
     const connect = await TestHelper.connect(options);
@@ -164,8 +209,9 @@ class SqlSchemaBasicGenerationsSpec {
   @test
   async 'entity referencing property E-P-O (entity to object over embedded id)'() {
 
-    require('./schemas/default/Course2');
-    require('./schemas/default/Literatur');
+    const Course2 = require('./schemas/default/Course2').Course2;
+    const Literatur = require('./schemas/default/Literatur').Literatur;
+    registry.reload([Course2, Literatur]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
@@ -193,9 +239,11 @@ class SqlSchemaBasicGenerationsSpec {
   @test
   async 'entity referencing property E-P-O-P-O (entity to object and again to object over embedded ids)'() {
 
-    require('./schemas/default/EDR');
-    require('./schemas/default/EDR_Object_DR');
-    require('./schemas/default/EDR_Object');
+    const EDR = require('./schemas/default/EDR').EDR;
+    const EDR_Object_DR = require('./schemas/default/EDR_Object_DR').EDR_Object_DR;
+    const EDR_Object = require('./schemas/default/EDR_Object').EDR_Object;
+
+    registry.reload([EDR, EDR_Object_DR, EDR_Object]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
@@ -224,9 +272,11 @@ class SqlSchemaBasicGenerationsSpec {
   @test
   async 'entity referencing property E-P-O-P-O (entity to object and again to object over embedded objects)'() {
 
-    require('./schemas/embedded/EntityWithEmbedded');
-    require('./schemas/embedded/EmbeddedObject');
-    require('./schemas/embedded/EmbeddedSubObject');
+    const EntityWithEmbedded = require('./schemas/embedded/EntityWithEmbedded').EntityWithEmbedded;
+    const EmbeddedObject = require('./schemas/embedded/EmbeddedObject').EmbeddedObject;
+    const EmbeddedSubObject = require('./schemas/embedded/EmbeddedSubObject').EmbeddedSubObject;
+
+    registry.reload([EntityWithEmbedded, EmbeddedObject, EmbeddedSubObject]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'embedded';
@@ -271,6 +321,8 @@ class SqlSchemaBasicGenerationsSpec {
     const Book = require('./schemas/default/Book').Book;
     const Summary = require('./schemas/default/Summary').Summary;
 
+    registry.reload([Author, Book, Summary]);
+
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
     const connect = await TestHelper.connect(options);
@@ -301,6 +353,7 @@ class SqlSchemaBasicGenerationsSpec {
   async 'schema with property in property'() {
 
     const PathFeatureCollection = require('./schemas/features/PathFeatureCollection').PathFeatureCollection;
+    registry.reload([PathFeatureCollection]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'default';
@@ -321,6 +374,7 @@ class SqlSchemaBasicGenerationsSpec {
   async 'complex entity with multiple object integrations E-P-O[]-P-O[]'() {
 
     const Person = require('./schemas/complex_entity/Person').Person;
+    registry.reload([Person]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'complex_entity';

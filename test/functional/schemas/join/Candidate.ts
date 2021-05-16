@@ -1,4 +1,4 @@
-import {Eq, Key, Value} from 'commons-expressions/browser';
+import {Eq, Key, Value} from '@allgemein/expressions';
 
 import {Identity} from './Identity';
 import {IdentityRole} from './IdentityRole';

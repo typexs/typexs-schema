@@ -1,3 +1,4 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
@@ -5,11 +6,23 @@ import {StorageRef} from '@typexs/base';
 import {EntityController} from '../../src/libs/EntityController';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
-import {XS_P_PREV_ID} from '../../src/libs/Constants';
+import {NAMESPACE_BUILT_ENTITY, XS_P_PREV_ID} from '../../src/libs/Constants';
+import {ILookupRegistry, RegistryFactory} from '@allgemein/schema-api';
 
+
+let registry: ILookupRegistry;
 
 @suite('functional/sql_plain_entity')
 class SqlPlainEntitySpec {
+
+
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
 
   before() {
     TestHelper.resetTypeorm();
@@ -24,6 +37,8 @@ class SqlPlainEntitySpec {
     const options = _.clone(TEST_STORAGE_OPTIONS);
 
     const Author = require('./schemas/default/Author').Author;
+    const authorRef = registry.getEntityRefFor(Author);
+
 
     const connect = await this.connect(options);
     const xsem = connect.controller;

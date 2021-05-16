@@ -1,24 +1,37 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {MultipleTypesDeclared} from './schemas/conversion/MultipleTypesDeclared';
 import {EmbeddedMultipleTypesDeclared} from './schemas/conversion/EmbeddedMultipleTypesDeclared';
-import {EntityRegistry} from '../../src/libs/EntityRegistry';
+import {ILookupRegistry, RegistryFactory} from '@allgemein/schema-api';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 
+let registry: ILookupRegistry;
 
 @suite('functional/conversion')
 class ConversionSpec {
 
 
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  // before() {
+  //   registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  // }
+
+  static after() {
+    RegistryFactory.reset();
+  }
+
   @test
   'check types json to object'() {
-
-    const registry = EntityRegistry.$();
     const regEntityDef = registry.getEntityRefFor(MultipleTypesDeclared);
 
     const mt = new MultipleTypesDeclared();
     // empty
     const emptyObject = JSON.stringify(mt);
-    const recreatedEmpty = regEntityDef.build(JSON.parse(emptyObject));
+    const recreatedEmpty = regEntityDef.build(JSON.parse(emptyObject), {skipClassNamespaceInfo: true});
 
     // console.log(emptyObject, recreatedEmpty);
     expect(mt).to.deep.eq(recreatedEmpty);
@@ -27,7 +40,7 @@ class ConversionSpec {
     // number
     mt.number = 12345;
     const numberObject = JSON.stringify(mt);
-    const recreatedNumber = regEntityDef.build(JSON.parse(numberObject)) as MultipleTypesDeclared;
+    const recreatedNumber = regEntityDef.build(JSON.parse(numberObject), {skipClassNamespaceInfo: true}) as MultipleTypesDeclared;
 
     // console.log(numberObject, recreatedNumber);
     expect(mt).to.deep.eq(recreatedNumber);
@@ -37,7 +50,7 @@ class ConversionSpec {
     // boolean
     mt.boolean = true;
     const booleanObject = JSON.stringify(mt);
-    const recreatedBoolean = regEntityDef.build(JSON.parse(booleanObject)) as MultipleTypesDeclared;
+    const recreatedBoolean = regEntityDef.build(JSON.parse(booleanObject), {skipClassNamespaceInfo: true}) as MultipleTypesDeclared;
 
     // console.log(booleanObject, recreatedBoolean);
     expect(mt).to.deep.eq(recreatedBoolean);
@@ -46,7 +59,7 @@ class ConversionSpec {
 
     mt.boolean = false;
     const booleanObject2 = JSON.stringify(mt);
-    const recreatedBoolean2 = regEntityDef.build(JSON.parse(booleanObject2)) as MultipleTypesDeclared;
+    const recreatedBoolean2 = regEntityDef.build(JSON.parse(booleanObject2), {skipClassNamespaceInfo: true}) as MultipleTypesDeclared;
 
     // console.log(booleanObject2, recreatedBoolean2);
     expect(mt).to.deep.eq(recreatedBoolean2);
@@ -56,7 +69,7 @@ class ConversionSpec {
     // string
     mt.string = 'this is a string';
     const strObject = JSON.stringify(mt);
-    const recreatedString = regEntityDef.build(JSON.parse(strObject)) as MultipleTypesDeclared;
+    const recreatedString = regEntityDef.build(JSON.parse(strObject), {skipClassNamespaceInfo: true}) as MultipleTypesDeclared;
 
     // console.log(strObject, recreatedString);
     expect(mt).to.deep.eq(recreatedString);
@@ -66,7 +79,7 @@ class ConversionSpec {
     // date
     mt.date = new Date();
     const dateObject = JSON.stringify(mt);
-    const recreatedDate = regEntityDef.build(JSON.parse(dateObject)) as MultipleTypesDeclared;
+    const recreatedDate = regEntityDef.build(JSON.parse(dateObject), {skipClassNamespaceInfo: true}) as MultipleTypesDeclared;
 
     // console.log(dateObject, recreatedDate);
     expect(mt).to.deep.eq(recreatedDate);
@@ -90,7 +103,7 @@ class ConversionSpec {
 
   @test
   'check js types on embedded objects during json to object conversion'() {
-    const registry = EntityRegistry.$();
+    // const registry = EntityRegistry.$();
     const regEntityDef = registry.getEntityRefFor(EmbeddedMultipleTypesDeclared);
     const properties = regEntityDef.getPropertyRefs();
     expect(properties).to.have.length(3);
@@ -113,7 +126,7 @@ class ConversionSpec {
 
     const stringifiedObject = JSON.stringify(emt);
     const _sObject = JSON.parse(stringifiedObject);
-    const recreatedObject = regEntityDef.build(_sObject) as EmbeddedMultipleTypesDeclared;
+    const recreatedObject = regEntityDef.build(_sObject, {skipClassNamespaceInfo: true}) as EmbeddedMultipleTypesDeclared;
 
     // console.log(stringifiedObject, recreatedObject);
     expect(recreatedObject).to.deep.eq(emt);

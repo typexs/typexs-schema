@@ -1,11 +1,10 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
-
 import {expect} from 'chai';
-
 import {TestHelper} from './TestHelper';
-import {And, Eq, Expressions, ExpressionValidationError, Key, Value} from 'commons-expressions';
-import {classRefGet} from '../../src/libs/Helper';
+import {And, Eq, Expressions, ExpressionValidationError, Key, Value} from '@allgemein/expressions';
 import {EntityRegistry} from '../../src/libs/EntityRegistry';
+import {METATYPE_CLASS_REF} from '@allgemein/schema-api';
 
 
 @suite('functional/expressions')
@@ -37,8 +36,8 @@ class ExpressionsSpec {
     const ConditionHolder = require('./schemas/default/ConditionHolder').ConditionHolder;
     const ConditionKeeper = require('./schemas/default/ConditionKeeper').ConditionKeeper;
 
-    const referred = classRefGet(ConditionHolder);
-    const referrer = classRefGet(ConditionKeeper);
+    const referred = registry.getClassRefFor(ConditionHolder, METATYPE_CLASS_REF);
+    const referrer = registry.getClassRefFor(ConditionKeeper, METATYPE_CLASS_REF);
 
     const isValid_01 = cond_01.validate(registry, referred, referrer);
     expect(isValid_01).to.be.true;
@@ -67,22 +66,26 @@ class ExpressionsSpec {
 
   @test
   async 'test on class reference'() {
+    const registry = EntityRegistry.$();
     const cond_01 = And(Eq('holders.tableName', Value('condition_keeper')), Eq('holders.tableId', Value(23)));
     const log: string[] = [];
     const ConditionHolder = require('./schemas/default/ConditionHolder').ConditionHolder;
     const ConditionKeeper = require('./schemas/default/ConditionKeeper').ConditionKeeper;
 
-    let referrer = classRefGet(ConditionKeeper);
+    let referrer = registry.getClassRefFor(ConditionKeeper, METATYPE_CLASS_REF);
+    // let referrer = classRefGet(ConditionKeeper);
     let test = cond_01.test(referrer);
     expect(test).to.be.true;
 
     const cond_02 = Eq('tableName', Value('condition_keeper'));
-    referrer = classRefGet(ConditionKeeper);
+    referrer = registry.getClassRefFor(ConditionKeeper, METATYPE_CLASS_REF);
+    // referrer = classRefGet(ConditionKeeper);
     test = cond_02.test(referrer, log);
     expect(test).to.be.false;
     expect(log.shift()).to.be.eq('key tableName is no property of ConditionKeeper');
 
-    referrer = classRefGet(ConditionHolder);
+    referrer = registry.getClassRefFor(ConditionHolder, METATYPE_CLASS_REF);
+    // referrer = classRefGet(ConditionHolder);
     test = cond_02.test(referrer, log);
     expect(test).to.be.true;
   }

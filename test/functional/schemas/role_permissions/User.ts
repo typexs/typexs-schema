@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import {RBelongsTo2} from './RBelongsTo2';
-import {And, Eq, Key, Value} from 'commons-expressions';
+import {And, Eq, Key, Value} from '@allgemein/expressions';
 import {Role} from './Role';
 import {Entity} from '../../../../src/libs/decorators/Entity';
 import {Property} from '../../../../src/libs/decorators/Property';

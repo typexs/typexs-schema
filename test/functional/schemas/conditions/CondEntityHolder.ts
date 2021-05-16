@@ -3,7 +3,7 @@ import {Property} from '../../../../src/libs/decorators/Property';
 import {Entity} from '../../../../src/libs/decorators/Entity';
 
 import {CondObjectContent} from './CondObjectContent';
-import {Eq, Key} from 'commons-expressions';
+import {Eq, Key} from '@allgemein/expressions';
 import {Asc} from '../../../../src/libs/descriptors/OrderDesc';
 
 @Schema({name: 'conditions'})

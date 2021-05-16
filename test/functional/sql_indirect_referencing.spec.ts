@@ -1,11 +1,14 @@
 // process.env.SQL_LOG = '1';
-
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
-import {TypeOrmConnectionWrapper} from '@typexs/base';
+import {TypeOrmConnectionWrapper, TypeOrmEntityRegistry} from '@typexs/base';
+import {ILookupRegistry, RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 
 
 const FINDOPT = {
@@ -17,11 +20,22 @@ const FINDOPT = {
 };
 
 
+let registry: EntityRegistry;
+
 @suite('functional/sql_indirect_referencing')
 class SqlIndirectReferencingSpec {
 
 
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
+
   before() {
+    TypeOrmEntityRegistry.reset();
     TestHelper.resetTypeorm();
   }
 
@@ -41,6 +55,8 @@ class SqlIndirectReferencingSpec {
     const Book = require('./schemas/default/Book').Book;
     const Summary = require('./schemas/default/Summary').Summary;
 
+    registry.reload([Author, Book, Summary]);
+
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
@@ -48,8 +64,8 @@ class SqlIndirectReferencingSpec {
 
 
     const a = new Author();
-    a.firstName = 'Robert';
-    a.lastName = 'Kania';
+    a.firstName = 'Bert';
+    a.lastName = 'Waia';
 
     let book_save_1 = new Book();
     book_save_1.content = 'This is a good book';
@@ -96,19 +112,21 @@ class SqlIndirectReferencingSpec {
 
     await c.close();
 
+
+
   }
 
 
   @test
   async 'entity lifecycle for integrated property with multiple references'() {
-
-
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'integrated_property';
 
 
     const Room = require('./schemas/integrated_property/Room').Room;
     const Equipment = require('./schemas/integrated_property/Equipment').Equipment;
+
+    registry.reload([Room, Equipment]);
 
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;

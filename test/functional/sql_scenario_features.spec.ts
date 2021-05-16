@@ -1,3 +1,4 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {TestHelper} from './TestHelper';
@@ -5,10 +6,23 @@ import * as _ from 'lodash';
 import {TEST_STORAGE_OPTIONS} from './config';
 import {TypeOrmConnectionWrapper} from '@typexs/base';
 import {TypeOrmEntityRegistry} from '@typexs/base/browser';
+import {RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
 
+let registry: EntityRegistry;
 
 @suite('functional/sql_scenario_features')
 class SqlScenarioFeaturesSpec {
+
+
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
 
 
   before() {
@@ -26,12 +40,22 @@ class SqlScenarioFeaturesSpec {
     const PointFeature = require('./schemas/features/PointFeature').PointFeature;
     const Speed = require('./schemas/features/Speed').Speed;
 
+    // registry.reload();
+
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
     const c = await ref.connect();
+
+    const tables: any[] = await c.connection.query(
+      'SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';'
+    );
+    expect(_.map(tables, t => t.name)).to.have.include.members([
+      'path_feature_collection',
+      'p_path_feature_collection_features'
+    ]);
 
 
     let a = new PathFeatureCollection();
@@ -69,6 +93,7 @@ class SqlScenarioFeaturesSpec {
 
     const Room = require('./schemas/integrated_property/Room').Room;
     const Equipment = require('./schemas/integrated_property/Equipment').Equipment;
+    registry.reload([Room, Equipment]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'integrated_property';
@@ -76,6 +101,14 @@ class SqlScenarioFeaturesSpec {
     const xsem = connect.controller;
     const ref = connect.ref;
     const c = await ref.connect() as TypeOrmConnectionWrapper;
+
+
+    const tables: any[] = await c.connection.query(
+      'SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';'
+    );
+    expect(_.map(tables, t => t.name)).to.have.include.members([
+      'room', 'p_equipment'
+    ]);
 
     let r = new Room();
     r.number = 123;

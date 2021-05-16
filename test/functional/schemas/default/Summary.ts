@@ -1,8 +1,8 @@
 import {Book} from './Book';
 
 import {Property} from '../../../../src/libs/decorators/Property';
-import {Entity} from '../../../../src/libs/decorators/Entity';
 import {PropertyOf} from '../../../../src/libs/decorators/PropertyOf';
+
 /**
  * - first parameter must be the reference to an other entity (string|Class)
  * - second parameter must be the name of the property, it is also the name

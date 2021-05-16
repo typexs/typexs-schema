@@ -1,39 +1,57 @@
 // process.env['SQL_LOG'] = 'X';
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
 import {TypeOrmConnectionWrapper} from '@typexs/base';
-// import {Permission} from "./schemas/role_permissions/Permission";
-// import {ContentHolder} from "./schemas/join/ContentHolder";
+import {RegistryFactory} from '@allgemein/schema-api';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
+import {EntityRegistry} from '../../src/libs/EntityRegistry';
+import {getMetadataArgsStorage} from 'typeorm';
 
+let registry: EntityRegistry;
 
 @suite('functional/sql_predefined_join_bidirect')
 class SqlSchemaPredefinedJoinBidirectSpec {
+
+
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
 
 
   before() {
     TestHelper.resetTypeorm();
   }
 
+  after() {
+  }
 
   @test
   async 'E-P-E[] over predefined join tables'() {
+    const metadata = getMetadataArgsStorage();
     const Role = require('./schemas/role_permissions/Role').Role;
     const Permission = require('./schemas/role_permissions/Permission').Permission;
 
+    registry.reload([Role, Permission]);
+
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'role_permissions';
-
-    // let schema = EntityRegistry.$().getSchemaDefByName(options.name);
 
     const connect = await TestHelper.connect(options);
     const xsem = connect.controller;
     const ref = connect.ref;
     const c = await ref.connect() as TypeOrmConnectionWrapper;
 
-    const tables: any[] = await c.connection.query('SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';');
+    const tables: any[] = await c.connection.query(
+      'SELECT * FROM sqlite_master WHERE type=\'table\' and tbl_name not like \'%sqlite%\';'
+    );
     expect(_.map(tables, t => t.name)).to.have.include.members([
       'role',
       'r_belongsto_2',
@@ -93,6 +111,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
   async 'E-P-E[] over predefined join tables - save empty'() {
     const Role = require('./schemas/role_permissions/Role').Role;
     const Permission = require('./schemas/role_permissions/Permission').Permission;
+    registry.reload([Role, Permission]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'role_permissions';
@@ -130,6 +149,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
   async 'E-P-E[] over predefined join tables - correct ordered'() {
     const Role = require('./schemas/role_permissions/Role').Role;
     const Permission = require('./schemas/role_permissions/Permission').Permission;
+    registry.reload([Role, Permission]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'role_permissions';
@@ -178,6 +198,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
   async 'update E-P-E[] over predefined join tables'() {
     const Role = require('./schemas/role_permissions/Role').Role;
     const Permission = require('./schemas/role_permissions/Permission').Permission;
+    registry.reload([Role, Permission]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'role_permissions';
@@ -256,24 +277,24 @@ class SqlSchemaPredefinedJoinBidirectSpec {
     results = await connectionWrapper.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(2);
 
-
     // should remove relation
     role.permissions = [];
     await entityController.save(role);
     results = await connectionWrapper.connection.query('SELECT * FROM r_belongsto_2;');
     expect(results).to.have.length(0);
 
-
     await connectionWrapper.close();
-
   }
 
 
   @test
   async 'create E-P-O[] over predefined join tables'() {
+    const metadata = getMetadataArgsStorage();
     const ContentHolder = require('./schemas/join/ContentHolder').ContentHolder;
     const Content = require('./schemas/join/Content').Content;
-    const CotnentRef = require('./schemas/join/ContentRef').ContentRef;
+    const ContentRef = require('./schemas/join/ContentRef').ContentRef;
+
+    registry.reload([ContentHolder, Content, ContentRef]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'join';
@@ -333,6 +354,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
   async 'mass processing E-P-E[] over predefined join tables with one-to-many connection'() {
     const Role = require('./schemas/role_permissions/Role').Role;
     const Permission = require('./schemas/role_permissions/Permission').Permission;
+    registry.reload([Role, Permission]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'role_permissions';
@@ -385,6 +407,7 @@ class SqlSchemaPredefinedJoinBidirectSpec {
   async 'mass processing E-P-E[] over predefined join tables with one-to-one connection'() {
     const Role = require('./schemas/role_permissions/Role').Role;
     const Permission = require('./schemas/role_permissions/Permission').Permission;
+    registry.reload([Role, Permission]);
 
     const options = _.clone(TEST_STORAGE_OPTIONS);
     (<any>options).name = 'role_permissions';

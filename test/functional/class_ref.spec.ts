@@ -1,10 +1,16 @@
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
-import {ClassRef, SchemaUtils} from 'commons-schema-api';
+import {ClassRef, RegistryFactory, SchemaUtils} from '@allgemein/schema-api';
 
+// TODO move to @allgemein/schema-api
 
 @suite('functional/class_ref')
 class ClassRefSpec {
+
+  static after() {
+    RegistryFactory.reset();
+  }
+
 
   @test
   async 'class name'() {
@@ -25,7 +31,7 @@ class ClassRefSpec {
   async 'placeholder '() {
 
     const classRef = ClassRef.get('Placeholder');
-    expect(classRef.isPlaceholder).to.be.true;
+    expect(classRef.isPlaceholder()).to.be.true;
 
     class Placeholder {
 
@@ -33,7 +39,7 @@ class ClassRefSpec {
 
     const classRef2 = ClassRef.get(Placeholder);
     expect(classRef).to.be.eq(classRef);
-    expect(classRef2.isPlaceholder).to.be.false;
+    expect(classRef2.isPlaceholder()).to.be.false;
 
   }
 

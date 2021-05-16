@@ -17,7 +17,7 @@ export class PathFeature {
   @Property({type: 'number'})
   offset: number;
 
-  @Property({targetClass: Speed, nullable: true})
+  @Property({type: Speed, nullable: true})
   speed: Speed;
 
   @Property({type: 'number', nullable: true})
@@ -26,7 +26,7 @@ export class PathFeature {
   @Property({type: 'string', nullable: true})
   track: string;
 
-  @Property({targetClass: PointFeature})
+  @Property({type: PointFeature})
   geometry: PointFeature;
 
 

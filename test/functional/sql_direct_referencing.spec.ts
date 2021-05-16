@@ -1,5 +1,5 @@
 // process.env['SQL_LOG'] = '1';
-
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import * as _ from 'lodash';
@@ -7,6 +7,8 @@ import {StorageRef, TypeOrmConnectionWrapper} from '@typexs/base';
 import {EntityController} from '../../src/libs/EntityController';
 import {TestHelper} from './TestHelper';
 import {TEST_STORAGE_OPTIONS} from './config';
+import {ILookupRegistry, RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
+import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 
 
 const FINDOPT = {
@@ -17,12 +19,25 @@ const FINDOPT = {
   }
 };
 
+
+let registry: ILookupRegistry;
+
 @suite('functional/sql_direct_referencing')
 class SqlDirectReferencingSpec {
+
+  static before() {
+    registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
+  }
+
+  static after() {
+    RegistryFactory.reset();
+  }
 
   before() {
     TestHelper.resetTypeorm();
   }
+
+
 
   async connect(options: any): Promise<{ ref: StorageRef, controller: EntityController }> {
     return TestHelper.connect(options);
@@ -35,6 +50,10 @@ class SqlDirectReferencingSpec {
 
     const Author = require('./schemas/default/Author').Author;
     const Book = require('./schemas/default/Book').Book;
+
+    const authorRef = registry.getEntityRefFor(Author);
+    const bookRef = registry.getEntityRefFor(Book);
+
 
     const connect = await this.connect(options);
     const xsem = connect.controller;
@@ -89,6 +108,8 @@ class SqlDirectReferencingSpec {
 
     const Course = require('./schemas/default/Course').Course;
     const Periode = require('./schemas/default/Periode').Periode;
+    const authorRef = registry.getEntityRefFor(Course);
+    const bookRef = registry.getEntityRefFor(Periode);
 
     const connect = await this.connect(options);
     const xsem = connect.controller;
@@ -147,6 +168,9 @@ class SqlDirectReferencingSpec {
     const EDR = require('./schemas/default/EDR').EDR;
     const EDR_Object_DR = require('./schemas/default/EDR_Object_DR').EDR_Object_DR;
     const EDR_Object = require('./schemas/default/EDR_Object').EDR_Object;
+    // const authorRef = registry.getEntityRefFor(EDR);
+    // const bookRef = registry.getEntityRefFor(EDR_Object_DR);
+    // const bookRef2 = registry.getEntityRefFor(EDR_Object);
 
     const connect = await this.connect(options);
     const xsem = connect.controller;
@@ -301,6 +325,10 @@ class SqlDirectReferencingSpec {
     const Car = require('./schemas/direct_property/Car').Car;
     const Skil = require('./schemas/direct_property/Skil').Skil;
     const Driver = require('./schemas/direct_property/Driver').Driver;
+    registry.getEntityRefFor(Car);
+    registry.getEntityRefFor(Skil);
+    // registry.getEntityRefFor(Driver);
+
 
     const connect = await this.connect(options);
     const xsem = connect.controller;

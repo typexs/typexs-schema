@@ -1,8 +1,9 @@
+import '../../src/libs/decorators/register';
 import {suite, test} from '@testdeck/mocha';
 import {expect} from 'chai';
 import {TestHelper} from './TestHelper';
 import {StorageRef} from '@typexs/base';
-import {ExpressionInterpreter} from 'commons-expressions';
+import {ExpressionInterpreter} from '@allgemein/expressions';
 import {EntityController} from '../../src/libs/EntityController';
 
 

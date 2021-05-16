@@ -1,9 +1,10 @@
 import * as _ from 'lodash';
 import {getMetadataArgsStorage} from 'typeorm';
-import {Injector, Invoker, SqliteSchemaHandler, TypeOrmStorageRef} from '@typexs/base';
+import {Injector, Invoker, REGISTRY_TYPEORM, SqliteSchemaHandler, TypeOrmEntityRegistry, TypeOrmStorageRef} from '@typexs/base';
 import {EntityController} from '../../src/libs/EntityController';
 import {EntityRegistry} from '../../src/libs/EntityRegistry';
 import {FrameworkFactory} from '../../src/libs/framework/FrameworkFactory';
+import {RegistryFactory} from '../../../../node-commons/allgemein-schema-api/build/package';
 
 export class TestHelper {
 
@@ -12,6 +13,12 @@ export class TestHelper {
   }
 
   static async connect(options: any): Promise<{ ref: TypeOrmStorageRef, controller: EntityController }> {
+
+    RegistryFactory.register(REGISTRY_TYPEORM, TypeOrmEntityRegistry);
+    RegistryFactory.register(/^typeorm\..*/, TypeOrmEntityRegistry);
+    RegistryFactory.get(REGISTRY_TYPEORM);
+
+
     const invoker = new Invoker();
     Injector.set(Invoker.NAME, invoker);
     const ref = new TypeOrmStorageRef(options);
@@ -19,7 +26,7 @@ export class TestHelper {
     await schemaHandler.initOnceByType();
     ref.setSchemaHandler(schemaHandler);
     await ref.prepare();
-    const schemaDef = EntityRegistry.getSchema(options.name);
+    const schemaDef = EntityRegistry.$().getSchemaRefByName(options.name);
 
     const framework = FrameworkFactory.$().get(ref);
     const xsem = new EntityController(options.name, schemaDef, ref, framework);

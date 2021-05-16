@@ -12,7 +12,7 @@ export class Book2 {
   @Property({type: 'string'})
   content: string;
 
-  @Property({targetClass: Author, cardinality: 0})
+  @Property({type: Author, cardinality: 0})
   authors: Author[];
 
 }

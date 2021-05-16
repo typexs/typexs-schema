@@ -1,7 +1,7 @@
 import {QualiKeys} from './QualiKeys';
 import {Property} from '../../../../src/libs/decorators/Property';
 import {Entity} from '../../../../src/libs/decorators/Entity';
-import {Key} from "commons-expressions";
+import {Key} from "@allgemein/expressions";
 
 
 @Entity()
