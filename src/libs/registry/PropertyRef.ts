@@ -2,13 +2,13 @@ import {IProperty} from './IProperty';
 import * as _ from 'lodash';
 import {assign} from 'lodash';
 import {EntityRef} from './EntityRef';
-import * as moment from 'moment';
 
 import {DefaultPropertyRef, IBuildOptions, IClassRef, JS_PRIMATIVE_TYPES, METATYPE_PROPERTY} from '@allgemein/schema-api';
 import {NotSupportedError, NotYetImplementedError} from '@typexs/base';
 import {ExprDesc} from '@allgemein/expressions';
 import {OrderDesc} from '../../libs/descriptors/OrderDesc';
 import {K_NULLABLE, K_STORABLE} from '../Constants';
+import {DateUtils} from '@typexs/base/libs/utils/DateUtils';
 
 
 export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPropertyRef*/ {
@@ -252,7 +252,7 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
         if (data instanceof Date) {
           return data;
         } else {
-          return moment(data).toDate();
+          return DateUtils.fromISO(data);
         }
         break;
       default:
