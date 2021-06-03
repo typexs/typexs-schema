@@ -5,7 +5,7 @@ import {kebabCase} from 'lodash';
 import {AnnotationsHelper, ClassRef, RegistryFactory, XS_DEFAULT_SCHEMA} from '@allgemein/schema-api';
 import {EntityRegistry} from '../../src/libs/EntityRegistry';
 import {EntityRef} from '../../src/libs/registry/EntityRef';
-import {NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
+import {K_STORABLE, NAMESPACE_BUILT_ENTITY} from '../../src/libs/Constants';
 import {Property} from '../../src/libs/decorators/Property';
 import {Entity} from '../../src/libs/decorators/Entity';
 
@@ -15,6 +15,7 @@ let registry: EntityRegistry;
 class EntityRegistrySpec {
 
   static before() {
+    RegistryFactory.remove(NAMESPACE_BUILT_ENTITY);
     registry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY) as EntityRegistry;
   }
 
@@ -64,7 +65,7 @@ class EntityRegistrySpec {
     //   type: 'entity',
     //   machineName: 'author',
     //   options: {
-    //     storeable: true
+    //     [K_STORABLE]: true
     //   },
     //   schema: 'default'
     // });
@@ -192,7 +193,7 @@ class EntityRegistrySpec {
     }
 
 
-    @Entity({storeable: false})
+    @Entity({[K_STORABLE]: false})
     class TestAnno {
 
       @PropAddOn({hallo: 'welt'})
@@ -227,12 +228,12 @@ class EntityRegistrySpec {
 
 
     @EntityPropAddOn({hallo: 'welt'})
-    @Entity({storeable: false})
+    @Entity({[K_STORABLE]: false})
     class TestAnno2 {
 
     }
 
-    @Entity({storeable: false})
+    @Entity({[K_STORABLE]: false})
     @EntityPropAddOn({hallo: 'welt2'})
     class TestAnno3 {
 

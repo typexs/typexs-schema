@@ -16,7 +16,7 @@ class EntitiesFromJsonSpec {
     //   'type': 'entity',
     //   'machineName': 'personal',
     //   'options': {
-    //     'storeable': true
+    //     [K_STORABLE]: true
     //   },
     //   'schema': 'default',
     //   'properties': [
@@ -115,7 +115,7 @@ class EntitiesFromJsonSpec {
     //   name: 'Bookk',
     //   type: 'entity',
     //   machineName: 'bookk',
-    //   options: {storeable: true},
+    //   options: {[K_STORABLE]: true},
     //   schema: 'default',
     //   properties:
     //     [{

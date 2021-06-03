@@ -85,8 +85,13 @@ class ApiserverSpec {
   }
 
   static async after() {
-    await server.stop();
-    await bootstrap.shutdown();
+    if (server) {
+      await server.stop();
+    }
+    if (bootstrap) {
+      await bootstrap.shutdown();
+    }
+
     Bootstrap.reset();
 
   }
