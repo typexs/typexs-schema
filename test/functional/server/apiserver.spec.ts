@@ -26,6 +26,8 @@ const settingsTemplate: any = {
     paths: [
       __dirname + '/packages'
     ],
+    disableCache: true,
+    include: []
   },
 
 
