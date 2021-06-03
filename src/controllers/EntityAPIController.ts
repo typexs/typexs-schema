@@ -50,9 +50,6 @@ import {EntityControllerApi} from '../api/entity.controller.api';
 @JsonController(API_ENTITY_PREFIX)
 export class EntityAPIController {
 
-  @Inject('EntityRegistry')
-  registry: EntityRegistry;
-
   @Inject('EntityControllerFactory')
   factory: EntityControllerFactory;
 
@@ -339,7 +336,7 @@ export class EntityAPIController {
 
 
   private getEntityDef(entityName: string): EntityRef {
-    const entityDef = this.registry.getEntityRefByName(entityName);
+    const entityDef = this.factory.getRegistry().getEntityRefByName(entityName);
     if (entityDef) {
       return entityDef;
     }

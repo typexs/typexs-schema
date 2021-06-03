@@ -1,9 +1,11 @@
-import { Inject, Injector, Log, Storage} from '@typexs/base';
+import {Inject, Injector, Log, Storage} from '@typexs/base';
 
 import {EntityController} from './EntityController';
-import {EntityRegistry} from './EntityRegistry';
 import {IFramework} from './framework/IFramework';
 import {FrameworkFactory} from './framework/FrameworkFactory';
+import {RegistryFactory} from '@allgemein/schema-api';
+import {NAMESPACE_BUILT_ENTITY} from './Constants';
+import {EntityRegistry} from './EntityRegistry';
 
 export class EntityControllerFactory {
 
@@ -12,15 +14,16 @@ export class EntityControllerFactory {
   @Inject(Storage.NAME)
   storage: Storage;
 
-  @Inject(EntityRegistry.NAME)
-  registry: EntityRegistry;
-
   controller: EntityController[] = [];
+
+  getRegistry() {
+    return RegistryFactory.get(NAMESPACE_BUILT_ENTITY) as EntityRegistry;
+  }
 
   async initialize() {
     const storages = this.storage.getNames();
     for (const storageName of storages) {
-      const schemaDef = this.registry.getSchemaRefByName(storageName);
+      const schemaDef = this.getRegistry().getSchemaRefByName(storageName);
       if (schemaDef) {
         const storageRef = this.storage.get(storageName);
         let framework: IFramework = null;

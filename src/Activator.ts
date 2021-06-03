@@ -3,7 +3,6 @@ import {IActivator, Injector} from '@typexs/base';
 import {EntityRegistry} from './libs/EntityRegistry';
 import {EntityControllerFactory} from './libs/EntityControllerFactory';
 import {
-  NAMESPACE_BUILT_ENTITY,
   PERMISSION_ALLOW_ACCESS_ENTITY,
   PERMISSION_ALLOW_ACCESS_ENTITY_METADATA,
   PERMISSION_ALLOW_ACCESS_ENTITY_PATTERN,
@@ -16,19 +15,12 @@ import {
 } from './libs/Constants';
 import {EntityRef} from './libs/registry/EntityRef';
 import './libs/decorators/register';
-import {RegistryFactory} from '@allgemein/schema-api';
-
-// create ones
-const registry: EntityRegistry = RegistryFactory.get(NAMESPACE_BUILT_ENTITY);
 
 
 export class Activator implements IActivator, IPermissions {
 
 
   async startup(): Promise<void> {
-
-    Injector.set(EntityRegistry, registry);
-    Injector.set(EntityRegistry.NAME, registry);
 
     const factory = Injector.get(EntityControllerFactory);
     Injector.set(EntityControllerFactory.NAME, factory);
