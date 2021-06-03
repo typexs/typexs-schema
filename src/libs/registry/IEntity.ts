@@ -6,6 +6,6 @@ export interface IEntity extends IEntityOptions {
 
   typeorm?: any;
 
-  storeable?: boolean;
+  storable?: boolean;
 
 }

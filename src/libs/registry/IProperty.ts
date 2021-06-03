@@ -6,7 +6,7 @@ import {ExprDesc, KeyDesc} from '@allgemein/expressions';
 export interface IProperty extends IPropertyOptions {
 
 
-  storeable?: boolean;
+  storable?: boolean;
 
   /**
    * rename the property for storing name

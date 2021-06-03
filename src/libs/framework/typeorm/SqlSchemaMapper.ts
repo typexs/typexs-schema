@@ -9,14 +9,11 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn
 } from 'typeorm';
-
-
 import {SchemaRef} from '../../registry/SchemaRef';
 import {EntityRef} from '../../registry/EntityRef';
 import * as _ from 'lodash';
 import {PropertyRef} from '../../registry/PropertyRef';
 import {XS_P_PROPERTY, XS_P_PROPERTY_ID, XS_P_SEQ_NR, XS_P_TYPE} from '../../Constants';
-
 import {SchemaUtils} from '../../SchemaUtils';
 import {ISchemaMapper} from './../ISchemaMapper';
 import {IDataExchange} from '../IDataExchange';
@@ -24,7 +21,6 @@ import {EntityDefTreeWorker} from '../EntityDefTreeWorker';
 import {NameResolver} from './NameResolver';
 import {JoinDesc} from '../../descriptors/JoinDesc';
 import {IDBType} from '@typexs/base/libs/storage/IDBType';
-// import {classRefGet} from '../../Helper';
 import {ClassRef, IClassRef, ILookupRegistry, METATYPE_CLASS_REF, RegistryFactory} from '@allgemein/schema-api';
 import {ExprDesc} from '@allgemein/expressions';
 import {EntityRegistry} from '../../EntityRegistry';
@@ -78,7 +74,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
 
 
   async initialize() {
-    const entities = this.schemaDef.getStoreableEntities();
+    const entities = this.schemaDef.getStorableEntities();
     for (const entity of entities) {
       const entityClass = await this.walk(entity, null);
       this.addType(entityClass);
@@ -107,7 +103,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
                            referPropertyDef?: PropertyRef,
                            sources?: IDataExchange<any>): Promise<IDataExchange<any>> {
     const cls = entityDef.getClassRef().getClass();
-    if (!this.isDone(cls) && !this.inClassCache(cls)) {
+    if (!this.isDone(cls) && !this.inClassCache(cls) && entityDef.isStorable()) {
       this.classCache.push(cls);
       return super.onEntity(entityDef, referPropertyDef, sources);
     }
@@ -119,6 +115,7 @@ export class SqlSchemaMapper extends EntityDefTreeWorker implements ISchemaMappe
     // TODO check if entities are registered or not
     // register as entity
     // TODO can use other table name! Define an override attribute
+
     const tName = entityDef.storingName;
     const entityClass = entityDef.getClassRef().getClass();
     this.createEntityIfNotExists(entityClass, tName);

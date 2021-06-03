@@ -32,7 +32,7 @@ export class SchemaRef extends _SchemaRef {
 
 
 
-  getStoreableEntities(): EntityRef[] {
+  getStorableEntities(): EntityRef[] {
     return this.getEntityRefs().filter((x: EntityRef) => x.isStorable()) as EntityRef[];
   }
 

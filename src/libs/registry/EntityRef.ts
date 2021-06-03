@@ -21,7 +21,7 @@ import {Expressions} from '@allgemein/expressions';
 import {__CLASS__} from '@typexs/base';
 
 const DEFAULT_OPTIONS: IEntity = {
-  storeable: true
+  storable: true
 };
 
 const REGEX_ID = /(([\w_]+)=((\d+)|(\d+(\.|\,)\d+)|\'([^\']*)\'),?)/;
