@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/typexs/typexs-schema.git"
+    "url": "git+https://gitlab.com/typexs/schema.git"
   },
   "author": "Robert Kania",
   "license": "MIT",
@@ -26,9 +26,9 @@
     "entity"
   ],
   "bugs": {
-    "url": "https://github.com/typexs/typexs-schema/issues"
+    "url": "https://gitlab.com/typexs/schema/-/issues"
   },
-  "homepage": "https://github.com/typexs/typexs-schema#readme",
+  "homepage": "https://gitlab.com/typexs/schema",
   "devDependencies": {
     "@allgemein/config": "^1.1.3",
     "@allgemein/expressions": "^1.1.0",
