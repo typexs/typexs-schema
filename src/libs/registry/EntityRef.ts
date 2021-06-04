@@ -185,49 +185,9 @@ export class EntityRef extends DefaultEntityRef/*AbstractRef implements IEntityR
   }
 
 
-  // toJson(withProperties: boolean = true) {
-  //   const o = super.toJson();
-  //   o.schema = this.object.getSchema();
-  //   if (withProperties) {
-  //     o.properties = this.getPropertyRefs().map(p => p.toJson());
-  //   }
-  //
-  //   const storage = getMetadataStorage();
-  //   const metadata = storage.getTargetValidationMetadatas(this.object.getClass(), null, true, false);
-  //
-  //   metadata.forEach(m => {
-  //     const prop = _.find(o.properties, p => p.name === m.propertyName);
-  //     if (prop) {
-  //       if (!prop.validator) {
-  //         prop.validator = [];
-  //       }
-  //
-  //       const args: IValidationMetadataArgs = {
-  //         type: m.type,
-  //         target: this.object.className,
-  //         propertyName: m.propertyName,
-  //         constraints: m.constraints,
-  //         constraintCls: m.constraintCls,
-  //         validationTypeOptions: m.validationTypeOptions,
-  //         validationOptions: {
-  //           // TODO since 0.9.1 context: m.context,
-  //           message: m.message,
-  //           groups: m.groups,
-  //           always: m.always,
-  //           each: m.each,
-  //         }
-  //       };
-  //
-  //
-  //       prop.validator.push(args);
-  //     }
-  //   });
-  //
-  //   return o;
-  // }
   toJsonSchema(options: IJsonSchemaSerializeOptions = {}) {
     options = options || {};
-    return JsonSchema.serialize(this, {...options, namespace: this.namespace, allowKeyOverride: true});
+    return JsonSchema.serialize(this, {...options, namespace: this.namespace, allowKeyOverride: true, deleteReferenceKeys: false});
   }
 
 

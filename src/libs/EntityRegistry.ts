@@ -1,4 +1,4 @@
-import {defaults, isEmpty, keys, snakeCase} from 'lodash';
+import {defaults, isArray, isEmpty, keys, snakeCase} from 'lodash';
 import {SchemaRef} from './registry/SchemaRef';
 import {PropertyRef} from './registry/PropertyRef';
 import {EntityRef} from './registry/EntityRef';
@@ -13,7 +13,9 @@ import {
   IJsonSchema,
   IJsonSchemaSerializeOptions,
   IJsonSchemaUnserializeOptions,
+  IParseOptions,
   ISchemaRef,
+  JsonSchema,
   METADATA_TYPE,
   MetadataRegistry,
   METATYPE_CLASS_REF,
@@ -24,9 +26,9 @@ import {
   RegistryFactory,
   XS_DEFAULT_SCHEMA
 } from '@allgemein/schema-api';
-import {NotYetImplementedError} from '@typexs/base';
 import {NAMESPACE_BUILT_ENTITY} from './Constants';
 import {IObject} from './registry/IObject';
+import {getJsObjectType} from './Helper';
 
 
 export class EntityRegistry extends DefaultNamespacedRegistry /*AbstractRegistry*/ implements IJsonSchema {
@@ -50,6 +52,7 @@ export class EntityRegistry extends DefaultNamespacedRegistry /*AbstractRegistry
     }
     return this._self;
   }
+
 
   prepare() {
     const schema = this.find(METATYPE_SCHEMA, (x: ISchemaRef) => x.name === XS_DEFAULT_SCHEMA);
@@ -105,9 +108,7 @@ export class EntityRegistry extends DefaultNamespacedRegistry /*AbstractRegistry
     const entityRef = options.target ? this.find(METATYPE_ENTITY, (x: EntityRef) => x.getClass() === options.target) as IEntityRef : null;
     if (context === METATYPE_ENTITY) {
       if (!entityRef) {
-        const target = options.target;
         this.create(METATYPE_ENTITY, options as IEntity);
-
         const properties = MetadataRegistry.$()
           .getByContextAndTarget(METATYPE_PROPERTY,
             options.target, 'merge') as IProperty[];
@@ -190,15 +191,18 @@ export class EntityRegistry extends DefaultNamespacedRegistry /*AbstractRegistry
     }
     const entityRef = new EntityRef(options);
     const retRef = this.add(entityRef.metaType, entityRef);
-    const metaSchemaOptionsForEntity = MetadataRegistry.$()
-      .getByContextAndTarget(METATYPE_SCHEMA, entityRef.getClass()) as ISchema[];
-    if (metaSchemaOptionsForEntity.length > 0) {
-      for (const schemaOptions of metaSchemaOptionsForEntity) {
-        this.addSchemaToEntityRef(schemaOptions.name, entityRef as IEntityRef, {override: true, onlyDefault: true});
+    const refs = entityRef.getOptions('schema', []);
+    if ((isArray(refs) && refs.length === 0) || (!isArray(refs) && !refs)) {
+      const metaSchemaOptionsForEntity = MetadataRegistry.$()
+        .getByContextAndTarget(METATYPE_SCHEMA, entityRef.getClass()) as ISchema[];
+      if (metaSchemaOptionsForEntity.length > 0) {
+        for (const schemaOptions of metaSchemaOptionsForEntity) {
+          this.addSchemaToEntityRef(schemaOptions.name, entityRef as IEntityRef, {override: true, onlyDefault: true});
+        }
+      } else {
+        // no schema options add to 'default'
+        this.addSchemaToEntityRef(XS_DEFAULT_SCHEMA, entityRef as IEntityRef);
       }
-    } else {
-      // no schema options add to 'default'
-      this.addSchemaToEntityRef(XS_DEFAULT_SCHEMA, entityRef as IEntityRef);
     }
     return retRef;
   }
@@ -249,14 +253,42 @@ export class EntityRegistry extends DefaultNamespacedRegistry /*AbstractRegistry
     }
   }
 
-
-  toJsonSchema(options?: IJsonSchemaSerializeOptions): Promise<any> {
-    throw new NotYetImplementedError('todo');
+  fromJsonSchema(json: any, options?: IJsonSchemaUnserializeOptions) {
+    return JsonSchema.unserialize(json, defaults(options || {}, {
+        namespace: this.namespace,
+        collector: [
+          {
+            type: METATYPE_PROPERTY,
+            key: 'type',
+            fn: (key: string, data: any, options: IParseOptions) => {
+              const type = ['string', 'number', 'boolean', 'date', 'float', 'array', 'object'];
+              const value = data[key];
+              if (value && type.includes(value)) {
+                const cls = getJsObjectType(value);
+                if (cls === String) {
+                  if (data['format'] === 'date' || data['format'] === 'date-time') {
+                    return Date;
+                  }
+                }
+                return cls;
+              } else if (data['$ref']) {
+                const className = data['$ref'].split('/').pop();
+                return ClassRef.get(className, this.namespace).getClass(true);
+              }
+              return ClassRef.get(data[key], this.namespace).getClass(true);
+            }
+          }
+        ]
+      })
+    );
   }
 
-  fromJsonSchema(data: any, options?: IJsonSchemaUnserializeOptions): Promise<IClassRef | IEntityRef> {
-    throw new NotYetImplementedError('todo');
+  toJsonSchema(options?: IJsonSchemaSerializeOptions): any {
+    const serializer = JsonSchema.getSerializer(options);
+    for (const entityRef of this.getEntityRefs()) {
+      serializer.serialize(entityRef);
+    }
+    return serializer.getJsonSchema();
   }
-
 }
 

@@ -78,7 +78,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
       let targetName, targetId;
 
       for (const embed of embedded) {
-        const targetIdProps = this.entityController.schema().getPropertiesFor(embed.getTargetClass()).filter(p => p.identifier);
+        const targetIdProps = this.entityController.schema().getPropertiesFor(embed.getTargetClass()).filter(p => p.isIdentifier());
         const refProps = SqlHelper.getEmbeddedPropertyIds(embed);
         for (const target of sources.next) {
           let idx = 0;
@@ -532,7 +532,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
         abort: targetObjects.length === 0
       };
     } else if (propertyDef.hasJoinRef()) {
-      const targetIdProps = this.entityController.schema().getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
+      const targetIdProps = this.entityController.schema().getPropertiesFor(classRef.getClass()).filter(p => p.isIdentifier());
 
       if (!_.isEmpty(targetIdProps)) {
         const notNullProps = this.getNotNullablePropertyNames(classRef.getClass());
@@ -747,7 +747,7 @@ export class SqlSaveOp<T> extends EntityDefTreeWorker implements ISaveOp<T> {
 
       // set saved referrer id to base entity
       const targetClass = propertyDef.getTargetClass();
-      const targetIdProps = this.entityController.schema().getPropertiesFor(classRef.getClass()).filter(p => p.identifier);
+      const targetIdProps = this.entityController.schema().getPropertiesFor(classRef.getClass()).filter(p => p.isIdentifier());
       const refProps = SqlHelper.getEmbeddedPropertyIds(propertyDef);
       let targetName, targetId;
       for (const target of sources.target) {

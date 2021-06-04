@@ -9,6 +9,8 @@ import {ExprDesc} from '@allgemein/expressions';
 import {OrderDesc} from '../../libs/descriptors/OrderDesc';
 import {K_NULLABLE, K_STORABLE} from '../Constants';
 import {DateUtils} from '@typexs/base/libs/utils/DateUtils';
+import {isEntityRef} from '@allgemein/schema-api/api/IEntityRef';
+import {isClassRef} from '@allgemein/schema-api/api/IClassRef';
 
 
 export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPropertyRef*/ {
@@ -23,11 +25,11 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
 
   joinRef: IClassRef = null;
 
-  readonly identifier: boolean;
+  // readonly identifier: boolean;
 
-  readonly generated: boolean;
+  // readonly generated: boolean;
 
-  readonly embed: boolean;
+  // readonly embed: boolean;
 
 
   get entityName() {
@@ -53,8 +55,8 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
       this.cardinality = options.cardinality;
     }
 
-    if (_.isFunction(options.type) || _.isFunction(options.targetClass)) {
-      const targetClass = options.type || options.targetClass;
+    if (_.isFunction(options.type) || isEntityRef(options.type) || isClassRef(options.type)) {
+      // const targetClass = options.type || options.targetClass;
       // this.targetRef = this.getClassRefFor(targetClass);
       targetRef = this.getTargetRef();
       // } else if (_.isFunction(options.propertyClass)) {
@@ -66,24 +68,19 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
     }
 
     if ((_.isBoolean(options.embed) && options.embed) || this.getOptions('idKey')) {
-      this.embed = true;
+      this.setOption('embed', true);
       if (this.isCollection()) {
         throw new NotSupportedError('embedded property can not be a selection');
       }
-    } else {
-      this.embed = false;
     }
 
-    if ((_.isBoolean(options.id) && options.id) || (_.isBoolean(options.pk) && options.pk) || (_.isBoolean(options.auto) && options.auto)) {
-      this.identifier = true;
+    if ((_.isBoolean(options.id) && options.id) ||
+      (_.isBoolean(options.pk) && options.pk) ||
+      (_.isBoolean(options.auto) && options.auto)) {
+      this.setOption('identifier', true);
       if ((_.isBoolean(options.auto))) {
-        this.generated = options.auto;
-      } else {
-        this.generated = false;
+        this.setOption('generated', true);
       }
-    } else {
-      this.identifier = false;
-      this.generated = false;
     }
   }
 
@@ -108,11 +105,11 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
   }
 
   isEmbedded() {
-    return this.embed;
+    return this.getOptions('embed', false);
   }
 
   hasIdKeys() {
-    return this.embed && this.getOptions('idKey', false) !== false;
+    return this.isEmbedded() && this.getOptions('idKey', false) !== false;
   }
 
   hasConditions() {
@@ -322,11 +319,11 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
   }
 
   isIdentifier(): boolean {
-    return this.identifier;
+    return this.getOptions('identifier', false);
   }
 
   isGenerated(): boolean {
-    return this.generated;
+    return this.getOptions('generated', false);
   }
 
   /*

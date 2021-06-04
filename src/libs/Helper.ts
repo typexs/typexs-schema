@@ -1,17 +1,21 @@
-// import {ClassRef, LookupRegistry} from '@allgemein/schema-api';
-// import {NAMESPACE_BUILT_ENTITY} from './Constants';
-// // import {getMetadataStorage as _getMetadataStorage} from 'class-validator';
-//
-// export function classRefGet(name: string | Function) {
-//   return ClassRef.get(name, NAMESPACE_BUILT_ENTITY);
-// }
-//
-// export function lookupRegistry() {
-//   return LookupRegistry.$(NAMESPACE_BUILT_ENTITY);
-// }
-//
-// //
-// // export function getMetadataStorage() {
-// //   // return Injector.get(MetadataStorage); on class-validator v0.10.1
-// //   return _getMetadataStorage();
-// // }
+export function getJsObjectType(name: string) {
+  if (['string', 'number', 'boolean', 'date', 'float', 'array', 'object'].includes(name.toLowerCase())) {
+    switch (name.toLowerCase()) {
+      case 'string':
+        return String;
+      case 'number':
+        return Number;
+      case 'boolean':
+        return Boolean;
+      case 'date':
+        return Date;
+      case 'float':
+        return Number;
+      case 'array':
+        return Array;
+      case 'object':
+        return Object;
+    }
+  }
+  return null;
+}

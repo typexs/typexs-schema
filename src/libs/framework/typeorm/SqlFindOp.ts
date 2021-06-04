@@ -249,7 +249,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       if (sourceDef instanceof EntityRef) {
         sourcePropsIds = sourceDef.getPropertyRefIdentifier();
       } else if (sourceDef instanceof ClassRef) {
-        sourcePropsIds = this.em.schema().getPropertiesFor(sourceDef.getClass()).filter(p => p.identifier);
+        sourcePropsIds = this.em.schema().getPropertiesFor(sourceDef.getClass()).filter(p => p.isIdentifier());
       } else {
         throw new NotYetImplementedError();
       }
@@ -617,7 +617,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
       }
     } else if (propertyDef.isEmbedded()) {
       const targetIdProps = this.em.schema()
-        .getPropertiesFor(propertyDef.getTargetClass()).filter(p => p.identifier);
+        .getPropertiesFor(propertyDef.getTargetClass()).filter(p => p.isIdentifier());
       let targetName, targetId;
       const refProps = SqlHelper.getEmbeddedPropertyIds(propertyDef);
 
@@ -774,7 +774,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
     } else if (propertyDef.isEmbedded()) {
       const targetIdProps = this.em.schema()
         .getPropertiesFor(propertyDef.getTargetClass())
-        .filter(p => p.identifier);
+        .filter(p => p.isIdentifier());
 
       const refProps = SqlHelper.getEmbeddedPropertyIds(propertyDef);
       let targetName, targetId;
@@ -825,7 +825,7 @@ export class SqlFindOp<T> extends EntityDefTreeWorker implements IFindOp<T> {
    */
   private handleInlinePropertyPrefixObject(sources: IFindData, propertyDef: PropertyRef, classRef: ClassRef) {
     const targetProps = this.em.schema().getPropertiesFor(classRef.getClass());
-    const hasId = targetProps.filter(p => p.identifier).length > 0;
+    const hasId = targetProps.filter(p => p.isIdentifier()).length > 0;
 
     if (!hasId) {
       // is embedded in current data record

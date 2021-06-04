@@ -2,11 +2,14 @@ import {JoinDesc} from '../descriptors/JoinDesc';
 import {OrderDesc} from '../descriptors/OrderDesc';
 import {IPropertyOptions, JS_DATA_TYPES} from '@allgemein/schema-api';
 import {ExprDesc, KeyDesc} from '@allgemein/expressions';
+import {K_NULLABLE, K_STORABLE} from '../Constants';
 
 export interface IProperty extends IPropertyOptions {
 
-
-  storable?: boolean;
+  /**
+   * Is the property storable
+   */
+  [K_STORABLE]?: boolean;
 
   /**
    * rename the property for storing name
@@ -33,11 +36,12 @@ export interface IProperty extends IPropertyOptions {
 
   propertyClass?: string | Function;
 
-  nullable?: boolean;
+  [K_NULLABLE]?: boolean;
 
   /**
    * Marks if property is an identifier for the entity.
    */
+  // use identifier
   id?: boolean;
   pk?: boolean;
 

@@ -88,7 +88,7 @@ export class SqlHelper {
         }
 
         if (_.isNull(sortBy)) {
-          entityRef.getPropertyRefs().filter(x => !!x.identifier).forEach(x => {
+          entityRef.getPropertyRefs().filter(x => !!x.isIdentifier()).forEach(x => {
             qb.addOrderBy(qb.alias + '.' + x.storingName, 'ASC');
           });
         } else if (propertyRef && propertyRef.hasOrder()) {
