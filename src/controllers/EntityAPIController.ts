@@ -15,7 +15,6 @@ import {
   XS_P_$URL
 } from '@typexs/server';
 import {__CLASS__, __REGISTRY__, Inject, Invoker, NotYetImplementedError, XS_P_$COUNT, XS_P_$LIMIT, XS_P_$OFFSET} from '@typexs/base';
-import {EntityRegistry} from '../libs/EntityRegistry';
 import {EntityRef} from '../libs/registry/EntityRef';
 import {EntityControllerFactory} from '../libs/EntityControllerFactory';
 import {EntityController} from '../libs/EntityController';
@@ -44,6 +43,8 @@ import {
 } from '../libs/Constants';
 import {ObjectsNotValidError} from './../libs/exceptions/ObjectsNotValidError';
 import {EntityControllerApi} from '../api/entity.controller.api';
+import {IJsonSchemaUnserializeOptions, JsonSchema} from '@allgemein/schema-api';
+import {isEntityRef} from '@allgemein/schema-api/api/IEntityRef';
 
 
 @ContextGroup(C_API)
@@ -94,7 +95,7 @@ export class EntityAPIController {
   @Get(_API_CTRL_ENTITY_METADATA_ALL_STORES)
   @ContentType('application/json')
   async schemas(@CurrentUser() user: any): Promise<any> {
-    // return this.registry.listSchemas().map(x => x.toJson(true, false));
+    return this.getRegistry().getSchemaRefs().map(x => x.name);
   }
 
   /**
@@ -103,13 +104,32 @@ export class EntityAPIController {
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
   @Get(_API_CTRL_ENTITY_METADATA_GET_STORE)
   @ContentType('application/json')
-  async schema(@Param('name') schemaName: string, @CurrentUser() user: any) {
-    // const schema = this.registry.getSchemaRefByName(schemaName);
-    // if (schema) {
-    //   return schema.toJson();
-    // } else {
-    //   throw new Error('no schema ' + schemaName + ' found');
-    // }
+  async schema(@Param('name') schemaName: string,
+               @CurrentUser() user: any,
+               @QueryParam('opts') options?: IJsonSchemaUnserializeOptions) {
+    const schemaRef = this.getRegistry().getSchemaRefByName(schemaName);
+    if (schemaRef) {
+      const serializer = JsonSchema.getSerializer({
+        /**
+         * Append storageName to entity object
+         * @param src
+         * @param dst
+         */
+        postProcess: (src, dst) => {
+          if (isEntityRef(src)) {
+            dst.schemaName = schemaName;
+          }
+        }
+      });
+      for (const ref of schemaRef.getEntityRefs()) {
+        if (ref && isEntityRef(ref)) {
+          serializer.serialize(ref);
+        }
+      }
+      return serializer.getJsonSchema() ? serializer.getJsonSchema() : {};
+    } else {
+      throw new Error('no schema ' + schemaName + ' found');
+    }
   }
 
 
@@ -119,8 +139,8 @@ export class EntityAPIController {
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
   @Get(_API_CTRL_ENTITY_METADATA_ALL_ENTITIES)
   @ContentType('application/json')
-  async entities(@CurrentUser() user: any) {
-    // return this.registry.listEntities().map(x => x.toJson());
+  async entities(@CurrentUser() user: any, @QueryParam('opts') options?: IJsonSchemaUnserializeOptions) {
+    return this.getRegistry().toJsonSchema(options);
   }
 
 
@@ -130,15 +150,8 @@ export class EntityAPIController {
   @Access(PERMISSION_ALLOW_ACCESS_ENTITY_METADATA)
   @Get(_API_CTRL_ENTITY_METADATA_GET_ENTITY)
   @ContentType('application/json')
-  async entity(@Param('name') entityName: string, @CurrentUser() user: any) {
-    // const entity = this.registry.getEntityRefByName(entityName);
-    // if (entity) {
-    //   const json = entity.toJson();
-    //   json.properties = entity.getPropertyRefs().map(x => x.toJson());
-    //   return json;
-    // } else {
-    //   throw new Error('no entity found for ' + entityName);
-    // }
+  async entity(@Param('name') entityName: string, @CurrentUser() user: any, @QueryParam('opts') options?: IJsonSchemaUnserializeOptions) {
+    return this.getRegistry().getEntityRefByName(entityName).toJsonSchema(options);
   }
 
 
@@ -336,11 +349,15 @@ export class EntityAPIController {
 
 
   private getEntityDef(entityName: string): EntityRef {
-    const entityDef = this.factory.getRegistry().getEntityRefByName(entityName);
+    const entityDef = this.getRegistry().getEntityRefByName(entityName);
     if (entityDef) {
       return entityDef;
     }
     throw new Error('no entity definition found  for ' + entityName);
+  }
+
+  private getRegistry() {
+    return this.factory.getRegistry();
   }
 }
 

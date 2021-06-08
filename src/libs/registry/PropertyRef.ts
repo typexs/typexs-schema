@@ -1,6 +1,5 @@
 import {IProperty} from './IProperty';
-import * as _ from 'lodash';
-import {assign} from 'lodash';
+import {assign, capitalize, find, isArray, isBoolean, isFunction, isNull, isNumber, isString, isUndefined, snakeCase} from 'lodash';
 import {EntityRef} from './EntityRef';
 
 import {DefaultPropertyRef, IBuildOptions, IClassRef, JS_PRIMATIVE_TYPES, METATYPE_PROPERTY} from '@allgemein/schema-api';
@@ -41,8 +40,8 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
     let targetRef = null;
     if (!options.type && !options.propertyClass) {
       throw new NotSupportedError(`property ${this.name} has no defined type nor property class`);
-    } else if (_.isString(options.type)) {
-      const found_primative = _.find(JS_PRIMATIVE_TYPES, t => (new RegExp('^' + t + ':?')).test((<string>options.type).toLowerCase()));
+    } else if (isString(options.type)) {
+      const found_primative = find(JS_PRIMATIVE_TYPES, t => (new RegExp('^' + t + ':?')).test((<string>options.type).toLowerCase()));
       if (found_primative || options.type.toLowerCase() === options.type) {
         // this.dataType = options.type;
       } else {
@@ -51,15 +50,15 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
       }
     }
 
-    if (_.isNumber(options.cardinality)) {
+    if (isNumber(options.cardinality)) {
       this.cardinality = options.cardinality;
     }
 
-    if (_.isFunction(options.type) || isEntityRef(options.type) || isClassRef(options.type)) {
+    if (isFunction(options.type) || isEntityRef(options.type) || isClassRef(options.type)) {
       // const targetClass = options.type || options.targetClass;
       // this.targetRef = this.getClassRefFor(targetClass);
       targetRef = this.getTargetRef();
-      // } else if (_.isFunction(options.propertyClass)) {
+      // } else if (isFunction(options.propertyClass)) {
       //   this.propertyRef = this.getClassRefFor(options.propertyClass, METATYPE_CLASS_REF);
     }
 
@@ -67,18 +66,18 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
       throw new NotSupportedError('No primative or complex data type given: ' + JSON.stringify(options));
     }
 
-    if ((_.isBoolean(options.embed) && options.embed) || this.getOptions('idKey')) {
+    if ((isBoolean(options.embed) && options.embed) || this.getOptions('idKey')) {
       this.setOption('embed', true);
       if (this.isCollection()) {
         throw new NotSupportedError('embedded property can not be a selection');
       }
     }
 
-    if ((_.isBoolean(options.id) && options.id) ||
-      (_.isBoolean(options.pk) && options.pk) ||
-      (_.isBoolean(options.auto) && options.auto)) {
+    if ((isBoolean(options.id) && options.id) ||
+      (isBoolean(options.pk) && options.pk) ||
+      (isBoolean(options.auto) && options.auto)) {
       this.setOption('identifier', true);
-      if ((_.isBoolean(options.auto))) {
+      if ((isBoolean(options.auto))) {
         this.setOption('generated', true);
       }
     }
@@ -99,7 +98,7 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
   isEntityReference(): boolean {
     if (this.isReference()) {
       const entityDef = this.targetRef.getEntityRef();
-      return !(_.isNull(entityDef) || _.isUndefined(entityDef));
+      return !(isNull(entityDef) || isUndefined(entityDef));
     }
     return false;
   }
@@ -134,7 +133,7 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
 
   getOrder(): OrderDesc[] {
     let arr = this.getOptions('order', null);
-    if (!_.isArray(arr)) {
+    if (!isArray(arr)) {
       arr = [arr];
     }
     return arr;
@@ -146,7 +145,7 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
 
   getIdKeys(): string[] {
     const keys = this.getOptions('idKey');
-    if (!_.isArray(keys)) {
+    if (!isArray(keys)) {
       return [keys.key];
     } else {
       return keys.map(k => k.key);
@@ -205,7 +204,7 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
       case 'text':
       case 'time':
       case 'string':
-        if (_.isString(data)) {
+        if (isString(data)) {
           return data;
         } else if (data) {
           throw new NotYetImplementedError('value ' + data);
@@ -214,11 +213,11 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
         }
         break;
       case 'boolean':
-        if (_.isBoolean(data)) {
+        if (isBoolean(data)) {
           return data;
-        } else if (_.isNumber(data)) {
+        } else if (isNumber(data)) {
           return data > 0;
-        } else if (_.isString(data)) {
+        } else if (isString(data)) {
           if (data.toLowerCase() === 'true' || data.toLowerCase() === '1') {
             return true;
           }
@@ -227,7 +226,7 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
         break;
       case 'number':
       case 'double':
-        if (_.isString(data)) {
+        if (isString(data)) {
           if (/^\d+\.|\,\d+$/.test(data)) {
             return parseFloat(data.replace(',', '.'));
           } else if (/^\d+$/.test(data)) {
@@ -235,7 +234,7 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
           } else {
             throw new NotYetImplementedError('value ' + data);
           }
-        } else if (_.isNumber(data)) {
+        } else if (isNumber(data)) {
           return data;
         } else if (data) {
           throw new NotYetImplementedError('value ' + data);
@@ -261,10 +260,10 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
   get storingName() {
     let name = this.getOptions('name', null);
     if (!name) {
-      const prefix = this.getClassRef().hasEntityRef() ? 'p' : 'i'; // + _.snakeCase(this.object.className);
+      const prefix = this.getClassRef().hasEntityRef() ? 'p' : 'i'; // + snakeCase(this.object.className);
 
       if (this.isReference() && this.isAppended()) {
-        name = [prefix, _.snakeCase(this.name)].join('_');
+        name = [prefix, snakeCase(this.name)].join('_');
       } else if (this.isReference() && !this.isEmbedded()) {
         name = [prefix, this.getClassRef().machineName, this.machineName].join('_');
         /*
@@ -276,15 +275,15 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
           }
         } else {
           if (this.object.isEntity) {
-            name = [prefix, this.object.machineName(), _.snakeCase(this.name), this.targetRef.machineName()].join('_');
+            name = [prefix, this.object.machineName(), snakeCase(this.name), this.targetRef.machineName()].join('_');
           } else {
             name = [prefix, this.object.machineName(), this.targetRef.machineName()].join('_');
           }
         }*/
         // } else if (this.propertyRef) {
-        //   name = [prefix, _.snakeCase(this.name)].join('_');
+        //   name = [prefix, snakeCase(this.name)].join('_');
       } else {
-        name = _.snakeCase(this.name);
+        name = snakeCase(this.name);
       }
     }
     return name;
@@ -307,7 +306,7 @@ export class PropertyRef extends DefaultPropertyRef/*AbstractRef implements IPro
       label = options.label;
     }
     if (!label) {
-      label = _.capitalize(this.name);
+      label = capitalize(this.name);
     } else {
       label = 'None';
     }
